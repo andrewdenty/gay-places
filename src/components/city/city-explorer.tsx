@@ -169,8 +169,8 @@ export function CityExplorer({ city, venues }: Props) {
               className="block cursor-pointer"
             >
               <article
-                className={`border-b border-[var(--row-separator)] py-[16px] transition-colors ${
-                  selectedId === v.id ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]"
+                className={`border-b border-[var(--row-separator)] py-[16px] mx-[-8px] px-[8px] transition-colors ${
+                  selectedId === v.id ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"
                 }`}
               >
                 {/* Row 1: Name + open status */}

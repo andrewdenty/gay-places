@@ -37,10 +37,10 @@ export function SiteHeader() {
             <Image
               src="/logo-header.svg"
               alt="Gay Places"
-              width={64}
-              height={69}
+              width={84}
+              height={90}
               priority
-              style={{ height: 56, width: "auto" }}
+              style={{ height: 88, width: "auto" }}
             />
           )}
         </Link>

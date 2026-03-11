@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { OpeningHoursView } from "@/components/venue/opening-hours-view";
 import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
 import { VenueSectionRow } from "@/components/venue/venue-section-row";
+import { PhotoGallery } from "@/components/venue/photo-gallery";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueById } from "@/lib/data/public";
 import { env } from "@/lib/env";
@@ -52,7 +53,7 @@ export default async function VenuePage({
   const [{ data: photos }] = await Promise.all([
     supabase
       .from("venue_photos")
-      .select("id, url")
+      .select("id, storage_path")
       .eq("venue_id", venue.id)
       .limit(5),
   ]);
@@ -109,21 +110,7 @@ export default async function VenuePage({
 
         {/* Photo gallery */}
         {photos && photos.length > 0 && (
-          <div className="mt-4 flex gap-2 overflow-x-auto scrollbar-none">
-            {photos.map((photo) => (
-              <div
-                key={photo.id}
-                className="h-[112px] w-[112px] shrink-0 overflow-hidden rounded-[4px] bg-[var(--muted)]"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={photo.url}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
+          <PhotoGallery photos={photos} />
         )}
 
         {/* Address */}
