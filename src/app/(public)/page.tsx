@@ -1,76 +1,61 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
-import { env } from "@/lib/env";
-import { getCities } from "@/lib/data/public";
 
-export default async function LandingPage() {
-  const cities =
-    env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      ? await getCities()
-      : [];
+const featuredCities = [
+  { name: "Berlin", slug: "berlin" },
+  { name: "Barcelona", slug: "barcelona" },
+  { name: "London", slug: "london" },
+  { name: "New York", slug: "new-york" },
+];
 
+export default function LandingPage() {
   return (
     <Container className="py-10 sm:py-14">
-      <div className="mx-auto max-w-2xl">
-        <div className="flex items-center gap-2">
-          <Badge>Curated LGBTQ+ venues</Badge>
-          <Badge>Mobile-first</Badge>
-        </div>
-        <h1 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Discover gay bars, clubs, and spots in new cities.
+      <header className="space-y-4 border-b border-border pb-8">
+        <div className="label-small text-[#6a6a6a]">GAY PLACES</div>
+        <h1 className="h1-display">
+          Gay Places
         </h1>
-        <p className="mt-3 text-base leading-7 text-muted-foreground">
-          A minimal city guide: map + list browsing, venue details, and
-          community suggestions—always moderated.
+        <p className="max-w-xl text-[15px] text-[#6a6a6a]">
+          A curated guide to the world’s gay bars, clubs, and queer spaces.
+          Calm, typographic, and unapologetically selective.
         </p>
+      </header>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Link href={cities[0] ? `/city/${cities[0].slug}` : "/city/copenhagen"}>
-            <Button className="w-full sm:w-auto">
-              {cities[0] ? `Browse ${cities[0].name}` : "Browse Copenhagen"}
-            </Button>
-          </Link>
-          <Link href="/suggest">
-            <Button className="w-full sm:w-auto" variant="secondary">
-              Suggest a venue
-            </Button>
-          </Link>
-        </div>
+      <main className="mt-10 space-y-8">
+        <section className="space-y-4">
+          <h2 className="h2-heading">Featured cities</h2>
+          <p className="text-[14px] text-[#6a6a6a]">
+            Start with a few of the world&apos;s most storied nightlife capitals.
+          </p>
 
-        <div className="mt-10 grid gap-4">
-          {cities.length === 0 ? (
-            <Card className="p-5">
-              <div className="text-sm font-semibold">No cities yet</div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                Once Supabase is connected and seeded, your cities will appear
-                here.
-              </div>
-            </Card>
-          ) : (
-            cities.map((city) => (
-              <Card key={city.id} className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-semibold">{city.name}</div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      {city.country}
-                    </div>
-                  </div>
-                  <Link
-                    href={`/city/${city.slug}`}
-                    className="text-sm font-medium"
-                  >
-                    Open
-                  </Link>
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
-      </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {featuredCities.map((city) => (
+              <Link
+                key={city.slug}
+                href={`/city/${city.slug}`}
+                className="group flex flex-col border-b border-dashed border-[#e5e5e5] pb-4 transition-colors hover:border-[#111111]"
+              >
+                <span className="text-[15px] font-medium tracking-tight">
+                  {city.name}
+                </span>
+                <span className="caption text-[#6a6a6a]">
+                  Editorial picks, no ratings, just places that matter.
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-3 border-t border-border pt-8">
+          <h3 className="h3-heading">What Gay Places is</h3>
+          <p className="text-[15px] text-[#6a6a6a]">
+            Less like an app store for venues and more like a quiet, opinionated
+            travel companion. No stars. No endless feeds. Just the bars and
+            neighborhoods worth crossing a city for.
+          </p>
+        </section>
+      </main>
     </Container>
   );
 }

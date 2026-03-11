@@ -6,7 +6,7 @@ export function Card({
 }: PropsWithChildren<{ className?: string }>) {
   return (
     <div
-      className={`rounded-2xl border border-border bg-card text-card-foreground shadow-[var(--shadow-card)] ${className}`}
+      className={`rounded-xl border border-border bg-card text-card-foreground ${className}`}
     >
       {children}
     </div>

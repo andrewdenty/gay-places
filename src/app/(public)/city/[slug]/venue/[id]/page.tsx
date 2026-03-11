@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { OpeningHoursView } from "@/components/venue/opening-hours-view";
 import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
+import { Tag } from "@/components/ui/tag";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueById } from "@/lib/data/public";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,31 @@ export default async function VenuePage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
+
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return (
+      <Container className="py-6 sm:py-8">
+        <Card className="p-6">
+          <div className="text-sm font-semibold">Connect Supabase</div>
+          <div className="mt-2 text-sm text-muted-foreground">
+            This venue page needs Supabase configured. Add{" "}
+            <span className="font-medium text-foreground">NEXT_PUBLIC_SUPABASE_URL</span> and{" "}
+            <span className="font-medium text-foreground">
+              NEXT_PUBLIC_SUPABASE_ANON_KEY
+            </span>{" "}
+            to <span className="font-medium text-foreground">.env.local</span> and restart
+            the dev server.
+          </div>
+          <div className="mt-4 text-sm">
+            <Link href="/" className="font-medium hover:underline">
+              Back to home
+            </Link>
+          </div>
+        </Card>
+      </Container>
+    );
+  }
+
   const city = await getCityBySlug(slug);
   if (!city) notFound();
 
@@ -25,156 +51,195 @@ export default async function VenuePage({
   // Analytics is recorded client-side (no IP/user-agent stored).
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: photos }, { data: reviews }] = await Promise.all([
+  await Promise.all([
     supabase
       .from("venue_photos")
-      .select("id,storage_path,caption,created_at")
+      .select("id")
       .eq("venue_id", venue.id)
-      .order("created_at", { ascending: false })
-      .limit(12),
+      .limit(1),
     supabase
       .from("reviews")
-      .select("id,rating,body,created_at")
+      .select("id")
       .eq("venue_id", venue.id)
-      .order("created_at", { ascending: false })
-      .limit(20),
+      .limit(1),
   ]);
+
+  const mainTone: Parameters<typeof Tag>[0]["tone"] =
+    venue.venue_type === "club"
+      ? "dance"
+      : venue.venue_type === "cafe"
+        ? "cafe"
+        : venue.venue_type === "bar" &&
+            (venue.tags ?? []).some((t) => t.toLowerCase().includes("leather"))
+          ? "leather"
+          : venue.venue_type === "bar"
+            ? "cocktail"
+            : "neutral";
 
   return (
     <Container className="py-6 sm:py-8">
       <VenueViewTracker venueId={venue.id} />
-      <div className="mb-5">
-        <Link href={`/city/${city.slug}`} className="text-sm text-muted-foreground">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <Link href={`/city/${city.slug}`} className="text-[12px] text-[#6a6a6a]">
           ← Back to {city.name}
         </Link>
+        <span className="label-small text-[#6a6a6a] uppercase">
+          Venue
+        </span>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="grid gap-4">
-          <Card className="p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight">
-                  {venue.name}
-                </h1>
-                <div className="mt-2 text-sm text-muted-foreground">
-                  {venue.address}
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Badge>{venue.venue_type.replace("_", " ")}</Badge>
-                {(venue.tags ?? []).slice(0, 6).map((t) => (
-                  <Badge key={t}>{t}</Badge>
-                ))}
-              </div>
-            </div>
-
-            {venue.description ? (
-              <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                {venue.description}
-              </p>
-            ) : null}
-
-            <div className="mt-5 flex flex-wrap gap-3 text-sm">
-              {venue.website_url ? (
-                <a
-                  href={venue.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium hover:underline"
-                >
-                  Website
-                </a>
-              ) : null}
-              {venue.google_maps_url ? (
-                <a
-                  href={venue.google_maps_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium hover:underline"
-                >
-                  Open in Google Maps
-                </a>
-              ) : null}
-              <Link
-                href={`/venues/${venue.id}/suggest-edit`}
-                className="font-medium hover:underline"
-              >
-                Suggest an edit
-              </Link>
-              <Link
-                href={`/venues/${venue.id}/review`}
-                className="font-medium hover:underline"
-              >
-                Write a review
-              </Link>
-              <Link
-                href={`/venues/${venue.id}/upload-photo`}
-                className="font-medium hover:underline"
-              >
-                Upload a photo
-              </Link>
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <div className="text-sm font-semibold">Photos</div>
-            {photos && photos.length > 0 ? (
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {photos.map((p) => (
-                  <div
-                    key={p.id}
-                    className="aspect-square rounded-xl bg-muted"
-                    title={p.caption ?? ""}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="mt-2 text-sm text-muted-foreground">
-                No photos yet.
-              </div>
-            )}
-          </Card>
-
-          <Card className="p-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="text-sm font-semibold">Reviews</div>
-              <div className="text-sm text-muted-foreground">
-                {reviews?.length ?? 0}
-              </div>
-            </div>
-            {reviews && reviews.length > 0 ? (
-              <div className="mt-4 grid gap-3">
-                {reviews.map((r) => (
-                  <div key={r.id} className="rounded-xl border border-border p-4">
-                    <div className="text-sm font-semibold">
-                      {r.rating}/5
-                    </div>
-                    {r.body ? (
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        {r.body}
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="mt-2 text-sm text-muted-foreground">
-                No reviews yet.
-              </div>
-            )}
-          </Card>
+      <section className="space-y-4 border-b border-[#e5e5e5] pb-6">
+        <div className="space-y-2">
+          <h1 className="h1-display">
+            {venue.name}
+          </h1>
+          <p className="text-[14px] text-[#6a6a6a]">
+            {venue.venue_type === "club"
+              ? "Dance Club"
+              : venue.venue_type === "cafe"
+                ? "Cafe"
+                : venue.venue_type === "bar" &&
+                    (venue.tags ?? []).some((t) =>
+                      t.toLowerCase().includes("leather"),
+                    )
+                  ? "Leather Bar"
+                  : "Bar"}{" "}
+            · {city.name}
+          </p>
         </div>
 
-        <div className="lg:sticky lg:top-20 lg:h-fit">
-          <Card className="p-6">
-            <div className="text-sm font-semibold">Opening hours</div>
-            <div className="mt-4">
-              <OpeningHoursView hours={venue.opening_hours} />
-            </div>
-          </Card>
+        <div className="flex flex-wrap gap-2">
+          <Tag tone={mainTone}>
+            {venue.venue_type === "club"
+              ? "DANCE CLUB"
+              : venue.venue_type === "cafe"
+                ? "CAFE"
+                : venue.venue_type === "bar" &&
+                    (venue.tags ?? []).some((t) =>
+                      t.toLowerCase().includes("leather"),
+                    )
+                  ? "LEATHER BAR"
+                  : venue.venue_type.toUpperCase().replace("_", " ")}
+          </Tag>
+          {(venue.tags ?? []).slice(0, 3).map((t) => (
+            <Tag key={t}>{t.toUpperCase()}</Tag>
+          ))}
         </div>
-      </div>
+      </section>
+
+      <section className="space-y-3 border-b border-[#e5e5e5] pb-6 pt-6">
+        {venue.description ? (
+          <p className="text-[15px] text-[#333333]">
+            {venue.description}
+          </p>
+        ) : (
+          <p className="text-[15px] text-[#6a6a6a]">
+            A quiet, unhurried bar worth detouring for.
+          </p>
+        )}
+      </section>
+
+      <section className="space-y-4 border-b border-[#e5e5e5] pb-6 pt-6">
+        <p className="h1-display text-center text-[24px] leading-tight text-[#111111]">
+          “Berlin’s most notorious Sunday night.”
+        </p>
+      </section>
+
+      <section className="grid gap-6 border-b border-[#e5e5e5] pb-6 pt-6 sm:grid-cols-2">
+        <div className="space-y-2">
+          <h2 className="h3-heading">Highlights</h2>
+          <ul className="space-y-1 text-[14px] text-[#333333]">
+            <li>• Cruising labyrinth</li>
+            <li>• Sunday parties</li>
+            <li>• International crowd</li>
+            <li>• Open until late</li>
+          </ul>
+        </div>
+        <div className="space-y-2">
+          <h2 className="h3-heading">Details</h2>
+          <dl className="space-y-2 text-[14px]">
+            <div>
+              <dt className="label-small text-[#6a6a6a]">Address</dt>
+              <dd>{venue.address}</dd>
+            </div>
+            <div>
+              <dt className="label-small text-[#6a6a6a]">Opening hours</dt>
+              <dd className="mt-1">
+                <OpeningHoursView hours={venue.opening_hours} />
+              </dd>
+            </div>
+            <div>
+              <dt className="label-small text-[#6a6a6a]">Price</dt>
+              <dd>€</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section className="space-y-3 border-b border-[#e5e5e5] pb-6 pt-6">
+        <h2 className="h3-heading">Neighborhood</h2>
+        <p className="text-[14px] text-[#6a6a6a]">
+          Kreuzberg is Berlin’s most alternative district, known for dive bars,
+          late-night kebab shops, and the city’s queer nightlife.
+        </p>
+      </section>
+
+      <section className="space-y-3 border-b border-[#e5e5e5] pb-6 pt-6">
+        <h2 className="h3-heading">Nearby venues</h2>
+        <ul className="space-y-1 text-[14px]">
+          {["Lab.oratory", "Prinzknecht", "Möbel Olfe"].map((name) => (
+            <li key={name}>
+              <span className="border-b border-dotted border-[#b0b0b0] pb-[1px]">
+                {name}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="space-y-3 pt-6">
+        <h2 className="h3-heading">Practical</h2>
+        <div className="flex flex-wrap gap-4 text-[13px]">
+          {venue.website_url && (
+            <a
+              href={venue.website_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              Website
+            </a>
+          )}
+          {venue.google_maps_url && (
+            <a
+              href={venue.google_maps_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              Open in Google Maps
+            </a>
+          )}
+          <Link
+            href={`/venues/${venue.id}/review`}
+            className="underline underline-offset-2"
+          >
+            Write a review
+          </Link>
+          <Link
+            href={`/venues/${venue.id}/upload-photo`}
+            className="underline underline-offset-2"
+          >
+            Upload a photo
+          </Link>
+          <Link
+            href={`/venues/${venue.id}/suggest-edit`}
+            className="underline underline-offset-2"
+          >
+            Suggest an edit
+          </Link>
+        </div>
+      </section>
     </Container>
   );
 }
