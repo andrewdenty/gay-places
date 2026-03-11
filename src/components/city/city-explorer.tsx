@@ -1,12 +1,10 @@
 "use client";
 
 import mapboxgl from "mapbox-gl";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { env } from "@/lib/env";
 import type { City, Venue } from "@/lib/data/public";
-import { Card } from "@/components/ui/card";
-import { Tag } from "@/components/ui/tag";
 import { isOpenNow } from "@/components/city/opening-hours";
 
 type Props = {
@@ -16,37 +14,42 @@ type Props = {
 
 type VenueType = Venue["venue_type"] | "all";
 
-function uniqTags(venues: Venue[]) {
-  const s = new Set<string>();
-  for (const v of venues) for (const t of v.tags ?? []) s.add(String(t));
-  return Array.from(s).sort((a, b) => a.localeCompare(b));
-}
+type PillOption =
+  | { label: string; kind: "type"; value: VenueType }
+  | { label: string; kind: "open" };
+
+const pills: PillOption[] = [
+  { label: "Show all", kind: "type", value: "all" },
+  { label: "Bars", kind: "type", value: "bar" },
+  { label: "Clubs", kind: "type", value: "club" },
+  { label: "Saunas", kind: "type", value: "sauna" },
+  { label: "Cafés", kind: "type", value: "cafe" },
+  { label: "Open now", kind: "open" },
+];
 
 export function CityExplorer({ city, venues }: Props) {
+  const router = useRouter();
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
 
   const [query, setQuery] = useState("");
   const [type, setType] = useState<VenueType>("all");
-  const [tag, setTag] = useState<string>("all");
   const [openNow, setOpenNow] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const tags = useMemo(() => uniqTags(venues), [venues]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return venues.filter((v) => {
       if (type !== "all" && v.venue_type !== type) return false;
-      if (tag !== "all" && !(v.tags ?? []).includes(tag)) return false;
       if (openNow && !isOpenNow(v.opening_hours)) return false;
       if (!q) return true;
       const hay = `${v.name} ${(v.tags ?? []).join(" ")}`.toLowerCase();
       return hay.includes(q);
     });
-  }, [venues, query, type, tag, openNow]);
+  }, [venues, query, type, openNow]);
 
+  // Map init
   useEffect(() => {
     if (!mapRef.current) return;
     if (mapInstance.current) return;
@@ -69,6 +72,7 @@ export function CityExplorer({ city, venues }: Props) {
     };
   }, [city.center_lat, city.center_lng]);
 
+  // Markers
   useEffect(() => {
     const map = mapInstance.current;
     if (!map) return;
@@ -80,7 +84,7 @@ export function CityExplorer({ city, venues }: Props) {
       const el = document.createElement("button");
       el.type = "button";
       el.className =
-        "h-3 w-3 rounded-full bg-[var(--accent)] shadow-[0_0_0_6px_rgba(255,90,95,0.18)]";
+        "h-3 w-3 rounded-full bg-[var(--accent)] shadow-[0_0_0_6px_rgba(23,23,23,0.12)]";
       el.addEventListener("click", () => setSelectedId(v.id));
 
       const marker = new mapboxgl.Marker({ element: el })
@@ -90,6 +94,7 @@ export function CityExplorer({ city, venues }: Props) {
     }
   }, [filtered]);
 
+  // Fly to selected
   useEffect(() => {
     const map = mapInstance.current;
     if (!map) return;
@@ -100,159 +105,153 @@ export function CityExplorer({ city, venues }: Props) {
   }, [selectedId, venues]);
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] sm:items-end">
-          <div className="space-y-2">
-            <div className="label-small text-[#6a6a6a]">CITY</div>
-            <h2 className="h2-heading">{city.name}</h2>
-            <p className="text-[14px] text-[#6a6a6a]">
-              Quietly curated places to drink, cruise, dance, and stay out too late.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search venues or tags…"
-              className="h-10 w-full border-b border-[#e5e5e5] bg-transparent text-[14px] outline-none placeholder:text-[#b0b0b0]"
-            />
-            <div className="flex flex-wrap gap-3 text-[12px] text-[#6a6a6a]">
-              <span>
-                {filtered.length} venue{filtered.length === 1 ? "" : "s"}
-              </span>
-              <span>·</span>
-              <label className="inline-flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="h-3 w-3 rounded border border-[#b0b0b0]"
-                  checked={openNow}
-                  onChange={(e) => setOpenNow(e.target.checked)}
-                />
-                <span>Open now</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="space-y-0">
+      {/* Search */}
+      <div className="mb-0">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search venues…"
+          className="h-10 w-full border-b border-[var(--border)] bg-transparent text-[14px] outline-none placeholder:text-[var(--muted-foreground)]"
+        />
+      </div>
 
-      <section className="space-y-4">
-        <div className="flex flex-wrap gap-3 text-[12px] text-[#6a6a6a]">
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as VenueType)}
-            className="h-8 border border-[#e5e5e5] bg-transparent px-2 text-[12px]"
-          >
-            <option value="all">All types</option>
-            <option value="bar">Bar</option>
-            <option value="club">Club</option>
-            <option value="restaurant">Restaurant</option>
-            <option value="cafe">Café</option>
-            <option value="sauna">Sauna</option>
-            <option value="event_space">Event space</option>
-            <option value="other">Other</option>
-          </select>
-          <select
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-            className="h-8 border border-[#e5e5e5] bg-transparent px-2 text-[12px]"
-          >
-            <option value="all">All experiences</option>
-            {tags.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Pill filters */}
+      <div className="flex gap-[6px] overflow-x-auto py-[16px] border-b border-[var(--row-separator)] scrollbar-none">
+        {pills.map((pill) => {
+          const isActive =
+            pill.kind === "open"
+              ? openNow
+              : type === pill.value;
+          return (
+            <button
+              key={pill.label}
+              type="button"
+              onClick={() => {
+                if (pill.kind === "open") {
+                  setOpenNow((p) => !p);
+                } else {
+                  setType(pill.value);
+                }
+              }}
+              className={`h-[38px] shrink-0 rounded-full px-[12px] text-[12px] font-medium transition-colors ${
+                isActive
+                  ? "bg-[#171717] text-white"
+                  : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717]"
+              }`}
+            >
+              {pill.label}
+            </button>
+          );
+        })}
+      </div>
 
-        <div className="space-y-4 border-t border-[#e5e5e5] pt-4">
-          {filtered.map((v) => {
-            const open = isOpenNow(v.opening_hours);
+      {/* Venue count */}
+      <div className="py-3 label-xs text-[var(--muted-foreground)]">
+        {filtered.length} venue{filtered.length === 1 ? "" : "s"}
+      </div>
 
-            const mainTone: Parameters<typeof Tag>[0]["tone"] =
-              v.venue_type === "club"
-                ? "dance"
-                : v.venue_type === "cafe"
-                  ? "cafe"
-                  : v.venue_type === "bar" &&
-                      (v.tags ?? []).some((t) =>
-                        t.toLowerCase().includes("leather"),
-                      )
-                    ? "leather"
-                    : v.venue_type === "bar"
-                      ? "cocktail"
-                      : "neutral";
+      {/* Venue list */}
+      <div>
+        {filtered.map((v) => {
+          const open = isOpenNow(v.opening_hours);
+          const tags = (v.tags ?? []).slice(0, 3);
 
-            return (
-              <Link
-                key={v.id}
-                href={`/city/${city.slug}/venue/${v.id}`}
-                onMouseEnter={() => setSelectedId(v.id)}
-                onFocus={() => setSelectedId(v.id)}
-                className="block"
+          return (
+            <div
+              key={v.id}
+              role="link"
+              tabIndex={0}
+              onClick={() => router.push(`/city/${city.slug}/venue/${v.id}`)}
+              onKeyDown={(e) => e.key === "Enter" && router.push(`/city/${city.slug}/venue/${v.id}`)}
+              onMouseEnter={() => setSelectedId(v.id)}
+              onFocus={() => setSelectedId(v.id)}
+              className="block cursor-pointer"
+            >
+              <article
+                className={`border-b border-[var(--row-separator)] py-[16px] transition-colors ${
+                  selectedId === v.id ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]"
+                }`}
               >
-                <article
-                  className={`space-y-2 border-b border-[#e5e5e5] pb-4 ${
-                    selectedId === v.id ? "bg-[#f0f0ec]" : ""
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <h3 className="text-[16px] font-medium tracking-tight">
-                        {v.name}
-                      </h3>
-                      <p className="text-[13px] text-[#6a6a6a]">{v.address}</p>
-                    </div>
-                    <span className="label-small text-[11px] uppercase tracking-[0.16em] text-[#6a6a6a]">
-                      {open ? "OPEN" : "CLOSED"}
-                    </span>
-                  </div>
+                {/* Row 1: Name + open status */}
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-[16px] font-semibold tracking-[-0.32px] text-[var(--foreground)]">
+                    {v.name}
+                  </h3>
+                  <span className="label-xs flex shrink-0 items-center gap-[5px] text-[var(--muted-foreground)]">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+                    />
+                    {open ? "OPEN NOW" : "CLOSED"}
+                  </span>
+                </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <Tag tone={mainTone}>
-                      {v.venue_type === "club"
-                        ? "DANCE CLUB"
-                        : v.venue_type === "cafe"
-                          ? "CAFE"
-                          : v.venue_type === "bar" &&
-                              (v.tags ?? []).some((t) =>
-                                t.toLowerCase().includes("leather"),
-                              )
-                            ? "LEATHER BAR"
-                            : v.venue_type === "bar"
-                              ? "COCKTAIL BAR"
-                              : v.venue_type.toUpperCase().replace("_", " ")}
-                    </Tag>
-                    {(v.tags ?? []).slice(0, 2).map((t) => (
-                      <Tag key={t}>{t.toUpperCase()}</Tag>
+                {/* Row 2: Tags as dot-separated text */}
+                {tags.length > 0 && (
+                  <div className="mt-[4px] label-xs text-[var(--muted-foreground)]">
+                    {tags.map((t, i) => (
+                      <span key={t}>
+                        {i > 0 && <span className="mx-[6px]">·</span>}
+                        {t.toUpperCase()}
+                      </span>
                     ))}
                   </div>
-                </article>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+                )}
 
-      <section className="space-y-3">
-        <h3 className="h3-heading">Map</h3>
-        <Card className="overflow-hidden">
-          <div className="aspect-[4/3] w-full">
+                {/* Row 3: Description */}
+                {v.description && (
+                  <p className="mt-[6px] text-[13px] leading-[1.4] text-[var(--foreground)] line-clamp-2">
+                    {v.description}
+                  </p>
+                )}
+
+                {/* Row 4: Address + MAP link */}
+                <div className="mt-[6px] flex items-center justify-between gap-3">
+                  <p className="text-[14px] text-[var(--muted-foreground)]">
+                    {v.address}
+                  </p>
+                  {v.google_maps_url && (
+                    <a
+                      href={v.google_maps_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="label-xs shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                    >
+                      MAP ↗
+                    </a>
+                  )}
+                </div>
+              </article>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Map section */}
+      <div className="pt-8 pb-8">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="h2-editorial">Map</h2>
+          <span className="label-xs text-[var(--muted-foreground)]">
+            {city.name.toUpperCase()}
+          </span>
+        </div>
+        <div className="overflow-hidden rounded-[4px] border border-[var(--border)]">
+          <div className="h-[300px] w-full">
             {env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ? (
               <div ref={mapRef} className="h-full w-full" />
             ) : (
-              <div className="flex h-full items-center justify-center bg-muted">
-                <div className="text-[13px] text-muted-foreground">
+              <div className="flex h-full items-center justify-center bg-[var(--muted)]">
+                <div className="text-[13px] text-[var(--muted-foreground)]">
                   Add <code className="text-[12px]">NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to
-                  view wayfinding-style maps.
+                  view maps.
                 </div>
               </div>
             )}
           </div>
-        </Card>
-      </section>
+        </div>
+      </div>
     </div>
   );
 }
-

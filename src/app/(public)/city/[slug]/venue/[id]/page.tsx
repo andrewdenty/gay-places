@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Card } from "@/components/ui/card";
-import { Container } from "@/components/ui/container";
 import { OpeningHoursView } from "@/components/venue/opening-hours-view";
 import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
-import { Tag } from "@/components/ui/tag";
+import { VenueSectionRow } from "@/components/venue/venue-section-row";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueById } from "@/lib/data/public";
 import { env } from "@/lib/env";
+import { isOpenNow } from "@/components/city/opening-hours";
 
 export const dynamic = "force-dynamic";
 
@@ -20,16 +19,17 @@ export default async function VenuePage({
 
   if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return (
-      <Container className="py-6 sm:py-8">
-        <Card className="p-6">
+      <div className="py-6 sm:py-8">
+        <div className="rounded border border-[var(--border)] p-6">
           <div className="text-sm font-semibold">Connect Supabase</div>
-          <div className="mt-2 text-sm text-muted-foreground">
-            This venue page needs Supabase configured. Add{" "}
-            <span className="font-medium text-foreground">NEXT_PUBLIC_SUPABASE_URL</span> and{" "}
-            <span className="font-medium text-foreground">
+          <div className="mt-2 text-sm text-[var(--muted-foreground)]">
+            Add{" "}
+            <span className="font-medium text-[var(--foreground)]">NEXT_PUBLIC_SUPABASE_URL</span>{" "}
+            and{" "}
+            <span className="font-medium text-[var(--foreground)]">
               NEXT_PUBLIC_SUPABASE_ANON_KEY
             </span>{" "}
-            to <span className="font-medium text-foreground">.env.local</span> and restart
+            to <span className="font-medium text-[var(--foreground)]">.env.local</span> and restart
             the dev server.
           </div>
           <div className="mt-4 text-sm">
@@ -37,8 +37,8 @@ export default async function VenuePage({
               Back to home
             </Link>
           </div>
-        </Card>
-      </Container>
+        </div>
+      </div>
     );
   }
 
@@ -48,199 +48,173 @@ export default async function VenuePage({
   const venue = await getVenueById(id);
   if (!venue || venue.city_id !== city.id) notFound();
 
-  // Analytics is recorded client-side (no IP/user-agent stored).
-
   const supabase = await createSupabaseServerClient();
-  await Promise.all([
+  const [{ data: photos }] = await Promise.all([
     supabase
       .from("venue_photos")
-      .select("id")
+      .select("id, url")
       .eq("venue_id", venue.id)
-      .limit(1),
-    supabase
-      .from("reviews")
-      .select("id")
-      .eq("venue_id", venue.id)
-      .limit(1),
+      .limit(5),
   ]);
 
-  const mainTone: Parameters<typeof Tag>[0]["tone"] =
-    venue.venue_type === "club"
-      ? "dance"
-      : venue.venue_type === "cafe"
-        ? "cafe"
-        : venue.venue_type === "bar" &&
-            (venue.tags ?? []).some((t) => t.toLowerCase().includes("leather"))
-          ? "leather"
-          : venue.venue_type === "bar"
-            ? "cocktail"
-            : "neutral";
+  const open = isOpenNow(venue.opening_hours);
+  const tags = venue.tags ?? [];
 
   return (
-    <Container className="py-6 sm:py-8">
+    <div className="py-6 sm:py-8">
       <VenueViewTracker venueId={venue.id} />
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <Link href={`/city/${city.slug}`} className="text-[12px] text-[#6a6a6a]">
-          ← Back to {city.name}
+
+      {/* Back link + breadcrumb */}
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <Link
+          href={`/city/${city.slug}`}
+          className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+        >
+          ← {city.country.toUpperCase()} / {city.name.toUpperCase()}
         </Link>
-        <span className="label-small text-[#6a6a6a] uppercase">
-          Venue
-        </span>
+        <span className="label-xs text-[var(--muted-foreground)]">VENUE</span>
       </div>
 
-      <section className="space-y-4 border-b border-[#e5e5e5] pb-6">
-        <div className="space-y-2">
-          <h1 className="h1-display">
-            {venue.name}
-          </h1>
-          <p className="text-[14px] text-[#6a6a6a]">
-            {venue.venue_type === "club"
-              ? "Dance Club"
-              : venue.venue_type === "cafe"
-                ? "Cafe"
-                : venue.venue_type === "bar" &&
-                    (venue.tags ?? []).some((t) =>
-                      t.toLowerCase().includes("leather"),
-                    )
-                  ? "Leather Bar"
-                  : "Bar"}{" "}
-            · {city.name}
-          </p>
+      {/* Section 1 — Venue identity */}
+      <section className="border-b border-[var(--border)] pb-6">
+        {/* Name + open status */}
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="h1-editorial">{venue.name}</h1>
+          <div className="flex shrink-0 items-center gap-[6px] pt-2">
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+            />
+            <span className="label-xs text-[var(--muted-foreground)]">
+              {open ? "OPEN NOW" : "CLOSED"}
+            </span>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Tag tone={mainTone}>
-            {venue.venue_type === "club"
-              ? "DANCE CLUB"
-              : venue.venue_type === "cafe"
-                ? "CAFE"
-                : venue.venue_type === "bar" &&
-                    (venue.tags ?? []).some((t) =>
-                      t.toLowerCase().includes("leather"),
-                    )
-                  ? "LEATHER BAR"
-                  : venue.venue_type.toUpperCase().replace("_", " ")}
-          </Tag>
-          {(venue.tags ?? []).slice(0, 3).map((t) => (
-            <Tag key={t}>{t.toUpperCase()}</Tag>
-          ))}
-        </div>
-      </section>
+        <p className="mt-1 text-[14px] text-[var(--muted-foreground)]">
+          {venue.venue_type === "club"
+            ? "Dance Club"
+            : venue.venue_type === "cafe"
+              ? "Café"
+              : venue.venue_type === "bar" &&
+                  tags.some((t) => t.toLowerCase().includes("leather"))
+                ? "Leather Bar"
+                : venue.venue_type === "bar"
+                  ? "Bar"
+                  : venue.venue_type
+                      .charAt(0)
+                      .toUpperCase() + venue.venue_type.slice(1).replace("_", " ")}{" "}
+          · {city.name}
+        </p>
 
-      <section className="space-y-3 border-b border-[#e5e5e5] pb-6 pt-6">
-        {venue.description ? (
-          <p className="text-[15px] text-[#333333]">
-            {venue.description}
-          </p>
-        ) : (
-          <p className="text-[15px] text-[#6a6a6a]">
-            A quiet, unhurried bar worth detouring for.
-          </p>
+        {/* Photo gallery */}
+        {photos && photos.length > 0 && (
+          <div className="mt-4 flex gap-2 overflow-x-auto scrollbar-none">
+            {photos.map((photo) => (
+              <div
+                key={photo.id}
+                className="h-[112px] w-[112px] shrink-0 overflow-hidden rounded-[4px] bg-[var(--muted)]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.url}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
         )}
-      </section>
 
-      <section className="space-y-4 border-b border-[#e5e5e5] pb-6 pt-6">
-        <p className="h1-display text-center text-[24px] leading-tight text-[#111111]">
-          “Berlin’s most notorious Sunday night.”
-        </p>
-      </section>
-
-      <section className="grid gap-6 border-b border-[#e5e5e5] pb-6 pt-6 sm:grid-cols-2">
-        <div className="space-y-2">
-          <h2 className="h3-heading">Highlights</h2>
-          <ul className="space-y-1 text-[14px] text-[#333333]">
-            <li>• Cruising labyrinth</li>
-            <li>• Sunday parties</li>
-            <li>• International crowd</li>
-            <li>• Open until late</li>
-          </ul>
-        </div>
-        <div className="space-y-2">
-          <h2 className="h3-heading">Details</h2>
-          <dl className="space-y-2 text-[14px]">
-            <div>
-              <dt className="label-small text-[#6a6a6a]">Address</dt>
-              <dd>{venue.address}</dd>
-            </div>
-            <div>
-              <dt className="label-small text-[#6a6a6a]">Opening hours</dt>
-              <dd className="mt-1">
-                <OpeningHoursView hours={venue.opening_hours} />
-              </dd>
-            </div>
-            <div>
-              <dt className="label-small text-[#6a6a6a]">Price</dt>
-              <dd>€</dd>
-            </div>
-          </dl>
-        </div>
-      </section>
-
-      <section className="space-y-3 border-b border-[#e5e5e5] pb-6 pt-6">
-        <h2 className="h3-heading">Neighborhood</h2>
-        <p className="text-[14px] text-[#6a6a6a]">
-          Kreuzberg is Berlin’s most alternative district, known for dive bars,
-          late-night kebab shops, and the city’s queer nightlife.
-        </p>
-      </section>
-
-      <section className="space-y-3 border-b border-[#e5e5e5] pb-6 pt-6">
-        <h2 className="h3-heading">Nearby venues</h2>
-        <ul className="space-y-1 text-[14px]">
-          {["Lab.oratory", "Prinzknecht", "Möbel Olfe"].map((name) => (
-            <li key={name}>
-              <span className="border-b border-dotted border-[#b0b0b0] pb-[1px]">
-                {name}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="space-y-3 pt-6">
-        <h2 className="h3-heading">Practical</h2>
-        <div className="flex flex-wrap gap-4 text-[13px]">
-          {venue.website_url && (
-            <a
-              href={venue.website_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2"
-            >
-              Website
-            </a>
-          )}
+        {/* Address */}
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <p className="text-[13px] text-[var(--foreground)]">{venue.address}</p>
           {venue.google_maps_url && (
             <a
               href={venue.google_maps_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2"
+              className="label-xs shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
-              Open in Google Maps
+              GOOGLE MAPS ↗
             </a>
           )}
-          <Link
-            href={`/venues/${venue.id}/review`}
-            className="underline underline-offset-2"
+        </div>
+
+        {/* Description */}
+        {venue.description && (
+          <p className="mt-4 text-[15px] leading-[1.4] text-[var(--foreground)]">
+            {venue.description}
+          </p>
+        )}
+      </section>
+
+      {/* Section 2 — Highlights */}
+      {tags.length > 0 && (
+        <VenueSectionRow label="Highlights">
+          <p className="text-[13px] text-[var(--muted-foreground)] capitalize">
+            {tags.map((t, i) => (
+              <span key={t}>
+                {i > 0 && <span className="mx-[5px] text-[var(--border)]">·</span>}
+                {t}
+              </span>
+            ))}
+          </p>
+        </VenueSectionRow>
+      )}
+
+      {/* Section 3 — Opening hours */}
+      <VenueSectionRow label="Opening hours">
+        <div className="w-[220px]">
+          <OpeningHoursView hours={venue.opening_hours} />
+        </div>
+      </VenueSectionRow>
+
+      {/* Section 4 — Map */}
+      <VenueSectionRow label="Map">
+        {venue.google_maps_url ? (
+          <a
+            href={venue.google_maps_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           >
-            Write a review
-          </Link>
-          <Link
-            href={`/venues/${venue.id}/upload-photo`}
-            className="underline underline-offset-2"
-          >
-            Upload a photo
-          </Link>
+            OPEN IN MAPS ↗
+          </a>
+        ) : (
+          <span className="label-xs text-[var(--muted-foreground)]">{venue.address}</span>
+        )}
+      </VenueSectionRow>
+
+      {/* Section 5 — Nearby venues (static placeholder) */}
+      <VenueSectionRow label="Nearby">
+        <p className="text-[13px] text-[var(--muted-foreground)]">
+          <span>Lab.oratory</span>
+          <span className="mx-[5px]">·</span>
+          <span>Prinzknecht</span>
+          <span className="mx-[5px]">·</span>
+          <span>Möbel Olfe</span>
+        </p>
+      </VenueSectionRow>
+
+      {/* Section 6 — Contribute */}
+      <VenueSectionRow label="Contribute" bordered={false}>
+        <div className="flex items-center gap-0 text-[13px]">
           <Link
             href={`/venues/${venue.id}/suggest-edit`}
-            className="underline underline-offset-2"
+            className="text-[var(--muted-foreground)] underline underline-offset-2 hover:text-[var(--foreground)]"
           >
-            Suggest an edit
+            Suggest an Edit
+          </Link>
+          <span className="mx-[8px] text-[var(--border)]">·</span>
+          <Link
+            href={`/venues/${venue.id}/upload-photo`}
+            className="text-[var(--muted-foreground)] underline underline-offset-2 hover:text-[var(--foreground)]"
+          >
+            Upload a Photo
           </Link>
         </div>
-      </section>
-    </Container>
+      </VenueSectionRow>
+    </div>
   );
 }
-
