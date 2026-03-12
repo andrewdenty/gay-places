@@ -36,7 +36,7 @@ export function CityExplorer({ city, venues }: Props) {
   const [query, setQuery] = useState("");
   const [type, setType] = useState<VenueType>("all");
   const [openNow, setOpenNow] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -85,7 +85,7 @@ export function CityExplorer({ city, venues }: Props) {
       el.type = "button";
       el.className =
         "h-3 w-3 rounded-full bg-[var(--accent)] shadow-[0_0_0_6px_rgba(23,23,23,0.12)]";
-      el.addEventListener("click", () => setSelectedId(v.id));
+      el.addEventListener("click", () => setSelectedSlug(v.slug));
 
       const marker = new mapboxgl.Marker({ element: el })
         .setLngLat([v.lng, v.lat])
@@ -98,11 +98,11 @@ export function CityExplorer({ city, venues }: Props) {
   useEffect(() => {
     const map = mapInstance.current;
     if (!map) return;
-    if (!selectedId) return;
-    const v = venues.find((x) => x.id === selectedId);
+    if (!selectedSlug) return;
+    const v = venues.find((x) => x.slug === selectedSlug);
     if (!v) return;
     map.flyTo({ center: [v.lng, v.lat], zoom: Math.max(map.getZoom(), 14) });
-  }, [selectedId, venues]);
+  }, [selectedSlug, venues]);
 
   return (
     <div className="space-y-0">
@@ -159,18 +159,18 @@ export function CityExplorer({ city, venues }: Props) {
 
           return (
             <div
-              key={v.id}
+              key={v.slug}
               role="link"
               tabIndex={0}
-              onClick={() => router.push(`/city/${city.slug}/venue/${v.id}`)}
-              onKeyDown={(e) => e.key === "Enter" && router.push(`/city/${city.slug}/venue/${v.id}`)}
-              onMouseEnter={() => setSelectedId(v.id)}
-              onFocus={() => setSelectedId(v.id)}
+              onClick={() => router.push(`/city/${city.slug}/venue/${v.slug}`)}
+              onKeyDown={(e) => e.key === "Enter" && router.push(`/city/${city.slug}/venue/${v.slug}`)}
+              onMouseEnter={() => setSelectedSlug(v.slug)}
+              onFocus={() => setSelectedSlug(v.slug)}
               className="block cursor-pointer"
             >
               <article
                 className={`border-b border-[var(--row-separator)] py-[16px] mx-[-8px] px-[8px] transition-colors ${
-                  selectedId === v.id ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"
+                  selectedSlug === v.slug ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"
                 }`}
               >
                 {/* Row 1: Name + open status */}

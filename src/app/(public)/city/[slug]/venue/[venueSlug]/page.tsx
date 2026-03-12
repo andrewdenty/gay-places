@@ -5,7 +5,7 @@ import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
 import { VenueSectionRow } from "@/components/venue/venue-section-row";
 import { PhotoGallery } from "@/components/venue/photo-gallery";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCityBySlug, getVenueById } from "@/lib/data/public";
+import { getCityBySlug, getVenueBySlug } from "@/lib/data/public";
 import { env } from "@/lib/env";
 import { isOpenNow } from "@/components/city/opening-hours";
 
@@ -14,9 +14,9 @@ export const dynamic = "force-dynamic";
 export default async function VenuePage({
   params,
 }: {
-  params: Promise<{ slug: string; id: string }>;
+  params: Promise<{ slug: string; venueSlug: string }>;
 }) {
-  const { slug, id } = await params;
+  const { slug, venueSlug } = await params;
 
   if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return (
@@ -46,8 +46,8 @@ export default async function VenuePage({
   const city = await getCityBySlug(slug);
   if (!city) notFound();
 
-  const venue = await getVenueById(id);
-  if (!venue || venue.city_id !== city.id) notFound();
+  const venue = await getVenueBySlug(slug, venueSlug);
+  if (!venue) notFound();
 
   const supabase = await createSupabaseServerClient();
   const [{ data: photos }] = await Promise.all([
@@ -71,7 +71,7 @@ export default async function VenuePage({
           href={`/city/${city.slug}`}
           className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
         >
-          ← {city.country.toUpperCase()} / {city.name.toUpperCase()}
+          {city.country.toUpperCase()} / {city.name.toUpperCase()}
         </Link>
         <span className="label-xs text-[var(--muted-foreground)]">VENUE</span>
       </div>
@@ -139,10 +139,10 @@ export default async function VenuePage({
       {/* Section 2 — Highlights */}
       {tags.length > 0 && (
         <VenueSectionRow label="Highlights">
-          <p className="text-[13px] text-[var(--muted-foreground)] capitalize">
+          <p className="text-[13px] text-[var(--foreground)] capitalize">
             {tags.map((t, i) => (
               <span key={t}>
-                {i > 0 && <span className="mx-[5px] text-[var(--border)]">·</span>}
+                {i > 0 && <span className="mx-[5px] text-[var(--muted-foreground)]">·</span>}
                 {t}
               </span>
             ))}
@@ -151,11 +151,12 @@ export default async function VenuePage({
       )}
 
       {/* Section 3 — Opening hours */}
-      <VenueSectionRow label="Opening hours">
-        <div className="w-[220px]">
+      <div className="border-b border-[var(--border)] py-[24px]">
+        <span className="h2-editorial">{`Opening hours`}</span>
+        <div className="mt-4">
           <OpeningHoursView hours={venue.opening_hours} />
         </div>
-      </VenueSectionRow>
+      </div>
 
       {/* Section 4 — Map */}
       <VenueSectionRow label="Map">
@@ -175,7 +176,7 @@ export default async function VenuePage({
 
       {/* Section 5 — Nearby venues (static placeholder) */}
       <VenueSectionRow label="Nearby">
-        <p className="text-[13px] text-[var(--muted-foreground)]">
+        <p className="text-[13px] text-[var(--foreground)]">
           <span>Lab.oratory</span>
           <span className="mx-[5px]">·</span>
           <span>Prinzknecht</span>

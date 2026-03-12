@@ -1,13 +1,13 @@
 import type { OpeningHours, OpeningHoursRange } from "@/lib/types/opening-hours";
 
 const days: Array<{ key: keyof OpeningHours; label: string }> = [
-  { key: "mon", label: "Monday" },
-  { key: "tue", label: "Tuesday" },
-  { key: "wed", label: "Wednesday" },
-  { key: "thu", label: "Thursday" },
-  { key: "fri", label: "Friday" },
-  { key: "sat", label: "Saturday" },
-  { key: "sun", label: "Sunday" },
+  { key: "mon", label: "Mon" },
+  { key: "tue", label: "Tue" },
+  { key: "wed", label: "Wed" },
+  { key: "thu", label: "Thu" },
+  { key: "fri", label: "Fri" },
+  { key: "sat", label: "Sat" },
+  { key: "sun", label: "Sun" },
 ];
 
 // JS getDay() returns 0=Sun,1=Mon,...,6=Sat
@@ -32,7 +32,7 @@ export function OpeningHoursView({ hours }: { hours: OpeningHours | null }) {
   const todayKey = jsWeekdayToKey[new Date().getDay()];
 
   return (
-    <div>
+    <div className="w-full">
       {days.map((d, i) => {
         const isToday = d.key === todayKey;
         return (
@@ -43,17 +43,17 @@ export function OpeningHoursView({ hours }: { hours: OpeningHours | null }) {
             }`}
           >
             <span
-              className={`pl-[4px] ${
+              className={
                 isToday
-                  ? "font-bold text-[var(--foreground)]"
+                  ? "font-semibold text-[var(--foreground)]"
                   : "text-[var(--muted-foreground)]"
-              }`}
+              }
             >
               {d.label}
             </span>
             <span
               className={
-                isToday ? "font-bold text-[var(--foreground)]" : "text-[var(--foreground)]"
+                isToday ? "font-semibold text-[var(--foreground)]" : "text-[var(--foreground)]"
               }
             >
               {fmtRanges(hours[d.key] as OpeningHoursRange[] | undefined)}

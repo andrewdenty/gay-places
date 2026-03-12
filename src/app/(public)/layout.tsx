@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { PropsWithChildren } from "react";
 import { SiteHeader } from "@/components/layout/site-header";
 
@@ -15,23 +16,27 @@ export default function PublicLayout({ children }: PropsWithChildren) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#171717] px-4 py-10">
-        <div className="mx-auto w-full max-w-[720px]">
+      <footer className="bg-[#171717] py-10">
+        <div className="mx-auto w-full max-w-[720px] px-4 sm:px-6">
           <div className="flex items-center justify-between">
-            <Image
-              src="/logo-footer.svg"
-              alt="Gay Places"
-              width={87}
-              height={72}
-              style={{ height: 60, width: "auto" }}
-            />
-            <Image
-              src="/rainbow-logo.svg"
-              alt=""
-              width={88}
-              height={88}
-              style={{ height: 88, width: 88 }}
-            />
+            <Link href="/">
+              <Image
+                src="/logo-footer.svg"
+                alt="Gay Places"
+                width={87}
+                height={72}
+                style={{ height: 60, width: "auto" }}
+              />
+            </Link>
+            <Link href="/">
+              <Image
+                src="/rainbow-logo.svg"
+                alt=""
+                width={88}
+                height={88}
+                style={{ height: 88, width: 88 }}
+              />
+            </Link>
           </div>
           <div className="mt-6 label-xs text-white/40">
             © 2026 Gay Places
