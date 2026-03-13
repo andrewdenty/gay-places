@@ -126,7 +126,7 @@ export function SearchModal({
       <button
         type="button"
         onClick={onClose}
-        className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#6E6E6D] hover:text-[#6E6E6D] transition-colors z-10"
+        className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#6E6E6D] hover:text-[#6E6E6D] transition-colors z-20"
         aria-label="Close search"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
