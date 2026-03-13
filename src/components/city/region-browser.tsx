@@ -167,11 +167,11 @@ function RegionRow({ group }: { group: GroupedData }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-[var(--border)]">
+    <div className="border-b border-[var(--border)] -mx-4 px-4 sm:-mx-6 sm:px-6">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between py-5 text-left hover:text-[var(--foreground)] transition-colors"
+        className="flex items-center justify-between py-5 text-left hover:bg-[var(--muted)] -mx-4 px-4 sm:-mx-6 sm:px-6 transition-colors"
       >
         <div className="flex items-baseline gap-3">
           <span className="text-[17px] font-medium tracking-tight text-[var(--foreground)]">
