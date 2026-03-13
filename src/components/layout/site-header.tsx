@@ -8,7 +8,15 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    // Hysteresis: different thresholds for entering/leaving compact state
+    // prevents rapid flickering when scrollY hovers near a single threshold
+    const onScroll = () => {
+      setScrolled((prev) => {
+        if (!prev && window.scrollY > 50) return true;
+        if (prev && window.scrollY < 30) return false;
+        return prev;
+      });
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -16,33 +24,77 @@ export function SiteHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-20 border-b border-[var(--border)] transition-all duration-200 ${
-        scrolled
-          ? "py-2 backdrop-blur-[24px] bg-[rgba(252,252,251,0.8)]"
-          : "py-3 bg-[var(--background)]"
-      }`}
+      className="sticky top-0 z-20 border-b border-[var(--border)]"
+      style={{
+        paddingTop: scrolled ? 8 : 12,
+        paddingBottom: scrolled ? 8 : 12,
+        backdropFilter: scrolled ? "blur(20px)" : "blur(0px)",
+        backgroundColor: scrolled ? "rgba(247,247,245,0.85)" : "var(--background)",
+        transition: "padding 350ms ease-in-out, background-color 350ms ease-in-out, backdrop-filter 350ms ease-in-out",
+      }}
     >
       <div className="mx-auto flex w-full max-w-[720px] items-center justify-between px-4 sm:px-6">
-        {/* Logo — full wordmark when expanded, just pinwheel when compact */}
+        {/* Logo — both images always in DOM, animated with translateY */}
         <Link href="/" className="flex items-center">
-          {scrolled ? (
-            <Image
-              src="/rainbow-logo.svg"
-              alt="Gay Places"
-              width={32}
-              height={32}
-              priority
-            />
-          ) : (
-            <Image
-              src="/logo-header.svg"
-              alt="Gay Places"
-              width={84}
-              height={90}
-              priority
-              style={{ height: 88, width: "auto" }}
-            />
-          )}
+          <div
+            style={{
+              position: "relative",
+              overflow: "hidden",
+              // Container shrinks to fit whichever logo is active
+              width: scrolled ? 32 : 84,
+              height: scrolled ? 32 : 88,
+              transition: "width 350ms ease-in-out, height 350ms ease-in-out",
+            }}
+          >
+            {/* Full wordmark — slides up and exits first */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                transform: scrolled ? "translateY(-100%)" : "translateY(0)",
+                // When collapsing: exit immediately. When expanding: enter after rainbow leaves.
+                transition: scrolled
+                  ? "transform 350ms ease-in-out"
+                  : "transform 350ms 80ms ease-in-out",
+              }}
+            >
+              <Image
+                src="/logo-header.svg"
+                alt="Gay Places"
+                width={84}
+                height={88}
+                priority
+                style={{ height: 88, width: "auto" }}
+              />
+            </div>
+
+            {/* Rainbow pinwheel — slides up and enters after wordmark clears */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: 32,
+                height: 32,
+                // Use px value, not %, since % is relative to the element (32px) not the container (88px)
+                transform: scrolled ? "translateY(0)" : "translateY(88px)",
+                // When collapsing: enter after wordmark exits (80ms delay).
+                // When expanding: exit immediately.
+                transition: scrolled
+                  ? "transform 350ms 80ms ease-in-out"
+                  : "transform 350ms ease-in-out",
+              }}
+            >
+              <Image
+                src="/rainbow-logo.svg"
+                alt="Gay Places"
+                width={32}
+                height={32}
+                priority
+              />
+            </div>
+          </div>
         </Link>
 
         {/* Icon buttons */}
