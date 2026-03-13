@@ -28,9 +28,8 @@ export function SiteHeader() {
       style={{
         paddingTop: scrolled ? 8 : 12,
         paddingBottom: scrolled ? 8 : 12,
-        backdropFilter: scrolled ? "blur(20px)" : "blur(0px)",
-        backgroundColor: scrolled ? "rgba(247,247,245,0.85)" : "var(--background)",
-        transition: "padding 350ms ease-in-out, background-color 350ms ease-in-out, backdrop-filter 350ms ease-in-out",
+        backgroundColor: "var(--background)",
+        transition: "padding 350ms ease-in-out",
       }}
     >
       <div className="mx-auto flex w-full max-w-[720px] items-center justify-between px-4 sm:px-6">
