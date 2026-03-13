@@ -36,9 +36,16 @@ export async function createVenue(formData: FormData) {
     .map((t) => t.trim())
     .filter(Boolean);
 
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+
   const { error } = await supabase.from("venues").insert({
     city_id,
     name,
+    slug,
     address,
     lat,
     lng,
@@ -51,6 +58,7 @@ export async function createVenue(formData: FormData) {
     published,
   });
   if (error) throw error;
+  revalidatePath("/admin/venues");
 }
 
 export async function updateVenue(formData: FormData) {
