@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import type { City } from "@/lib/data/public";
 
+function toCountrySlug(name: string) {
+  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
+
 // Map country names to regions
 const COUNTRY_REGION: Record<string, string> = {
   // North America
@@ -105,6 +109,8 @@ type GroupedData = {
   countries: { name: string; cities: City[] }[];
 };
 
+type RegionRowProps = { group: GroupedData; publishedCountrySlugs: Set<string> };
+
 function groupCities(cities: City[]): GroupedData[] {
   // Group by country
   const byCountry: Record<string, City[]> = {};
@@ -163,7 +169,7 @@ function ChevronIcon({ open }: { open: boolean }) {
   );
 }
 
-function RegionRow({ group }: { group: GroupedData }) {
+function RegionRow({ group, publishedCountrySlugs }: RegionRowProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -191,7 +197,16 @@ function RegionRow({ group }: { group: GroupedData }) {
           {group.countries.map((country) => (
             <div key={country.name}>
               <div className="label-xs text-[var(--muted-foreground)] mb-3">
-                {country.name.toUpperCase()}
+                {publishedCountrySlugs.has(toCountrySlug(country.name)) ? (
+                  <Link
+                    href={`/country/${toCountrySlug(country.name)}`}
+                    className="hover:text-[var(--foreground)] transition-colors"
+                  >
+                    {country.name.toUpperCase()}
+                  </Link>
+                ) : (
+                  <span>{country.name.toUpperCase()}</span>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-x-8 gap-y-1">
                 {country.cities.map((city) => (
@@ -212,7 +227,7 @@ function RegionRow({ group }: { group: GroupedData }) {
   );
 }
 
-export function RegionBrowser({ cities }: { cities: City[] }) {
+export function RegionBrowser({ cities, publishedCountrySlugs }: { cities: City[]; publishedCountrySlugs: Set<string> }) {
   const groups = groupCities(cities);
 
   if (groups.length === 0) {
@@ -226,7 +241,7 @@ export function RegionBrowser({ cities }: { cities: City[] }) {
   return (
     <div>
       {groups.map((group) => (
-        <RegionRow key={group.region} group={group} />
+        <RegionRow key={group.region} group={group} publishedCountrySlugs={publishedCountrySlugs} />
       ))}
     </div>
   );

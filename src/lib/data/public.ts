@@ -1,6 +1,19 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { OpeningHours } from "@/lib/types/opening-hours";
 
+export type Country = {
+  id: string;
+  slug: string;
+  name: string;
+  intro: string;
+  editorial: string;
+  featured_city_ids: string[];
+  featured_venue_ids: string[];
+  seo_title: string;
+  seo_description: string;
+  published: boolean;
+};
+
 export type City = {
   id: string;
   slug: string;
@@ -104,6 +117,67 @@ export async function getVenueBySlug(
     .maybeSingle();
   if (error) throw error;
   return (data ?? null) as Venue | null;
+}
+
+export async function getPublishedCountrySlugs(): Promise<Set<string>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("countries")
+    .select("slug")
+    .eq("published", true);
+  if (error) throw error;
+  return new Set((data ?? []).map((r: { slug: string }) => r.slug));
+}
+
+export async function getCountryBySlug(slug: string): Promise<Country | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("countries")
+    .select("id,slug,name,intro,editorial,featured_city_ids,featured_venue_ids,seo_title,seo_description,published")
+    .eq("slug", slug)
+    .eq("published", true)
+    .maybeSingle();
+  if (error) throw error;
+  return (data ?? null) as Country | null;
+}
+
+export async function getCitiesByCountryName(countryName: string): Promise<City[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("cities")
+    .select("id,slug,name,country,center_lat,center_lng")
+    .eq("country", countryName)
+    .eq("published", true)
+    .order("name", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as City[];
+}
+
+export async function getVenueCountByCityId(cityId: string): Promise<number> {
+  const supabase = await createSupabaseServerClient();
+  const { count, error } = await supabase
+    .from("venues")
+    .select("id", { count: "exact", head: true })
+    .eq("city_id", cityId)
+    .eq("published", true);
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export async function getVenuesByIds(ids: string[]): Promise<(Venue & { city_slug?: string })[]> {
+  if (ids.length === 0) return [];
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("venues")
+    .select(`${VENUE_FIELDS},cities!inner(slug)`)
+    .in("id", ids)
+    .eq("published", true);
+  if (error) throw error;
+  return ((data ?? []) as unknown[]).map((v) => {
+    const row = v as Record<string, unknown>;
+    const city = row.cities as { slug: string } | null;
+    return { ...(row as Venue), city_slug: city?.slug };
+  });
 }
 
 /** @deprecated Use getVenueBySlug for public pages. Kept for internal/admin use. */

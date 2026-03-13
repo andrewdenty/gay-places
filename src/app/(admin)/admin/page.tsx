@@ -15,6 +15,9 @@ export default function AdminHomePage() {
             <Link className="font-medium hover:underline" href="/admin/submissions">
               Moderation queue
             </Link>
+            <Link className="font-medium hover:underline" href="/admin/countries">
+              Countries
+            </Link>
             <Link className="font-medium hover:underline" href="/admin/cities">
               Cities
             </Link>

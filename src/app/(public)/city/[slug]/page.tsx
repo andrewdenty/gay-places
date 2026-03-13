@@ -1,8 +1,13 @@
 import { notFound } from "next/navigation";
-import { getCityBySlug, getVenuesByCitySlug } from "@/lib/data/public";
+import Link from "next/link";
+import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
 import { CityExplorer } from "@/components/city/city-explorer";
 import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
+
+function toCountrySlug(name: string) {
+  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
 
 export const dynamic = "force-dynamic";
 
@@ -40,13 +45,25 @@ export default async function CityPage({
   const city = await getCityBySlug(slug);
   if (!city) notFound();
 
-  const venues = await getVenuesByCitySlug(slug);
+  const [venues, publishedCountrySlugs] = await Promise.all([
+    getVenuesByCitySlug(slug),
+    getPublishedCountrySlugs(),
+  ]);
 
   return (
     <div className="py-6 sm:py-8">
       <div className="mb-6">
         <div className="label-xs text-[var(--muted-foreground)] mb-2">
-          {city.country.toUpperCase()}
+          {publishedCountrySlugs.has(toCountrySlug(city.country)) ? (
+            <Link
+              href={`/country/${toCountrySlug(city.country)}`}
+              className="hover:text-[var(--foreground)] transition-colors"
+            >
+              {city.country.toUpperCase()}
+            </Link>
+          ) : (
+            <span>{city.country.toUpperCase()}</span>
+          )}
         </div>
         <h1 className="h1-editorial">{city.name}</h1>
       </div>
