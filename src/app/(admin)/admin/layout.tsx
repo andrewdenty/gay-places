@@ -13,6 +13,9 @@ export default function AdminLayout({ children }: PropsWithChildren) {
           <Link href="/admin/submissions" className="font-medium hover:underline">
             Submissions
           </Link>
+          <Link href="/admin/countries" className="font-medium hover:underline">
+            Countries
+          </Link>
           <Link href="/admin/cities" className="font-medium hover:underline">
             Cities
           </Link>

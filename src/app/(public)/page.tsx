@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCities } from "@/lib/data/public";
+import { getCities, getPublishedCountrySlugs } from "@/lib/data/public";
 import { RegionBrowser } from "@/components/city/region-browser";
 import { env } from "@/lib/env";
 
@@ -14,6 +14,7 @@ const featuredCities = [
 export default async function LandingPage() {
   const hasSupa = !!(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
   const cities = hasSupa ? await getCities().catch(() => []) : [];
+  const publishedCountrySlugs = hasSupa ? await getPublishedCountrySlugs().catch(() => new Set<string>()) : new Set<string>();
 
   return (
     <div className="py-6 sm:py-8">
@@ -79,7 +80,7 @@ export default async function LandingPage() {
         </p>
 
         {cities.length > 0 ? (
-          <RegionBrowser cities={cities} />
+          <RegionBrowser cities={cities} publishedCountrySlugs={publishedCountrySlugs} />
         ) : (
           // Fallback skeleton rows when no Supabase or no data
           <div className="space-y-0">
