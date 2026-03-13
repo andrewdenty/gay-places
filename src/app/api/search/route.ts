@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
 
   const cities = citiesRes.data ?? [];
   const venues = (venuesRes.data ?? []).map((v) => {
-    const cityData = v.cities as { slug: string; name: string } | null;
+    const citiesJoin = v.cities as { slug: string; name: string }[] | null;
+    const cityData = Array.isArray(citiesJoin) ? citiesJoin[0] ?? null : (citiesJoin as { slug: string; name: string } | null);
     return {
       id: v.id,
       slug: v.slug,
