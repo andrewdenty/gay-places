@@ -29,6 +29,20 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.png",
   },
+  openGraph: {
+    title: "Gay Places",
+    description:
+      "A minimal travel guide helping gay tourists discover LGBTQ+ venues in new cities.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Gay Places",
+    description:
+      "A minimal travel guide helping gay tourists discover LGBTQ+ venues in new cities.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({
