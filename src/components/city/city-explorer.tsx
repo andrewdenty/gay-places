@@ -154,7 +154,7 @@ export function CityExplorer({ city, venues }: Props) {
       {/* Venue list */}
       <div>
         {filtered.map((v) => {
-          const open = isOpenNow(v.opening_hours);
+          const open = !v.closed && isOpenNow(v.opening_hours);
           const tags = (v.tags ?? []).slice(0, 3);
 
           return (
@@ -178,13 +178,19 @@ export function CityExplorer({ city, venues }: Props) {
                   <h3 className="text-[16px] font-semibold tracking-[-0.32px] text-[var(--foreground)]">
                     {v.name}
                   </h3>
-                  <span className="label-xs flex shrink-0 items-center gap-[5px] text-[var(--muted-foreground)]">
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
-                    />
-                    {open ? "OPEN NOW" : "CLOSED"}
-                  </span>
+                  {v.closed ? (
+                    <span className="label-xs shrink-0 rounded-full border border-[#E63946]/30 bg-red-50 px-[7px] py-[2px] text-red-600">
+                      PERMANENTLY CLOSED
+                    </span>
+                  ) : (
+                    <span className="label-xs flex shrink-0 items-center gap-[5px] text-[var(--muted-foreground)]">
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+                      />
+                      {open ? "OPEN NOW" : "CLOSED"}
+                    </span>
+                  )}
                 </div>
 
                 {/* Row 2: Tags as dot-separated text */}

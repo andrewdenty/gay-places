@@ -31,6 +31,7 @@ export type Venue = {
   website_url: string | null;
   google_maps_url: string | null;
   opening_hours: OpeningHours;
+  closed?: boolean;
 };
 
 const VENUE_FIELDS =
