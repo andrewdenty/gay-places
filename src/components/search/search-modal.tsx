@@ -159,7 +159,6 @@ export function SearchModal({
               className="w-full rounded-full bg-[var(--background)] py-3.5 pl-12 pr-10 text-[15px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
               style={{
                 border: "1.5px solid var(--border)",
-                // @ts-expect-error focus handled via onFocus/onBlur below
               }}
               onFocus={(e) => (e.currentTarget.style.borderColor = "#6E6E6D")}
               onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
