@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
@@ -17,6 +17,10 @@ const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
   weight: "400",
 });
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "Gay Places",
