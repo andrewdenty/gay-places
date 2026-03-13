@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 async function requireAdmin() {
@@ -85,5 +86,12 @@ export async function updateVenue(formData: FormData) {
     })
     .eq("id", id);
   if (error) throw error;
+}
+
+export async function deleteVenue(venueId: string): Promise<void> {
+  const supabase = await requireAdmin();
+  const { error } = await supabase.from("venues").delete().eq("id", venueId);
+  if (error) throw error;
+  revalidatePath("/admin/venues");
 }
 

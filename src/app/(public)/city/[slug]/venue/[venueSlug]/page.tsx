@@ -58,7 +58,8 @@ export default async function VenuePage({
       .limit(5),
   ]);
 
-  const open = isOpenNow(venue.opening_hours);
+  const permanentlyClosed = venue.closed === true;
+  const open = !permanentlyClosed && isOpenNow(venue.opening_hours);
   const tags = venue.tags ?? [];
 
   return (
@@ -81,15 +82,23 @@ export default async function VenuePage({
         {/* Name + open status */}
         <div className="flex items-start justify-between gap-4">
           <h1 className="h1-editorial">{venue.name}</h1>
-          <div className="flex shrink-0 items-center gap-[6px] pt-2">
-            <span
-              className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
-            />
-            <span className="label-xs text-[var(--muted-foreground)]">
-              {open ? "OPEN NOW" : "CLOSED"}
-            </span>
-          </div>
+          {permanentlyClosed ? (
+            <div className="flex shrink-0 items-center gap-[6px] pt-2">
+              <span className="label-xs rounded-full border border-[#E63946]/30 bg-red-50 px-[8px] py-[3px] text-red-600">
+                PERMANENTLY CLOSED
+              </span>
+            </div>
+          ) : (
+            <div className="flex shrink-0 items-center gap-[6px] pt-2">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+              />
+              <span className="label-xs text-[var(--muted-foreground)]">
+                {open ? "OPEN NOW" : "CLOSED"}
+              </span>
+            </div>
+          )}
         </div>
 
         <p className="mt-1 text-[14px] text-[var(--muted-foreground)]">
@@ -173,6 +182,24 @@ export default async function VenuePage({
           <span className="label-xs text-[var(--muted-foreground)]">{venue.address}</span>
         )}
       </VenueSectionRow>
+
+      {/* Section 4b — Website */}
+      {venue.website_url && (
+        <VenueSectionRow label="Website">
+          <a
+            href={venue.website_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
+            {venue.website_url
+              .replace(/^https?:\/\/(www\.)?/, "")
+              .replace(/\/$/, "")
+              .toUpperCase()}{" "}
+            ↗
+          </a>
+        </VenueSectionRow>
+      )}
 
       {/* Section 5 — Nearby venues (static placeholder) */}
       <VenueSectionRow label="Nearby">

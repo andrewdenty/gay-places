@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createVenue, updateVenue } from "./actions";
+import { createVenue } from "./actions";
+import { VenuesList, type VenueRow } from "./venues-list";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +16,10 @@ export default async function AdminVenuesPage() {
     supabase
       .from("venues")
       .select(
-        "id,name,address,lat,lng,venue_type,tags,website_url,google_maps_url,description,published,city_id",
+        "id,name,address,venue_type,published,closed,city_id,slug,cities(slug,name)",
       )
       .order("name", { ascending: true })
-      .limit(200),
+      .limit(500),
   ]);
 
   return (
@@ -113,98 +113,7 @@ export default async function AdminVenuesPage() {
         </form>
       </Card>
 
-      <div className="mt-6 grid gap-3">
-        {(venues ?? []).map((v) => (
-          <Card key={v.id} className="p-6">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="text-sm font-semibold">{v.name}</div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {v.address}
-                </div>
-              </div>
-              <Link
-                href={`/city/copenhagen/venue/${v.id}`}
-                className="text-sm font-medium hover:underline"
-              >
-                View
-              </Link>
-            </div>
-
-            <form action={updateVenue} className="mt-4 grid gap-3 sm:grid-cols-2">
-              <input type="hidden" name="id" value={v.id} />
-              <input
-                name="name"
-                defaultValue={v.name ?? ""}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              />
-              <input
-                name="address"
-                defaultValue={v.address ?? ""}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              />
-              <input
-                name="lat"
-                defaultValue={String(v.lat ?? "")}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              />
-              <input
-                name="lng"
-                defaultValue={String(v.lng ?? "")}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              />
-              <select
-                name="published"
-                defaultValue={v.published ? "true" : "false"}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              >
-                <option value="true">Published</option>
-                <option value="false">Hidden</option>
-              </select>
-              <select
-                name="venue_type"
-                defaultValue={v.venue_type ?? "other"}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              >
-                <option value="bar">Bar</option>
-                <option value="club">Club</option>
-                <option value="restaurant">Restaurant</option>
-                <option value="cafe">Café</option>
-                <option value="sauna">Sauna</option>
-                <option value="event_space">Event space</option>
-                <option value="other">Other</option>
-              </select>
-              <input
-                name="tags"
-                defaultValue={(v.tags ?? []).join(", ")}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm sm:col-span-2"
-              />
-              <input
-                name="website_url"
-                defaultValue={v.website_url ?? ""}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              />
-              <input
-                name="google_maps_url"
-                defaultValue={v.google_maps_url ?? ""}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              />
-              <textarea
-                name="description"
-                defaultValue={v.description ?? ""}
-                rows={2}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm sm:col-span-2"
-              />
-              <div className="sm:col-span-2">
-                <Button type="submit" variant="secondary">
-                  Save changes
-                </Button>
-              </div>
-            </form>
-          </Card>
-        ))}
-      </div>
+      <VenuesList venues={(venues ?? []) as unknown as VenueRow[]} cities={cities ?? []} />
     </div>
   );
 }
-
