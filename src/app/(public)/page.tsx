@@ -4,6 +4,7 @@ import { RegionBrowser } from "@/components/city/region-browser";
 import { env } from "@/lib/env";
 
 const featuredCities = [
+  { name: "Copenhagen", slug: "copenhagen", tagline: "The world's most liveable queer city" },
   { name: "Berlin", slug: "berlin", tagline: "Europe's queer capital" },
   { name: "New York", slug: "new-york", tagline: "The city that never sleeps" },
   { name: "London", slug: "london", tagline: "Soho and beyond" },
@@ -25,8 +26,7 @@ export default async function LandingPage() {
           Gay Places
         </h1>
         <p className="text-[15px] text-[var(--muted-foreground)] max-w-[480px] leading-[1.6]">
-          A curated guide to gay bars, clubs, and queer spaces around the world.
-          No ratings, no noise — just the places worth crossing a city for.
+          A quietly curated guide to gay bars, clubs, and queer places worth seeking out. No crowdsourced clutter, no endless scrolling, just a sharp edit of places with something about them.
         </p>
       </header>
 
@@ -64,17 +64,6 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* About */}
-      <section className="border-t border-[var(--border)] pt-8 mb-10">
-        <div className="label-xs text-[var(--muted-foreground)] mb-3">
-          ABOUT
-        </div>
-        <p className="text-[15px] text-[var(--muted-foreground)] leading-[1.7] max-w-[560px]">
-          Less like an app store for venues and more like a quiet, opinionated
-          travel companion. Editorial picks, no star ratings, and no endless feeds.
-        </p>
-      </section>
-
       {/* All cities by region */}
       <section>
         <div className="flex items-baseline justify-between mb-2">
@@ -95,7 +84,7 @@ export default async function LandingPage() {
           // Fallback skeleton rows when no Supabase or no data
           <div className="space-y-0">
             {["North America", "Europe", "Latin America", "Asia", "Australia Pacific", "Africa", "Middle East"].map((region) => (
-              <div key={region} className="border-b border-[var(--border)] py-5">
+              <div key={region} className="border-b border-[var(--border)] py-5 -mx-4 px-4 sm:-mx-6 sm:px-6">
                 <span className="text-[17px] font-medium tracking-tight text-[var(--foreground)]">
                   {region}
                 </span>
