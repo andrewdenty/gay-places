@@ -109,7 +109,7 @@ export function SiteFooter() {
 
         {/* Bottom: rainbow + copyright */}
         <div className="mt-auto pt-8 flex items-end justify-between pb-8">
-          <div className="label-xs text-white/40">© 2026 Gay Places</div>
+          <div className="label-xs text-white/40">© 2026 Andrew Denty</div>
           <Link href="/">
             <Image
               src="/rainbow-logo.svg"
