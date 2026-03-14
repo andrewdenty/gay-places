@@ -18,6 +18,80 @@ Gay Places is a minimal, Apple-inspired travel guide for gay tourists to discove
 - **Mapbox GL JS**
 - **Vercel** (frontend hosting)
 
+## Data pipeline
+
+> **Short answer: data is not ingested automatically today.**
+>
+> All venue data is entered manually by admins. The only pipeline feature that
+> exists right now is **description generation**, which is triggered manually
+> from the admin venue-edit page — not by any scheduled job.
+
+### What exists today
+
+| Feature | How it runs | Where |
+|---|---|---|
+| Venue CRUD | Admin manually creates / edits venues | `/admin/venues` |
+| Description generation | Admin clicks "Generate base description" on a venue | `/admin/venues/[slug]` |
+
+Description generation uses the `packages/data-pipeline/ai` module. The v1
+implementation is **deterministic** — it builds a short neutral sentence from
+the venue name, city, type, and tags (e.g. *"Eagle is a bar in Copenhagen known
+for leather nights."*). It requires no API key and produces the same output
+every time for the same inputs.
+
+### What does NOT exist yet
+
+- Automated scrapers (no source sites are scraped)
+- Google Places enrichment (no API calls to Google)
+- Scheduled ingestion (no GitHub Actions workflows, no cron jobs)
+- Candidate review queue, match scoring, or venue upsert pipeline
+
+### Planned automation (not yet implemented)
+
+The intended long-term flow is:
+
+```
+Scheduled scraper  →  venue_candidates table
+        ↓
+Google Places enrichment  →  venue_matches table
+        ↓
+Match scoring (confidence threshold)
+        ↓
+Admin review queue  →  Approve  →  canonical venues table
+        ↓
+Publish to site
+```
+
+When GitHub Actions workflows are added they will use this schedule:
+
+| Job | Cron | Purpose |
+|---|---|---|
+| Discovery | `0 2 * * *` (nightly 02:00 UTC) | Scrape source sites → `venue_candidates` |
+| Enrichment | `0 4 * * *` (daily 04:00 UTC) | Call Google Places API for unprocessed candidates |
+| Refresh | `0 3 * * 0` (weekly Sunday 03:00 UTC) | Re-fetch data for existing venues, detect closures |
+
+Low-confidence records will **never** publish automatically — they always go
+through the admin review queue first.
+
+Required secrets for future automation (store in GitHub → Settings → Secrets):
+
+| Secret | Purpose |
+|---|---|
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service-role key for server-side DB writes |
+| `GOOGLE_MAPS_API_KEY` | Google Places API access |
+
+### Adding AI-generated descriptions (future)
+
+The description generator is designed to be swapped without changing any
+calling code. To add an OpenAI or Claude back-end:
+
+1. Create `packages/data-pipeline/ai/openai-generator.ts` implementing the
+   `DescriptionGenerator` interface
+2. In `packages/data-pipeline/ai/index.ts`, check
+   `process.env.AI_DESCRIPTION_MODEL` and return the new generator
+3. No other files need to change
+
 ## Local development
 
 ### 1) Install dependencies
