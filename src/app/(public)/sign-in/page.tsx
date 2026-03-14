@@ -12,17 +12,14 @@ export default function SignInPage() {
         <Card className="p-6">
           <h1 className="text-lg font-semibold tracking-tight">Sign in</h1>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Sign in with Google or Apple to suggest venues, upload photos, and
-            write reviews.
+            Sign in with Google to suggest venues, upload photos, and write
+            reviews.
           </p>
           <div className="mt-5">
             <Suspense
               fallback={
                 <div className="grid gap-3">
                   <Button disabled>Continue with Google</Button>
-                  <Button disabled variant="secondary">
-                    Continue with Apple
-                  </Button>
                 </div>
               }
             >
