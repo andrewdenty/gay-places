@@ -9,12 +9,12 @@ type CountryRow = {
   id: string;
   slug: string;
   name: string;
-  intro: string;
-  editorial: string;
-  featured_city_ids: string[];
-  featured_venue_ids: string[];
-  seo_title: string;
-  seo_description: string;
+  intro?: string | null;
+  editorial?: string | null;
+  featured_city_ids?: string[] | null;
+  featured_venue_ids?: string[] | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
   published: boolean;
 };
 
@@ -75,14 +75,6 @@ export default async function AdminCountriesPage() {
             className={inputClass}
             required
           />
-          <select
-            name="published"
-            defaultValue="false"
-            className={inputClass}
-          >
-            <option value="true">Published</option>
-            <option value="false">Hidden</option>
-          </select>
           <div className="sm:col-span-2">
             <Button type="submit">Create</Button>
           </div>
@@ -102,13 +94,9 @@ export default async function AdminCountriesPage() {
                 </div>
               </div>
               <span
-                className={`label-xs px-2 py-1 rounded-full ${
-                  c.published
-                    ? "bg-green-50 text-green-700"
-                    : "bg-[var(--muted)] text-[var(--muted-foreground)]"
-                }`}
+                className="label-xs px-2 py-1 rounded-full bg-[var(--muted)] text-[var(--muted-foreground)]"
               >
-                {c.published ? "Published" : "Hidden"}
+                Auto-published with venues
               </span>
             </div>
 
@@ -131,16 +119,6 @@ export default async function AdminCountriesPage() {
                     className={inputClass}
                   />
                 </FieldGroup>
-                <FieldGroup label="Status">
-                  <select
-                    name="published"
-                    defaultValue={c.published ? "true" : "false"}
-                    className={inputClass}
-                  >
-                    <option value="true">Published</option>
-                    <option value="false">Hidden</option>
-                  </select>
-                </FieldGroup>
               </div>
 
               {/* Editorial fields */}
@@ -154,7 +132,7 @@ export default async function AdminCountriesPage() {
                 >
                   <input
                     name="intro"
-                    defaultValue={c.intro}
+                    defaultValue={c.intro ?? ""}
                     placeholder="e.g. A small country with an outsized queer scene."
                     className={inputClass}
                   />
@@ -165,7 +143,7 @@ export default async function AdminCountriesPage() {
                 >
                   <textarea
                     name="editorial"
-                    defaultValue={c.editorial}
+                    defaultValue={c.editorial ?? ""}
                     rows={6}
                     placeholder="Denmark has long punched above its weight…"
                     className={textareaClass}
@@ -184,7 +162,7 @@ export default async function AdminCountriesPage() {
                 >
                   <textarea
                     name="featured_city_ids"
-                    defaultValue={(c.featured_city_ids ?? []).join("\n")}
+                    defaultValue={(c.featured_city_ids ?? []).join("\n") ?? ""}
                     rows={3}
                     placeholder="e.g. 3f2a1b4c-…"
                     className={textareaClass}
@@ -196,7 +174,7 @@ export default async function AdminCountriesPage() {
                 >
                   <textarea
                     name="featured_venue_ids"
-                    defaultValue={(c.featured_venue_ids ?? []).join("\n")}
+                    defaultValue={(c.featured_venue_ids ?? []).join("\n") ?? ""}
                     rows={3}
                     placeholder="e.g. 7a9c3d8e-…"
                     className={textareaClass}
@@ -216,7 +194,7 @@ export default async function AdminCountriesPage() {
                   >
                     <input
                       name="seo_title"
-                      defaultValue={c.seo_title}
+                      defaultValue={c.seo_title ?? ""}
                       placeholder="Gay Bars & Queer Venues in Denmark"
                       className={inputClass}
                     />
@@ -227,7 +205,7 @@ export default async function AdminCountriesPage() {
                   >
                     <textarea
                       name="seo_description"
-                      defaultValue={c.seo_description}
+                      defaultValue={c.seo_description ?? ""}
                       rows={2}
                       placeholder="A curated guide to gay bars, clubs, and queer spaces across Denmark."
                       className={textareaClass}

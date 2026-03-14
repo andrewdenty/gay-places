@@ -148,7 +148,7 @@ export default async function CountryPage({
   const orderedCities = [...featuredCities, ...remainingCities];
 
   // Fetch featured venues
-  const featuredVenueIds = country.featured_venue_ids ?? [];
+  const featuredVenueIds = country.featured_venue_ids ?? [] as string[];
   type VenueWithCity = Venue & { city_slug?: string };
   const featuredVenues: VenueWithCity[] = featuredVenueIds.length > 0
     ? await getVenuesByIds(featuredVenueIds)
@@ -161,7 +161,7 @@ export default async function CountryPage({
     .filter(Boolean) as VenueWithCity[];
 
   const region = COUNTRY_REGION[country.name] ?? null;
-  const hasEditorial = country.editorial.trim().length > 0;
+  const hasEditorial = (country.editorial ?? "").trim().length > 0;
   const hasFeaturedVenues = orderedVenues.length > 0;
 
   return (
@@ -176,7 +176,7 @@ export default async function CountryPage({
           </div>
         )}
         <h1 className="h1-editorial mb-0">{country.name}</h1>
-        {country.intro.trim().length > 0 && (
+        {(country.intro ?? "").trim().length > 0 && (
           <p className="mt-3 text-[15px] text-[var(--muted-foreground)] max-w-[480px] leading-[1.6]">
             {country.intro}
           </p>

@@ -29,12 +29,10 @@ export async function createCountry(formData: FormData) {
   const supabase = await requireAdmin();
   const slug = getText(formData, "slug");
   const name = getText(formData, "name");
-  const published = getText(formData, "published") === "true";
 
   const { error } = await supabase.from("countries").insert({
     slug,
     name,
-    published,
   });
   if (error) throw error;
 }
@@ -46,7 +44,6 @@ export async function updateCountry(formData: FormData) {
   const slug = getText(formData, "slug");
   const intro = getText(formData, "intro");
   const editorial = getText(formData, "editorial");
-  const published = getText(formData, "published") === "true";
   const seo_title = getText(formData, "seo_title");
   const seo_description = getText(formData, "seo_description");
 
@@ -62,7 +59,6 @@ export async function updateCountry(formData: FormData) {
       slug,
       intro,
       editorial,
-      published,
       featured_city_ids,
       featured_venue_ids,
       seo_title,
