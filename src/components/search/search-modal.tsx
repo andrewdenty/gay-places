@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconButton } from "@/components/ui/icon-button";
 
@@ -44,6 +44,11 @@ export function SearchModal({
   const [venues, setVenues] = useState<VenueResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  // Keep a ref so keyboard handlers always see the latest value without
+  // needing selectedIndex in the effect dependency array.
+  const selectedIndexRef = useRef(selectedIndex);
+  selectedIndexRef.current = selectedIndex;
 
   // Callback ref: focus input immediately on mount so iOS keyboard triggers
   // within the user gesture window (synchronous with the render)
@@ -61,15 +66,47 @@ export function SearchModal({
     }
   }, [isOpen]);
 
-  // Escape key closes modal
+  const navigate = useCallback((href: string) => {
+    onClose();
+    router.push(href);
+  }, [onClose, router]);
+
+  // Reset selection when query changes
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [query]);
+
+  // Keyboard navigation (Escape, ArrowUp, ArrowDown, Enter)
   useEffect(() => {
     if (!isOpen) return;
+    const allResults = [
+      ...cities.map((city) => `/city/${city.slug}`),
+      ...venues.map((venue) => `/city/${venue.city_slug}/venue/${venue.slug}`),
+    ];
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+      } else if (e.key === "ArrowDown") {
+        if (allResults.length === 0) return;
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % allResults.length);
+      } else if (e.key === "ArrowUp") {
+        if (allResults.length === 0) return;
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev <= 0 ? allResults.length - 1 : prev - 1
+        );
+      } else if (e.key === "Enter") {
+        const idx = selectedIndexRef.current;
+        if (idx >= 0 && idx < allResults.length) {
+          e.preventDefault();
+          navigate(allResults[idx]);
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, cities, venues, navigate]);
 
   // Prevent body scroll
   useEffect(() => {
@@ -104,11 +141,6 @@ export function SearchModal({
     }, 200);
     return () => clearTimeout(t);
   }, [query]);
-
-  function navigate(href: string) {
-    onClose();
-    router.push(href);
-  }
 
   const hasResults = cities.length > 0 || venues.length > 0;
   const hasQuery = query.trim().length > 0;
@@ -199,12 +231,13 @@ export function SearchModal({
                   <div className="px-4 pb-3 label-xs text-[var(--muted-foreground)]">
                     CITIES
                   </div>
-                  {cities.map((city) => (
+                  {cities.map((city, i) => (
                     <button
                       key={city.id}
                       type="button"
                       onClick={() => navigate(`/city/${city.slug}`)}
-                      className="flex w-full items-center justify-between px-4 py-4 text-left hover:bg-[var(--muted)] transition-colors border-b border-[#F0F0ED]"
+                      aria-current={selectedIndex === i ? true : undefined}
+                      className={`flex w-full items-center justify-between px-4 py-4 text-left transition-colors border-b border-[#F0F0ED] ${selectedIndex === i ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]"}`}
                     >
                       <div>
                         <div className="text-[14px] font-medium text-[var(--foreground)]">
@@ -233,12 +266,15 @@ export function SearchModal({
                   <div className="px-4 pb-3 label-xs text-[var(--muted-foreground)]">
                     VENUES
                   </div>
-                  {venues.map((venue) => (
+                  {venues.map((venue, i) => {
+                    const venueIndex = cities.length + i;
+                    return (
                     <button
                       key={venue.id}
                       type="button"
                       onClick={() => navigate(`/city/${venue.city_slug}/venue/${venue.slug}`)}
-                      className="flex w-full items-center justify-between px-4 py-4 text-left hover:bg-[var(--muted)] transition-colors border-b border-[#F0F0ED]"
+                      aria-current={selectedIndex === venueIndex ? true : undefined}
+                      className={`flex w-full items-center justify-between px-4 py-4 text-left transition-colors border-b border-[#F0F0ED] ${selectedIndex === venueIndex ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]"}`}
                     >
                       <div>
                         <div className="text-[14px] font-medium text-[var(--foreground)]">
@@ -260,7 +296,8 @@ export function SearchModal({
                         <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
