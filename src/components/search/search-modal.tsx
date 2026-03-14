@@ -44,13 +44,16 @@ export function SearchModal({
   const [venues, setVenues] = useState<VenueResult[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Auto-focus input when opened
+  // Callback ref: focus input immediately on mount so iOS keyboard triggers
+  // within the user gesture window (synchronous with the render)
+  const setInputRef = (el: HTMLInputElement | null) => {
+    (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+    if (el) el.focus();
+  };
+
+  // Clear state when closed
   useEffect(() => {
-    if (isOpen) {
-      // Small delay to let animation settle
-      const t = setTimeout(() => inputRef.current?.focus(), 50);
-      return () => clearTimeout(t);
-    } else {
+    if (!isOpen) {
       setQuery("");
       setCities([]);
       setVenues([]);
@@ -151,12 +154,12 @@ export function SearchModal({
               <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
             </svg>
             <input
-              ref={inputRef}
+              ref={setInputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search venues and cities…"
-              className="w-full rounded-full bg-[var(--background)] py-3.5 pl-12 pr-10 text-[15px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
+              className="w-full rounded-full bg-[var(--background)] py-3.5 pl-12 pr-10 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
               style={{
                 border: "1.5px solid var(--border)",
               }}
