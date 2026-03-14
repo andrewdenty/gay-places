@@ -43,6 +43,7 @@ export function SearchModal({
   const [cities, setCities] = useState<CityResult[]>([]);
   const [venues, setVenues] = useState<VenueResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState(false);
 
   // Callback ref: focus input immediately on mount so iOS keyboard triggers
   // within the user gesture window (synchronous with the render)
@@ -126,66 +127,67 @@ export function SearchModal({
       {/* Backdrop click to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
-      {/* Close button */}
-      <IconButton
-        label="Close search"
-        onClick={onClose}
-        className="absolute top-4 right-4 z-20"
-      >
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-          <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        </svg>
-      </IconButton>
-
       {/* Search area — positioned in upper third */}
-      <div className="relative z-10 flex flex-col items-center px-4 pt-[15vh]">
+      <div className="relative z-10 flex flex-col items-center px-4 pt-6 sm:pt-[15vh]">
         <div className="w-full max-w-[560px]">
-          {/* Pill input */}
-          <div className="relative flex items-center">
-            <svg
-              className="absolute left-5 text-[var(--muted-foreground)] pointer-events-none"
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-            >
-              <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.3" />
-              <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-            </svg>
-            <input
-              ref={setInputRef}
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search venues and cities…"
-              className="w-full rounded-full bg-[var(--background)] py-3.5 pl-12 pr-10 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
-              style={{
-                border: "1.5px solid var(--border)",
-              }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#6E6E6D")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
-            />
-            {query ? (
-              <button
-                type="button"
-                onClick={() => { setQuery(""); inputRef.current?.focus(); }}
-                className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-                aria-label="Clear search"
+          {/* Search field + close button row */}
+          <div className="flex items-center gap-3">
+            {/* Pill input */}
+            <div className="relative flex flex-1 items-center">
+              <svg
+                className="absolute left-5 text-[var(--muted-foreground)] pointer-events-none"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
               >
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                  <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
-              </button>
-            ) : loading && (
-              <div className="absolute right-5 h-3.5 w-3.5 animate-spin rounded-full border border-[var(--border)] border-t-[var(--muted-foreground)]" />
-            )}
+                <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.3" />
+                <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+              <input
+                ref={setInputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                placeholder="Search venues and cities…"
+                className="w-full rounded-full pl-12 pr-10 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
+                style={{
+                  height: "56px",
+                  backgroundColor: "#F7F7F5",
+                  border: focused ? "1.5px solid #E4E4E1" : "1.5px solid transparent",
+                }}
+              />
+              {query ? (
+                <button
+                  type="button"
+                  onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+                  className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                  aria-label="Clear search"
+                >
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  </svg>
+                </button>
+              ) : loading && (
+                <div className="absolute right-5 h-3.5 w-3.5 animate-spin rounded-full border border-[var(--border)] border-t-[var(--muted-foreground)]" />
+              )}
+            </div>
+
+            {/* Close button */}
+            <IconButton label="Close search" onClick={onClose}>
+              <svg width="20" height="20" viewBox="0 0 12 12" fill="none">
+                <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </IconButton>
           </div>
 
           {/* Results */}
           {hasQuery && (!loading || hasResults) && (
-            <div className="mt-3 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--background)]">
+            <div className="mt-6">
               {!hasResults && !loading && (
                 <div className="px-5 py-8 text-center text-[13px] text-[var(--muted-foreground)]">
                   No results for &ldquo;{query.trim()}&rdquo;
@@ -194,27 +196,26 @@ export function SearchModal({
 
               {cities.length > 0 && (
                 <div>
-                  <div className="px-5 pt-8 pb-1 label-xs text-[var(--muted-foreground)]">
+                  <div className="px-4 pb-3 label-xs text-[var(--muted-foreground)]">
                     CITIES
                   </div>
-                  {cities.map((city, i) => (
-                    <div key={city.id}>
-                      {i > 0 && <div className="mx-5 border-t border-[#F0F0ED]" />}
+                  {cities.map((city) => (
                     <button
+                      key={city.id}
                       type="button"
                       onClick={() => navigate(`/city/${city.slug}`)}
-                      className="flex w-full items-center justify-between px-5 py-3 text-left hover:bg-[var(--muted)] transition-colors"
+                      className="flex w-full items-center justify-between px-4 py-4 text-left hover:bg-[var(--muted)] transition-colors border-b border-[#F0F0ED]"
                     >
                       <div>
-                        <span className="text-[14px] font-medium text-[var(--foreground)]">
+                        <div className="text-[14px] font-medium text-[var(--foreground)]">
                           {city.name}
-                        </span>
-                        <span className="ml-2 text-[13px] text-[var(--foreground)]">
+                        </div>
+                        <div className="mt-0.5 text-[13px] text-[var(--muted-foreground)]">
                           {city.country}
-                        </span>
+                        </div>
                       </div>
                       <svg
-                        className="text-[var(--muted-foreground)]"
+                        className="shrink-0 text-[var(--muted-foreground)]"
                         width="12"
                         height="12"
                         viewBox="0 0 12 12"
@@ -223,31 +224,29 @@ export function SearchModal({
                         <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </button>
-                    </div>
                   ))}
                 </div>
               )}
 
               {venues.length > 0 && (
-                <div>
-                  <div className="px-5 pt-8 pb-1 label-xs text-[var(--muted-foreground)]">
+                <div className={cities.length > 0 ? "mt-4" : ""}>
+                  <div className="px-4 pb-3 label-xs text-[var(--muted-foreground)]">
                     VENUES
                   </div>
-                  {venues.map((venue, i) => (
-                    <div key={venue.id}>
-                      {i > 0 && <div className="mx-5 border-t border-[#F0F0ED]" />}
+                  {venues.map((venue) => (
                     <button
+                      key={venue.id}
                       type="button"
                       onClick={() => navigate(`/city/${venue.city_slug}/venue/${venue.slug}`)}
-                      className="flex w-full items-center justify-between px-5 py-3 text-left hover:bg-[var(--muted)] transition-colors"
+                      className="flex w-full items-center justify-between px-4 py-4 text-left hover:bg-[var(--muted)] transition-colors border-b border-[#F0F0ED]"
                     >
                       <div>
-                        <span className="text-[14px] font-medium text-[var(--foreground)]">
+                        <div className="text-[14px] font-medium text-[var(--foreground)]">
                           {venue.name}
-                        </span>
-                        <div className="mt-0.5 text-[13px] text-[var(--foreground)]">
+                        </div>
+                        <div className="mt-0.5 text-[13px] text-[var(--muted-foreground)]">
                           {venueTypeLabel[venue.venue_type] ?? "Venue"}
-                          <span className="mx-1.5 text-[var(--muted-foreground)]">·</span>
+                          <span className="mx-1.5">·</span>
                           {venue.city_name}
                         </div>
                       </div>
@@ -261,17 +260,10 @@ export function SearchModal({
                         <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </button>
-                    </div>
                   ))}
                 </div>
               )}
             </div>
-          )}
-
-          {!hasQuery && (
-            <p className="mt-4 text-center text-[13px] text-[var(--muted-foreground)]">
-              Search venues and cities across our guide
-            </p>
           )}
         </div>
       </div>

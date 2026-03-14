@@ -9,7 +9,7 @@ export function IconButton({ label, className = "", children, ...props }: IconBu
     <button
       type="button"
       aria-label={label}
-      className={`flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#6E6E6D] hover:bg-[#F7F7F5] transition-colors ${className}`}
+      className={`flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#E4E4E1] hover:bg-[#F7F7F5] transition-colors ${className}`}
       {...props}
     >
       {children}
