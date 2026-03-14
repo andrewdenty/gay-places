@@ -16,6 +16,17 @@
 
 import type { ScrapedVenue } from "./types";
 
+// ─── Retry / throttle configuration ─────────────────────────────────────────
+
+/** Number of times to retry a failed Overpass API request. */
+export const OVERPASS_MAX_RETRIES = 5;
+
+/**
+ * Milliseconds to wait between retry attempts when the Overpass API returns
+ * HTTP 429 (rate-limited) or 504 (gateway timeout / server overload).
+ */
+export const OVERPASS_RETRY_DELAY_MS = 30_000;
+
 // ─── City bounding boxes ──────────────────────────────────────────────────────
 // Format: [south, west, north, east]  (Overpass API bbox convention)
 // Add more cities here to extend the discovery pipeline.
@@ -142,14 +153,102 @@ function elementToVenue(
   };
 }
 
+// ─── Retry helper ─────────────────────────────────────────────────────────────
+
+/**
+ * POST a query to the Overpass API interpreter, automatically retrying on
+ * HTTP 429 (rate-limited) and 504 (gateway timeout / server overload).
+ *
+ * @param query    The Overpass QL query string.
+ * @param retries  Maximum number of attempts (default: OVERPASS_MAX_RETRIES).
+ * @param delay    Milliseconds to wait between retries (default: OVERPASS_RETRY_DELAY_MS).
+ * @returns        Parsed JSON response body.
+ * @throws         After all retries are exhausted, or on a non-retryable error.
+ */
+export async function queryOverpassWithRetry(
+  query: string,
+  retries: number = OVERPASS_MAX_RETRIES,
+  delay: number = OVERPASS_RETRY_DELAY_MS,
+): Promise<OverpassResponse> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    let resp: Response;
+    try {
+      resp = await fetch("https://overpass-api.de/api/interpreter", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `data=${encodeURIComponent(query)}`,
+      });
+    } catch (err) {
+      // Network-level error (DNS failure, connection reset, etc.)
+      if (attempt < retries) {
+        console.warn(
+          `  ⚠ Overpass network error (attempt ${attempt}/${retries}), retrying in ${delay / 1000}s…`,
+          err,
+        );
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+      throw err;
+    }
+
+    if (resp.ok) {
+      return (await resp.json()) as OverpassResponse;
+    }
+
+    if (resp.status === 429 || resp.status === 504) {
+      if (attempt < retries) {
+        console.warn(
+          `  ⚠ Overpass API returned ${resp.status} (attempt ${attempt}/${retries}), retrying in ${delay / 1000}s…`,
+        );
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+      throw new Error(
+        `Overpass API returned ${resp.status} after ${retries} attempt(s).`,
+      );
+    }
+
+    // Any other non-OK status is a hard failure.
+    throw new Error(`Overpass API returned ${resp.status}: ${await resp.text()}`);
+  }
+
+  // Unreachable, but satisfies TypeScript's control-flow analysis.
+  throw new Error("queryOverpassWithRetry: exhausted retries unexpectedly.");
+}
+
+// ─── Overpass API status check (optional) ────────────────────────────────────
+
+/**
+ * Checks the Overpass API /api/status endpoint and returns the number of
+ * available slots, or `null` when the status endpoint is unreachable / not
+ * parseable.
+ *
+ * Use this to skip or delay requests when quota is too low.
+ */
+export async function getOverpassAvailableSlots(): Promise<number | null> {
+  try {
+    const resp = await fetch("https://overpass-api.de/api/status");
+    if (!resp.ok) return null;
+    const text = await resp.text();
+    // The status page returns lines like:  "2 slots available out of 2."
+    const match = /(\d+)\s+slots?\s+available/i.exec(text);
+    return match ? parseInt(match[1], 10) : null;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
  * Discover LGBTQ+ venues in a city using OpenStreetMap data.
  *
+ * Automatically retries on HTTP 429 / 504 up to OVERPASS_MAX_RETRIES times,
+ * waiting OVERPASS_RETRY_DELAY_MS between each attempt.
+ *
  * @param citySlug  A key from CITY_BBOXES (e.g. "berlin")
  * @returns         Normalised ScrapedVenue objects (may be empty)
- * @throws          If the city slug is unknown or the Overpass API returns an error
+ * @throws          If the city slug is unknown or all retries are exhausted
  */
 export async function scrapeOverpass(citySlug: string): Promise<ScrapedVenue[]> {
   const bbox = CITY_BBOXES[citySlug];
@@ -160,19 +259,7 @@ export async function scrapeOverpass(citySlug: string): Promise<ScrapedVenue[]> 
   }
 
   const query = buildQuery(bbox);
-  const resp = await fetch("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `data=${encodeURIComponent(query)}`,
-  });
-
-  if (!resp.ok) {
-    throw new Error(
-      `Overpass API returned ${resp.status} for city "${citySlug}": ${await resp.text()}`,
-    );
-  }
-
-  const json = (await resp.json()) as OverpassResponse;
+  const json = await queryOverpassWithRetry(query);
   const venues: ScrapedVenue[] = [];
 
   for (const el of json.elements ?? []) {
