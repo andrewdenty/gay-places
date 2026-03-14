@@ -5,9 +5,6 @@ insert into storage.buckets (id, name, public)
 values ('venue-photos', 'venue-photos', false)
 on conflict (id) do nothing;
 
--- Ensure RLS is on
-alter table storage.objects enable row level security;
-
 -- Policies scoped to venue-photos bucket
 drop policy if exists "Public read approved venue photos" on storage.objects;
 create policy "Public read approved venue photos"
