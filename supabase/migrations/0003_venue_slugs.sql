@@ -1,8 +1,16 @@
 -- Add slug column to venues for SEO-friendly URLs
 -- Slugs are unique per city (two cities can have a venue with the same slug)
 
-alter table public.venues
-  add column slug text;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name='venues' AND column_name='slug'
+  ) THEN
+    ALTER TABLE public.venues ADD COLUMN slug text;
+  END IF;
+END
+$$;
 
 -- Populate slug from name:
 --   1. strip characters that aren't letters, digits, spaces, or hyphens
