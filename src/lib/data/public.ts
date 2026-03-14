@@ -5,12 +5,12 @@ export type Country = {
   id: string;
   slug: string;
   name: string;
-  intro: string;
-  editorial: string;
-  featured_city_ids: string[];
-  featured_venue_ids: string[];
-  seo_title: string;
-  seo_description: string;
+  intro?: string | null;
+  editorial?: string | null;
+  featured_city_ids?: string[] | null;
+  featured_venue_ids?: string[] | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
   published: boolean;
 };
 
@@ -123,8 +123,7 @@ export async function getPublishedCountrySlugs(): Promise<Set<string>> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("countries")
-    .select("slug")
-    .eq("published", true);
+    .select("slug");
   if (error) throw error;
   return new Set((data ?? []).map((r: { slug: string }) => r.slug));
 }
@@ -135,7 +134,6 @@ export async function getCountryBySlug(slug: string): Promise<Country | null> {
     .from("countries")
     .select("id,slug,name,intro,editorial,featured_city_ids,featured_venue_ids,seo_title,seo_description,published")
     .eq("slug", slug)
-    .eq("published", true)
     .maybeSingle();
   if (error) throw error;
   return (data ?? null) as Country | null;
