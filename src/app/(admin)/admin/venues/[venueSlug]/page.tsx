@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto } from "./actions";
 import { DeleteVenueButton } from "./delete-venue-button";
+import { AdminPhotoUpload } from "./admin-photo-upload";
 
 export const dynamic = "force-dynamic";
 
@@ -248,22 +249,11 @@ export default async function EditVenuePage({
           <p className="mt-3 text-sm text-muted-foreground">No photos yet.</p>
         )}
 
-        <form action={uploadVenuePhoto} className="mt-4">
-          <input type="hidden" name="venue_id" value={venue.id} />
-          <input type="hidden" name="venue_slug" value={venue.slug} />
-          <div className="flex items-center gap-3">
-            <input
-              type="file"
-              name="photo"
-              accept="image/*"
-              className="text-sm"
-              required
-            />
-            <Button type="submit" variant="secondary">
-              Upload
-            </Button>
-          </div>
-        </form>
+        <AdminPhotoUpload
+            venueId={venue.id}
+            venueSlug={venue.slug}
+            uploadAction={uploadVenuePhoto}
+          />
       </Card>
 
       {/* Danger zone */}

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface PhotoUploaderProps {
@@ -18,6 +17,7 @@ interface PhotoUploaderProps {
 }
 
 export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -28,6 +28,7 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
     setBusy(true);
     setStatus(null);
     try {
+      // Step 1: Create the submission record and get the upload path
       const createRes = await fetch("/api/submissions/photo", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -45,12 +46,28 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
         throw new Error("error" in created ? created.error : "Upload failed");
       }
 
-      const supabase = createSupabaseBrowserClient();
-      const { error: uploadError } = await supabase.storage
-        .from("venue-photos")
-        .upload(created.upload_path, file, { upsert: false });
-      if (uploadError) throw uploadError;
+      // Step 2: Upload the file via the server endpoint (uses service-role key,
+      //         bypassing Storage RLS)
+      const uploadForm = new FormData();
+      uploadForm.append("file", file);
+      uploadForm.append("submission_id", created.submission_id);
+      uploadForm.append("upload_path", created.upload_path);
 
+      const uploadRes = await fetch("/api/upload/photo", {
+        method: "POST",
+        body: uploadForm,
+      });
+      let uploaded: { success?: boolean; error?: string };
+      try {
+        uploaded = await uploadRes.json();
+      } catch {
+        throw new Error("Upload failed");
+      }
+      if (!uploadRes.ok || uploaded.error) {
+        throw new Error(uploaded.error ?? "Upload failed");
+      }
+
+      // Step 3: Record the storage path on the submission
       await onUpdateSubmission(created.submission_id, {
         venue_id: venueId,
         caption,
@@ -71,11 +88,26 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
   return (
     <div className="grid gap-3 overflow-hidden">
       <input
+        ref={fileInputRef}
         type="file"
         accept="image/*"
-        className="w-full min-w-0"
+        className="sr-only"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          Choose photo
+        </Button>
+        {file && (
+          <span className="max-w-xs truncate text-sm text-muted-foreground">
+            {file.name}
+          </span>
+        )}
+      </div>
       <input
         value={caption}
         onChange={(e) => setCaption(e.target.value)}
