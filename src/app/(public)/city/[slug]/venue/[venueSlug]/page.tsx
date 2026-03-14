@@ -4,6 +4,7 @@ import { OpeningHoursView } from "@/components/venue/opening-hours-view";
 import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
 import { VenueSectionRow } from "@/components/venue/venue-section-row";
 import { PhotoGallery } from "@/components/venue/photo-gallery";
+import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug } from "@/lib/data/public";
 import { env } from "@/lib/env";
@@ -168,20 +169,12 @@ export default async function VenuePage({
       </div>
 
       {/* Section 4 — Map */}
-      <VenueSectionRow label="Map">
-        {venue.google_maps_url ? (
-          <a
-            href={venue.google_maps_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-          >
-            OPEN IN MAPS ↗
-          </a>
-        ) : (
-          <span className="label-xs text-[var(--muted-foreground)]">{venue.address}</span>
-        )}
-      </VenueSectionRow>
+      <VenueMapWrapper
+        lat={venue.lat}
+        lng={venue.lng}
+        name={venue.name}
+        googleMapsUrl={venue.google_maps_url}
+      />
 
       {/* Section 4b — Website */}
       {venue.website_url && (
