@@ -29,7 +29,7 @@ export default async function AdminCitiesPage() {
         {(cities ?? []).map((c) => (
           <Card key={c.id} className="p-6">
             <div className="text-sm font-semibold">{c.name}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{c.slug} · {c.country}</div>
+            <div className="mt-1 text-xs text-[var(--muted-foreground)]">{c.slug} · {c.country}</div>
 
             <form action={updateCity} className="mt-4 grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={c.id} />

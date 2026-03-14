@@ -58,7 +58,7 @@ export default async function AdminCountriesPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Countries</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="mt-0.5 text-sm text-[var(--muted-foreground)]">
             {(countries ?? []).length} countr{(countries ?? []).length !== 1 ? "ies" : "y"}
           </p>
         </div>
