@@ -1,11 +1,15 @@
 "use client";
 
-import mapboxgl from "mapbox-gl";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { env } from "@/lib/env";
+import { useMemo, useState } from "react";
 import type { City, Venue } from "@/lib/data/public";
 import { isOpenNow } from "@/components/city/opening-hours";
+
+const CityMap = dynamic(
+  () => import("@/components/maps/CityMap").then((m) => m.CityMap),
+  { ssr: false }
+);
 
 type Props = {
   city: City;
@@ -29,9 +33,6 @@ const pills: PillOption[] = [
 
 export function CityExplorer({ city, venues }: Props) {
   const router = useRouter();
-  const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstance = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
 
   const [query, setQuery] = useState("");
   const [type, setType] = useState<VenueType>("all");
@@ -48,61 +49,6 @@ export function CityExplorer({ city, venues }: Props) {
       return hay.includes(q);
     });
   }, [venues, query, type, openNow]);
-
-  // Map init
-  useEffect(() => {
-    if (!mapRef.current) return;
-    if (mapInstance.current) return;
-    if (!env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) return;
-
-    mapboxgl.accessToken = env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-    const map = new mapboxgl.Map({
-      container: mapRef.current,
-      style: "mapbox://styles/mapbox/standard",
-      center: [city.center_lng, city.center_lat],
-      zoom: 12,
-    });
-
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
-    mapInstance.current = map;
-
-    return () => {
-      mapInstance.current?.remove();
-      mapInstance.current = null;
-    };
-  }, [city.center_lat, city.center_lng]);
-
-  // Markers
-  useEffect(() => {
-    const map = mapInstance.current;
-    if (!map) return;
-
-    for (const m of markersRef.current) m.remove();
-    markersRef.current = [];
-
-    for (const v of filtered) {
-      const el = document.createElement("button");
-      el.type = "button";
-      el.className =
-        "h-3 w-3 rounded-full bg-[var(--accent)] shadow-[0_0_0_6px_rgba(23,23,23,0.12)]";
-      el.addEventListener("click", () => setSelectedSlug(v.slug));
-
-      const marker = new mapboxgl.Marker({ element: el })
-        .setLngLat([v.lng, v.lat])
-        .addTo(map);
-      markersRef.current.push(marker);
-    }
-  }, [filtered]);
-
-  // Fly to selected
-  useEffect(() => {
-    const map = mapInstance.current;
-    if (!map) return;
-    if (!selectedSlug) return;
-    const v = venues.find((x) => x.slug === selectedSlug);
-    if (!v) return;
-    map.flyTo({ center: [v.lng, v.lat], zoom: Math.max(map.getZoom(), 14) });
-  }, [selectedSlug, venues]);
 
   return (
     <div className="space-y-0">
@@ -243,19 +189,12 @@ export function CityExplorer({ city, venues }: Props) {
             {city.name.toUpperCase()}
           </span>
         </div>
-        <div className="overflow-hidden rounded-[4px] border border-[var(--border)]">
-          <div className="h-[300px] w-full">
-            {env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ? (
-              <div ref={mapRef} className="h-full w-full" />
-            ) : (
-              <div className="flex h-full items-center justify-center bg-[var(--muted)]">
-                <div className="text-[13px] text-[var(--muted-foreground)]">
-                  Add <code className="text-[12px]">NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to
-                  view maps.
-                </div>
-              </div>
-            )}
-          </div>
+        <div className="overflow-hidden border border-[var(--border)]">
+          <CityMap
+            venues={filtered}
+            center={[city.center_lng, city.center_lat]}
+            citySlug={city.slug}
+          />
         </div>
       </div>
     </div>
