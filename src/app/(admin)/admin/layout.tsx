@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: PropsWithChildren) {
   return (
     <div className="min-h-dvh flex flex-col bg-[var(--background)]">
       {/* Admin header */}
-      <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--background)]">
+      <header className="sticky top-0 z-20 bg-[var(--background)]">
         <div className="flex items-center justify-between px-4 py-3 sm:px-6">
           {/* Left: Logo + Admin label */}
           <Link href="/admin" className="flex items-center gap-3">
@@ -28,10 +28,7 @@ export default async function AdminLayout({ children }: PropsWithChildren) {
               height={24}
             />
             <span className="text-sm font-semibold tracking-tight">
-              Gay Places{" "}
-              <span className="text-[var(--muted-foreground)] font-normal">
-                Admin
-              </span>
+              admin
             </span>
           </Link>
 

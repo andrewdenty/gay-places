@@ -94,7 +94,12 @@ export function VenuesList({
               {/* Info */}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium">{v.name}</span>
+                  <Link
+                    href={`/admin/venues/${v.slug}`}
+                    className="text-sm font-medium hover:underline"
+                  >
+                    {v.name}
+                  </Link>
                   {!v.published && (
                     <span className="rounded-full bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
                       Hidden
@@ -114,8 +119,16 @@ export function VenuesList({
 
               {/* Actions */}
               <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDelete(v)}
+                  disabled={isPending}
+                  className="text-sm text-red-500 hover:underline disabled:opacity-50"
+                >
+                  Delete
+                </button>
                 <Link href={`/admin/venues/${v.slug}`}>
-                  <Button size="sm">Edit</Button>
+                  <Button size="sm" variant="secondary">Edit</Button>
                 </Link>
                 {v.cities?.slug && v.slug && (
                   <Link
@@ -127,14 +140,6 @@ export function VenuesList({
                     </Button>
                   </Link>
                 )}
-                <button
-                  type="button"
-                  onClick={() => handleDelete(v)}
-                  disabled={isPending}
-                  className="text-sm text-red-500 hover:underline disabled:opacity-50"
-                >
-                  Delete
-                </button>
               </div>
             </div>
           </div>
