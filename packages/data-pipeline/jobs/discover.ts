@@ -19,12 +19,16 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { scrapeOverpass, SUPPORTED_CITIES } from "../scrapers/index";
+import {
+  scrapeOverpass,
+  getOverpassAvailableSlots,
+  SUPPORTED_CITIES,
+} from "../scrapers/index";
 import type { ScrapedVenue } from "../scrapers/types";
 
 // Minimum delay between Overpass API requests — keeps us within polite usage
 // limits and avoids triggering rate-limiting (429) responses.
-const OVERPASS_API_DELAY_MS = 2_000;
+const OVERPASS_API_DELAY_MS = 5_000;
 
 // ─── Supabase client ──────────────────────────────────────────────────────────
 
@@ -134,6 +138,16 @@ async function main() {
 
   for (let i = 0; i < cities.length; i++) {
     const city = cities[i];
+
+    // Optional: check Overpass API quota before scraping.
+    const availableSlots = await getOverpassAvailableSlots();
+    if (availableSlots === 0) {
+      const msg = `${city}: scrape skipped — Overpass API reports 0 available slots`;
+      console.warn(`\n  ⚠ ${msg}`);
+      errors.push(msg);
+      continue;
+    }
+
     process.stdout.write(`  ${city}: scraping… `);
 
     let venues: ScrapedVenue[] = [];
