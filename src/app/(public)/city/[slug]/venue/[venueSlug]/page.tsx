@@ -138,10 +138,10 @@ export default async function VenuePage({
           )}
         </div>
 
-        {/* Description */}
-        {venue.description && (
+        {/* Description — priority: editorial → base → legacy */}
+        {(venue.description_editorial || venue.description_base || venue.description) && (
           <p className="mt-4 text-[15px] leading-[1.4] text-[var(--foreground)]">
-            {venue.description}
+            {venue.description_editorial ?? venue.description_base ?? venue.description}
           </p>
         )}
       </section>

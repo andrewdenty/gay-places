@@ -18,6 +18,78 @@ Gay Places is a minimal, Apple-inspired travel guide for gay tourists to discove
 - **Mapbox GL JS**
 - **Vercel** (frontend hosting)
 
+## Data pipeline
+
+### How it works
+
+Venue discovery runs **automatically every night at 02:00 UTC** via GitHub
+Actions. The workflow scrapes OpenStreetMap for LGBTQ+ tagged venues across all
+configured cities, then stores the results as *candidates* for admin review.
+Nothing is published automatically — an admin must approve each candidate first.
+
+```
+GitHub Actions (nightly 02:00 UTC)
+        ↓
+OpenStreetMap Overpass API
+        ↓
+venue_candidates table  (status = 'pending')
+        ↓
+Admin reviews at /admin/candidates
+        ↓
+Approve → creates an unpublished venue → admin enriches & publishes
+Reject  → candidate dismissed
+```
+
+### Schedule
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| **Discover Venues** | Nightly `0 2 * * *` + manual dispatch | Scrapes OSM, upserts into `venue_candidates` |
+
+The discovery job can also be triggered manually from **GitHub → Actions →
+Discover Venues (Nightly)** with an optional city filter (e.g. "berlin,london").
+
+### Required GitHub secrets
+
+Set these in **GitHub → Settings → Secrets and variables → Actions**:
+
+| Secret | Value |
+|---|---|
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service-role key (bypasses RLS for server-side writes) |
+
+### Supported cities
+
+Berlin, London, Barcelona, Prague, Copenhagen, Amsterdam, Paris, Madrid.
+
+To add a city: add its bounding box to `CITY_BBOXES` in
+`packages/data-pipeline/scrapers/overpass.ts` and create the city in the admin
+UI (`/admin/cities`) so candidates can be approved against it.
+
+### Data source
+
+Discovery uses [OpenStreetMap](https://www.openstreetmap.org) via the free
+[Overpass API](https://overpass-api.de). No API key is required. OSM nodes and
+ways tagged with `lgbtq=primary/only/welcome` or the legacy `gay=yes` are
+returned. Data is licensed under the [ODbL](https://opendatacommons.org/licenses/odbl/).
+
+### Admin workflow
+
+1. Visit `/admin/candidates` to see pending candidates
+2. Click **Approve** to create an unpublished venue — then edit and publish it
+   from `/admin/venues` when the details look correct
+3. Click **Reject** to dismiss a candidate (e.g. a false positive or duplicate)
+
+### Pipeline code
+
+| Path | Purpose |
+|---|---|
+| `packages/data-pipeline/scrapers/overpass.ts` | OpenStreetMap scraper |
+| `packages/data-pipeline/scrapers/types.ts` | `ScrapedVenue` interface |
+| `packages/data-pipeline/jobs/discover.ts` | Job entry point |
+| `.github/workflows/discover-venues.yml` | GitHub Actions workflow |
+| `supabase/migrations/0008_venue_candidates.sql` | `venue_candidates` table |
+
 ## Local development
 
 ### 1) Install dependencies

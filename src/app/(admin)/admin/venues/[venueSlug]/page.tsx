@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto } from "./actions";
+import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto, generateBaseDescription } from "./actions";
 import { DeleteVenueButton } from "./delete-venue-button";
 import { AdminPhotoUpload } from "./admin-photo-upload";
 
@@ -39,7 +39,7 @@ export default async function EditVenuePage({
   const { data: venue } = await supabase
     .from("venues")
     .select(
-      "id,name,address,lat,lng,venue_type,tags,website_url,google_maps_url,description,published,closed,city_id,slug,opening_hours",
+      "id,name,address,lat,lng,venue_type,tags,website_url,google_maps_url,description,description_base,description_editorial,description_generation_status,description_last_generated_at,published,closed,city_id,slug,opening_hours",
     )
     .eq("slug", venueSlug)
     .maybeSingle();
@@ -164,13 +164,59 @@ export default async function EditVenuePage({
             placeholder="Tags (comma-separated)"
             className={`${INPUT} sm:col-span-2`}
           />
-          <textarea
-            name="description"
-            defaultValue={venue.description ?? ""}
-            placeholder="Description"
-            rows={4}
-            className={TEXTAREA}
-          />
+
+          {/* ── Description ──────────────────────────────────────────── */}
+          {/* Editorial description (human-curated, takes priority) */}
+          <div className="sm:col-span-2">
+            <div className="mb-1 text-xs text-muted-foreground">
+              Editorial description{" "}
+              <span className="text-[10px] opacity-60">
+                — shown on the public page; overrides auto-generated text
+              </span>
+            </div>
+            <textarea
+              name="description_editorial"
+              defaultValue={venue.description_editorial ?? ""}
+              placeholder="Write a short editorial description of this venue…"
+              rows={3}
+              className={TEXTAREA}
+            />
+          </div>
+
+          {/* Base description (auto-generated, read-only) */}
+          <div className="sm:col-span-2">
+            <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span>
+                Base description{" "}
+                <span className="text-[10px] opacity-60">
+                  — auto-generated fallback; shown when editorial is empty
+                </span>
+              </span>
+              {venue.description_generation_status && (
+                <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase">
+                  {venue.description_generation_status}
+                </span>
+              )}
+            </div>
+            <textarea
+              readOnly
+              value={venue.description_base ?? ""}
+              placeholder="Not yet generated — use the button below to generate."
+              rows={2}
+              className={`${TEXTAREA} cursor-default opacity-70`}
+            />
+            {/* Hidden field so the save action can determine the correct status when editorial is cleared. */}
+            <input type="hidden" name="description_base_exists" value={venue.description_base ? "1" : ""} />
+            {venue.description_last_generated_at && (
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Last generated{" "}
+                {new Date(venue.description_last_generated_at).toLocaleString(
+                  undefined,
+                  { dateStyle: "medium", timeStyle: "short" },
+                )}
+              </p>
+            )}
+          </div>
           <div className="sm:col-span-2">
             <div className="mb-1 text-xs text-muted-foreground">
               Opening hours (JSON)
@@ -206,8 +252,25 @@ export default async function EditVenuePage({
             </label>
           </div>
 
-          <div className="sm:col-span-2">
+          <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
             <Button type="submit">Save changes</Button>
+          </div>
+        </form>
+
+        {/* Generate base description — separate form so it doesn't interfere with the main save */}
+        <form action={generateBaseDescription} className="mt-3 border-t border-border pt-4">
+          <input type="hidden" name="id" value={venue.id} />
+          <input type="hidden" name="slug" value={venue.slug} />
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground">
+              Auto-generate a base description from the venue name, city, type, and tags.
+              {venue.description_base
+                ? " This will overwrite the existing base description."
+                : ""}
+            </p>
+            <Button type="submit" variant="secondary" size="sm">
+              {venue.description_base ? "Regenerate" : "Generate"} base description
+            </Button>
           </div>
         </form>
       </Card>
