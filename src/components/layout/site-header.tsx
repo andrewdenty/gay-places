@@ -105,16 +105,16 @@ export function SiteHeader() {
           {/* Icon buttons */}
           <div className="flex items-center gap-2">
             <IconButton label="Search" onClick={() => setSearchOpen(true)}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <svg width="20" height="20" viewBox="0 0 14 14" fill="none">
                 <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" />
                 <line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
             </IconButton>
             <IconButton label="Menu" onClick={() => setMenuOpen(true)}>
-              <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
-                <line x1="0" y1="1" x2="14" y2="1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                <line x1="0" y1="5" x2="14" y2="5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                <line x1="0" y1="9" x2="14" y2="9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <line x1="0" y1="5" x2="20" y2="5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                <line x1="0" y1="10" x2="20" y2="10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                <line x1="0" y1="15" x2="20" y2="15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
             </IconButton>
           </div>
