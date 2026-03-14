@@ -20,77 +20,75 @@ Gay Places is a minimal, Apple-inspired travel guide for gay tourists to discove
 
 ## Data pipeline
 
-> **Short answer: data is not ingested automatically today.**
->
-> All venue data is entered manually by admins. The only pipeline feature that
-> exists right now is **description generation**, which is triggered manually
-> from the admin venue-edit page — not by any scheduled job.
+### How it works
 
-### What exists today
-
-| Feature | How it runs | Where |
-|---|---|---|
-| Venue CRUD | Admin manually creates / edits venues | `/admin/venues` |
-| Description generation | Admin clicks "Generate base description" on a venue | `/admin/venues/[slug]` |
-
-Description generation uses the `packages/data-pipeline/ai` module. The v1
-implementation is **deterministic** — it builds a short neutral sentence from
-the venue name, city, type, and tags (e.g. *"Eagle is a bar in Copenhagen known
-for leather nights."*). It requires no API key and produces the same output
-every time for the same inputs.
-
-### What does NOT exist yet
-
-- Automated scrapers (no source sites are scraped)
-- Google Places enrichment (no API calls to Google)
-- Scheduled ingestion (no GitHub Actions workflows, no cron jobs)
-- Candidate review queue, match scoring, or venue upsert pipeline
-
-### Planned automation (not yet implemented)
-
-The intended long-term flow is:
+Venue discovery runs **automatically every night at 02:00 UTC** via GitHub
+Actions. The workflow scrapes OpenStreetMap for LGBTQ+ tagged venues across all
+configured cities, then stores the results as *candidates* for admin review.
+Nothing is published automatically — an admin must approve each candidate first.
 
 ```
-Scheduled scraper  →  venue_candidates table
+GitHub Actions (nightly 02:00 UTC)
         ↓
-Google Places enrichment  →  venue_matches table
+OpenStreetMap Overpass API
         ↓
-Match scoring (confidence threshold)
+venue_candidates table  (status = 'pending')
         ↓
-Admin review queue  →  Approve  →  canonical venues table
+Admin reviews at /admin/candidates
         ↓
-Publish to site
+Approve → creates an unpublished venue → admin enriches & publishes
+Reject  → candidate dismissed
 ```
 
-When GitHub Actions workflows are added they will use this schedule:
+### Schedule
 
-| Job | Cron | Purpose |
+| Workflow | Trigger | What it does |
 |---|---|---|
-| Discovery | `0 2 * * *` (nightly 02:00 UTC) | Scrape source sites → `venue_candidates` |
-| Enrichment | `0 4 * * *` (daily 04:00 UTC) | Call Google Places API for unprocessed candidates |
-| Refresh | `0 3 * * 0` (weekly Sunday 03:00 UTC) | Re-fetch data for existing venues, detect closures |
+| **Discover Venues** | Nightly `0 2 * * *` + manual dispatch | Scrapes OSM, upserts into `venue_candidates` |
 
-Low-confidence records will **never** publish automatically — they always go
-through the admin review queue first.
+The discovery job can also be triggered manually from **GitHub → Actions →
+Discover Venues (Nightly)** with an optional city filter (e.g. "berlin,london").
 
-Required secrets for future automation (store in GitHub → Settings → Secrets):
+### Required GitHub secrets
 
-| Secret | Purpose |
+Set these in **GitHub → Settings → Secrets and variables → Actions**:
+
+| Secret | Value |
 |---|---|
-| `SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service-role key for server-side DB writes |
-| `GOOGLE_MAPS_API_KEY` | Google Places API access |
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service-role key (bypasses RLS for server-side writes) |
 
-### Adding AI-generated descriptions (future)
+### Supported cities
 
-The description generator is designed to be swapped without changing any
-calling code. To add an OpenAI or Claude back-end:
+Berlin, London, Barcelona, Prague, Copenhagen, Amsterdam, Paris, Madrid.
 
-1. Create `packages/data-pipeline/ai/openai-generator.ts` implementing the
-   `DescriptionGenerator` interface
-2. In `packages/data-pipeline/ai/index.ts`, check
-   `process.env.AI_DESCRIPTION_MODEL` and return the new generator
-3. No other files need to change
+To add a city: add its bounding box to `CITY_BBOXES` in
+`packages/data-pipeline/scrapers/overpass.ts` and create the city in the admin
+UI (`/admin/cities`) so candidates can be approved against it.
+
+### Data source
+
+Discovery uses [OpenStreetMap](https://www.openstreetmap.org) via the free
+[Overpass API](https://overpass-api.de). No API key is required. OSM nodes and
+ways tagged with `lgbtq=primary/only/welcome` or the legacy `gay=yes` are
+returned. Data is licensed under the [ODbL](https://opendatacommons.org/licenses/odbl/).
+
+### Admin workflow
+
+1. Visit `/admin/candidates` to see pending candidates
+2. Click **Approve** to create an unpublished venue — then edit and publish it
+   from `/admin/venues` when the details look correct
+3. Click **Reject** to dismiss a candidate (e.g. a false positive or duplicate)
+
+### Pipeline code
+
+| Path | Purpose |
+|---|---|
+| `packages/data-pipeline/scrapers/overpass.ts` | OpenStreetMap scraper |
+| `packages/data-pipeline/scrapers/types.ts` | `ScrapedVenue` interface |
+| `packages/data-pipeline/jobs/discover.ts` | Job entry point |
+| `.github/workflows/discover-venues.yml` | GitHub Actions workflow |
+| `supabase/migrations/0008_venue_candidates.sql` | `venue_candidates` table |
 
 ## Local development
 

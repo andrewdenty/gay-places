@@ -1,0 +1,42 @@
+name: Discover Venues (Nightly)
+
+on:
+  schedule:
+    # Every night at 02:00 UTC — runs after midnight in all European timezones.
+    - cron: '0 2 * * *'
+  # Also allow manual trigger from the GitHub Actions UI.
+  workflow_dispatch:
+    inputs:
+      cities:
+        description: >
+          Comma-separated city slugs to scan, e.g. "berlin,london".
+          Leave blank to scan all supported cities.
+        required: false
+        default: ''
+
+jobs:
+  discover:
+    name: Run venue discovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run discovery job
+        run: npx tsx packages/data-pipeline/jobs/discover.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Pass manual city override (empty string = scan all cities).
+          DISCOVER_CITIES: ${{ github.event.inputs.cities }}
