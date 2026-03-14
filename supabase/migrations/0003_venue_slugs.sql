@@ -44,9 +44,19 @@ where exists (
 alter table public.venues
   alter column slug set not null;
 
--- Unique slug per city
-alter table public.venues
-  add constraint venues_city_slug_unique unique (city_id, slug);
+-- Unique slug per city (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_schema = 'public'
+      AND constraint_name   = 'venues_city_slug_unique'
+  ) THEN
+    ALTER TABLE public.venues
+      ADD CONSTRAINT venues_city_slug_unique UNIQUE (city_id, slug);
+  END IF;
+END
+$$;
 
 -- Index for fast slug lookups
 create index if not exists venues_slug_idx on public.venues (slug);
