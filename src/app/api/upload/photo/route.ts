@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   // Authenticate the requesting user
@@ -40,8 +39,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Submission not found" }, { status: 404 });
   }
 
-  // Use the service-role client to bypass Storage RLS
-  const adminSupabase = createSupabaseAdminClient();
+  // Use the authenticated user's session to upload; storage RLS policy
+  // "Users upload staged venue photos" authorizes this path+submission combination.
   let bytes: ArrayBuffer;
   try {
     bytes = await file.arrayBuffer();
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to read file data" }, { status: 400 });
   }
 
-  const { error: uploadError } = await adminSupabase.storage
+  const { error: uploadError } = await supabase.storage
     .from("venue-photos")
     .upload(uploadPath, bytes, { contentType: file.type, upsert: false });
 

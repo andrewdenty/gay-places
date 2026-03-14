@@ -3,7 +3,6 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -74,7 +73,6 @@ export async function updateVenueDetails(formData: FormData) {
 
 export async function deleteVenueById(formData: FormData) {
   const supabase = await requireAdmin();
-  const adminSupabase = createSupabaseAdminClient();
   const id = getText(formData, "id");
 
   // Delete photos from storage first
@@ -84,7 +82,7 @@ export async function deleteVenueById(formData: FormData) {
     .eq("venue_id", id);
 
   if (photos && photos.length > 0) {
-    await adminSupabase.storage
+    await supabase.storage
       .from("venue-photos")
       .remove(photos.map((p) => p.storage_path));
     await supabase.from("venue_photos").delete().eq("venue_id", id);
@@ -99,7 +97,6 @@ export async function deleteVenueById(formData: FormData) {
 
 export async function uploadVenuePhoto(formData: FormData) {
   const supabase = await requireAdmin();
-  const adminSupabase = createSupabaseAdminClient();
   const venueId = getText(formData, "venue_id");
   const venueSlug = getText(formData, "venue_slug");
   const file = formData.get("photo") as File;
@@ -110,7 +107,7 @@ export async function uploadVenuePhoto(formData: FormData) {
   const path = `public/${venueId}/${Date.now()}.${ext}`;
   const bytes = await file.arrayBuffer();
 
-  const { error: storageError } = await adminSupabase.storage
+  const { error: storageError } = await supabase.storage
     .from("venue-photos")
     .upload(path, bytes, { contentType: file.type, upsert: false });
   if (storageError) throw storageError;
@@ -126,12 +123,11 @@ export async function uploadVenuePhoto(formData: FormData) {
 
 export async function deleteVenuePhoto(formData: FormData) {
   const supabase = await requireAdmin();
-  const adminSupabase = createSupabaseAdminClient();
   const photoId = getText(formData, "photo_id");
   const storagePath = getText(formData, "storage_path");
   const venueSlug = getText(formData, "venue_slug");
 
-  await adminSupabase.storage.from("venue-photos").remove([storagePath]);
+  await supabase.storage.from("venue-photos").remove([storagePath]);
   const { error } = await supabase
     .from("venue_photos")
     .delete()
