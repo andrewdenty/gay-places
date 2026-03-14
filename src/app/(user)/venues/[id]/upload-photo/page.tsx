@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { PhotoUploader } from "@/components/photos/photo-uploader";
+import { updateSubmissionWithData } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export default async function UploadPhotoPage({
         </p>
 
         <Card className="mt-6 p-6">
-          <PhotoUploader venueId={venue.id} />
+          <PhotoUploader venueId={venue.id} onUpdateSubmission={updateSubmissionWithData} />
         </Card>
       </div>
     </Container>
