@@ -44,7 +44,12 @@ Reject  → candidate dismissed
 
 | Workflow | Trigger | What it does |
 |---|---|---|
+| **Deploy Database Migrations** | Push to `main` + manual dispatch | Runs `supabase db push` to apply any pending migrations |
 | **Discover Venues** | Nightly `0 2 * * *` + manual dispatch | Scrapes OSM, upserts into `venue_candidates` |
+
+The migration workflow runs automatically whenever changes land on `main`, so new
+migration files are always applied to the production database before the new
+code starts serving traffic.
 
 The discovery job can also be triggered manually from **GitHub → Actions →
 Discover Venues (Nightly)** with an optional city filter (e.g. "berlin,london").
@@ -55,7 +60,10 @@ Set these in **GitHub → Settings → Secrets and variables → Actions**:
 
 | Secret | Value |
 |---|---|
-| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_ACCESS_TOKEN` | Supabase access token from [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) — used by the migration workflow. Create a dedicated token for CI rather than reusing a personal one. |
+| `SUPABASE_PROJECT_ID` | Project reference ID (the subdomain of your Supabase URL, e.g. `abcdefghijklmnop`) — used by the migration workflow |
+| `SUPABASE_DB_PASSWORD` | Database password for your Supabase project — used by the migration workflow |
+| `SUPABASE_URL` | Your Supabase project URL (e.g. `https://abcdefghijklmnop.supabase.co`) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service-role key (bypasses RLS for server-side writes) |
 
 ### Supported cities
@@ -87,6 +95,7 @@ returned. Data is licensed under the [ODbL](https://opendatacommons.org/licenses
 | `packages/data-pipeline/scrapers/overpass.ts` | OpenStreetMap scraper |
 | `packages/data-pipeline/scrapers/types.ts` | `ScrapedVenue` interface |
 | `packages/data-pipeline/jobs/discover.ts` | Job entry point |
+| `.github/workflows/migrate.yml` | Migration deployment workflow (runs on push to `main`) |
 | `.github/workflows/discover-venues.yml` | GitHub Actions workflow |
 | `supabase/migrations/0008_venue_candidates.sql` | `venue_candidates` table |
 
@@ -113,6 +122,12 @@ In Supabase Dashboard → **SQL Editor**, run these files in order:
 
 - `supabase/migrations/0001_init.sql`
 - `supabase/migrations/0002_storage.sql`
+- `supabase/migrations/0003_venue_slugs.sql`
+- `supabase/migrations/0004_venue_closed.sql`
+- `supabase/migrations/0005_countries.sql`
+- `supabase/migrations/0006_countries_optional_fields.sql`
+- `supabase/migrations/0007_description_fields.sql`
+- `supabase/migrations/0008_venue_candidates.sql`
 
 ### 4) Seed Copenhagen data (development)
 
