@@ -4,7 +4,20 @@ import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
 
-export function PhotoUploader({ venueId }: { venueId: string }) {
+interface PhotoUploaderProps {
+  venueId: string;
+  onUpdateSubmission: (
+    submissionId: string,
+    proposedData: {
+      venue_id: string;
+      caption: string;
+      storage_path: string;
+      filename: string;
+    },
+  ) => Promise<void>;
+}
+
+export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProps) {
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -38,18 +51,12 @@ export function PhotoUploader({ venueId }: { venueId: string }) {
         .upload(created.upload_path, file, { upsert: false });
       if (uploadError) throw uploadError;
 
-      const { error: updateError } = await supabase
-        .from("submissions")
-        .update({
-          proposed_data: {
-            venue_id: venueId,
-            caption,
-            storage_path: created.upload_path,
-            filename: file.name,
-          },
-        })
-        .eq("id", created.submission_id);
-      if (updateError) throw updateError;
+      await onUpdateSubmission(created.submission_id, {
+        venue_id: venueId,
+        caption,
+        storage_path: created.upload_path,
+        filename: file.name,
+      });
 
       setStatus("Uploaded. Your photo is now pending moderation.");
       setFile(null);
