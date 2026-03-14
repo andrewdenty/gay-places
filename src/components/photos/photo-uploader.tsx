@@ -62,10 +62,11 @@ export function PhotoUploader({ venueId }: { venueId: string }) {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-3 overflow-hidden">
       <input
         type="file"
         accept="image/*"
+        className="w-full min-w-0"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
       <input
