@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { IconButton } from "@/components/ui/icon-button";
 
 type CityResult = {
   id: string;
@@ -123,17 +124,16 @@ export function SearchModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Close button */}
-      <button
-        type="button"
+      <IconButton
+        label="Close search"
         onClick={onClose}
-        className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#6E6E6D] hover:text-[#6E6E6D] transition-colors z-20"
-        aria-label="Close search"
+        className="absolute top-4 right-4 z-20"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
           <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
           <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
         </svg>
-      </button>
+      </IconButton>
 
       {/* Search area — positioned in upper third */}
       <div className="relative z-10 flex flex-col items-center px-4 pt-[15vh]">
