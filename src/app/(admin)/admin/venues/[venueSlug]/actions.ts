@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createDescriptionGenerator } from "@data-pipeline/ai";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -30,7 +31,7 @@ export async function updateVenueDetails(formData: FormData) {
   const lat = Number(getText(formData, "lat"));
   const lng = Number(getText(formData, "lng"));
   const venue_type = getText(formData, "venue_type") || "other";
-  const description = getText(formData, "description");
+  const description_editorial = getText(formData, "description_editorial") || null;
   const website_url = getText(formData, "website_url") || null;
   const google_maps_url = getText(formData, "google_maps_url") || null;
   const published = formData.get("published") === "on";
@@ -48,6 +49,15 @@ export async function updateVenueDetails(formData: FormData) {
     // Keep empty if invalid JSON
   }
 
+  // Mark status as human_edited when an admin saves a non-empty editorial description.
+  // When editorial is cleared, reset to 'generated' if a base description exists, otherwise leave unchanged.
+  const descriptionBaseExists = getText(formData, "description_base_exists") === "1";
+  const description_generation_status = description_editorial
+    ? "human_edited"
+    : descriptionBaseExists
+      ? "generated"
+      : undefined;
+
   const { error } = await supabase
     .from("venues")
     .update({
@@ -57,7 +67,10 @@ export async function updateVenueDetails(formData: FormData) {
       lat,
       lng,
       venue_type,
-      description,
+      description_editorial,
+      ...(description_generation_status !== undefined && {
+        description_generation_status,
+      }),
       website_url,
       google_maps_url,
       tags,
@@ -69,6 +82,52 @@ export async function updateVenueDetails(formData: FormData) {
   if (error) throw error;
 
   revalidatePath("/admin/venues");
+  revalidatePath(`/admin/venues/${venueSlug}`);
+}
+
+/**
+ * Generate (or regenerate) a venue's base description using the active
+ * description generator. In v1 this is always the deterministic generator.
+ * Swap in an AI generator by updating createDescriptionGenerator() in
+ * packages/data-pipeline/ai/index.ts — no changes needed here.
+ */
+export async function generateBaseDescription(formData: FormData) {
+  const supabase = await requireAdmin();
+  const id = getText(formData, "id");
+  const venueSlug = getText(formData, "slug");
+
+  // Fetch the fields the generator needs, including the city name.
+  const { data: venue, error: fetchError } = await supabase
+    .from("venues")
+    .select("name,venue_type,tags,city_id,cities(name,country)")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fetchError) throw fetchError;
+  if (!venue) throw new Error("Venue not found");
+
+  // cities join returns a single object for a many-to-one FK relationship.
+  const cityRow = venue.cities as unknown as { name: string; country: string } | null;
+
+  const generator = createDescriptionGenerator();
+  const result = await generator.generate({
+    name: venue.name,
+    city: cityRow?.name ?? "",
+    country: cityRow?.country ?? undefined,
+    venue_type: venue.venue_type,
+    tags: venue.tags ?? [],
+  });
+
+  const { error: updateError } = await supabase
+    .from("venues")
+    .update({
+      description_base: result.description_base,
+      description_generation_status: result.status,
+      description_last_generated_at: result.generated_at.toISOString(),
+    })
+    .eq("id", id);
+  if (updateError) throw updateError;
+
   revalidatePath(`/admin/venues/${venueSlug}`);
 }
 
