@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createCountry, updateCountry } from "./actions";
+import { updateCountry } from "./actions";
+import { NewCountryModal } from "@/components/admin/new-country-modal";
 
 export const dynamic = "force-dynamic";
 
@@ -53,33 +54,16 @@ export default async function AdminCountriesPage() {
     .order("name", { ascending: true });
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <h1 className="text-xl font-semibold tracking-tight">Countries</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Create country pages to act as editorial gateways for city guides.
-      </p>
-
-      {/* Create form */}
-      <Card className="mt-6 p-6">
-        <div className="text-sm font-semibold mb-4">Create country</div>
-        <form action={createCountry} className="grid gap-3 sm:grid-cols-2">
-          <input
-            name="slug"
-            placeholder="slug (e.g. denmark)"
-            className={inputClass}
-            required
-          />
-          <input
-            name="name"
-            placeholder="Name (e.g. Denmark)"
-            className={inputClass}
-            required
-          />
-          <div className="sm:col-span-2">
-            <Button type="submit">Create</Button>
-          </div>
-        </form>
-      </Card>
+    <div>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">Countries</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {(countries ?? []).length} countr{(countries ?? []).length !== 1 ? "ies" : "y"}
+          </p>
+        </div>
+        <NewCountryModal />
+      </div>
 
       {/* Country list */}
       <div className="mt-6 grid gap-4">

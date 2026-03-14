@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { deleteVenue } from "./actions";
 
 type City = { id: string; name: string; slug: string };
@@ -58,17 +59,17 @@ export function VenuesList({
   return (
     <div className="mt-6">
       {/* Search + City filter */}
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search venues…"
-          className="h-11 flex-1 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-accent"
+          className="h-11 flex-1 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-1 focus:ring-[var(--accent)]"
         />
         <select
           value={cityFilter}
           onChange={(e) => setCityFilter(e.target.value)}
-          className="h-11 rounded-xl border border-border bg-background px-3 text-sm"
+          className="h-11 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm sm:w-48"
         >
           <option value="">All cities</option>
           {cities.map((c) => (
@@ -79,7 +80,7 @@ export function VenuesList({
         </select>
       </div>
 
-      <div className="mt-2 text-xs text-muted-foreground">
+      <div className="mt-2 text-xs text-[var(--muted-foreground)]">
         {filtered.length} venue{filtered.length !== 1 ? "s" : ""}
       </div>
 
@@ -87,51 +88,54 @@ export function VenuesList({
         {filtered.map((v) => (
           <div
             key={v.id}
-            className="flex items-center justify-between rounded-xl border border-border px-4 py-3"
+            className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3"
           >
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium">{v.name}</span>
-                {!v.published && (
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    Hidden
-                  </span>
-                )}
-                {v.closed && (
-                  <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-600">
-                    Closed
-                  </span>
-                )}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              {/* Info */}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium">{v.name}</span>
+                  {!v.published && (
+                    <span className="rounded-full bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
+                      Hidden
+                    </span>
+                  )}
+                  {v.closed && (
+                    <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-600">
+                      Closed
+                    </span>
+                  )}
+                </div>
+                <div className="mt-0.5 text-xs text-[var(--muted-foreground)]">
+                  {v.cities?.name}
+                  {v.address ? ` · ${v.address}` : ""}
+                </div>
               </div>
-              <div className="mt-0.5 truncate text-xs text-muted-foreground">
-                {v.cities?.name} · {v.address}
-              </div>
-            </div>
 
-            <div className="ml-4 flex shrink-0 items-center gap-4">
-              {v.cities?.slug && v.slug && (
-                <Link
-                  href={`/city/${v.cities.slug}/venue/${v.slug}`}
-                  target="_blank"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  View ↗
+              {/* Actions */}
+              <div className="flex flex-wrap items-center gap-2">
+                <Link href={`/admin/venues/${v.slug}`}>
+                  <Button size="sm">Edit</Button>
                 </Link>
-              )}
-              <Link
-                href={`/admin/venues/${v.slug}`}
-                className="text-sm font-medium hover:underline"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => handleDelete(v)}
-                disabled={isPending}
-                className="text-sm text-red-500 hover:underline disabled:opacity-50"
-              >
-                Delete
-              </button>
+                {v.cities?.slug && v.slug && (
+                  <Link
+                    href={`/city/${v.cities.slug}/venue/${v.slug}`}
+                    target="_blank"
+                  >
+                    <Button size="sm" variant="secondary">
+                      View ↗
+                    </Button>
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleDelete(v)}
+                  disabled={isPending}
+                  className="text-sm text-red-500 hover:underline disabled:opacity-50"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -139,3 +143,4 @@ export function VenuesList({
     </div>
   );
 }
+

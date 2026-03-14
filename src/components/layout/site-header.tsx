@@ -7,7 +7,7 @@ import { SearchModal } from "@/components/search/search-modal";
 import { NavDrawer } from "@/components/layout/nav-drawer";
 import { IconButton } from "@/components/ui/icon-button";
 
-export function SiteHeader() {
+export function SiteHeader({ isAdmin = false }: { isAdmin?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -122,7 +122,7 @@ export function SiteHeader() {
       </header>
 
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-      <NavDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <NavDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} isAdmin={isAdmin} />
     </>
   );
 }

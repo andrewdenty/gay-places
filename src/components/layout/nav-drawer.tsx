@@ -15,9 +15,11 @@ type City = {
 export function NavDrawer({
   isOpen,
   onClose,
+  isAdmin = false,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const [cities, setCities] = useState<City[]>([]);
@@ -175,6 +177,15 @@ export function NavDrawer({
               >
                 Sign In
               </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
+                  onClick={onClose}
+                >
+                  Admin
+                </Link>
+              )}
             </nav>
           </div>
         </div>
