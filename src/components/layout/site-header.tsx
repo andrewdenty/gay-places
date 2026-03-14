@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SearchModal } from "@/components/search/search-modal";
 import { NavDrawer } from "@/components/layout/nav-drawer";
+import { IconButton } from "@/components/ui/icon-button";
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -103,29 +104,19 @@ export function SiteHeader() {
 
           {/* Icon buttons */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#6E6E6D] transition-colors"
-              aria-label="Search"
-            >
+            <IconButton label="Search" onClick={() => setSearchOpen(true)}>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" />
                 <line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMenuOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#6E6E6D] transition-colors"
-              aria-label="Menu"
-            >
+            </IconButton>
+            <IconButton label="Menu" onClick={() => setMenuOpen(true)}>
               <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
                 <line x1="0" y1="1" x2="14" y2="1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                 <line x1="0" y1="5" x2="14" y2="5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                 <line x1="0" y1="9" x2="14" y2="9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
-            </button>
+            </IconButton>
           </div>
         </div>
       </header>
