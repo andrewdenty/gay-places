@@ -67,7 +67,7 @@ export default async function LandingPage() {
 
       {/* All cities by region */}
       <section>
-        <div className="flex items-baseline justify-between mb-4">
+        <div className="flex items-baseline justify-between mb-[6px]">
           <h2 className="h2-editorial">All city guides</h2>
           {cities.length > 0 && (
             <span className="label-xs text-[var(--muted-foreground)]">
@@ -75,6 +75,9 @@ export default async function LandingPage() {
             </span>
           )}
         </div>
+        <p className="text-[13px] text-[var(--muted-foreground)] mb-4">
+          Browse by region and country.
+        </p>
 
         {cities.length > 0 ? (
           <RegionBrowser cities={cities} publishedCountrySlugs={publishedCountrySlugs} />
