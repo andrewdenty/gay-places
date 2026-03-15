@@ -173,14 +173,15 @@ function parseListingPage(
 
 /** Decode common HTML entities. */
 function decodeHTMLEntities(text: string): string {
+  // Decode &amp; last to avoid double-unescaping (e.g. &amp;lt; → &lt; → <).
   return text
-    .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&#x27;/g, "'")
-    .replace(/&apos;/g, "'");
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
 }
 
 /** Try to extract an address string from nearby HTML. */

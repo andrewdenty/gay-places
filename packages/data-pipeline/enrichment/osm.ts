@@ -54,6 +54,11 @@ function mapVenueType(amenity: string): string {
   return AMENITY_TO_VENUE_TYPE[amenity] ?? "other";
 }
 
+/** OSM tag keys to include in enrichment results. */
+const RELEVANT_TAG_KEYS = [
+  "amenity", "lgbtq", "gay", "lesbian", "transgender", "cuisine", "website",
+] as const;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Simple string normalisation for matching. */
@@ -251,7 +256,7 @@ export class OsmEnrichmentProvider implements EnrichmentProvider {
 
     // Collect relevant tags.
     const relevantTags: Record<string, string> = {};
-    for (const key of ["amenity", "lgbtq", "gay", "lesbian", "transgender", "cuisine", "website"]) {
+    for (const key of RELEVANT_TAG_KEYS) {
       if (tags[key]) relevantTags[key] = tags[key];
     }
 
