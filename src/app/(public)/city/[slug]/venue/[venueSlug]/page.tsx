@@ -7,7 +7,7 @@ import { PhotoGallery } from "@/components/venue/photo-gallery";
 import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCityBySlug, getVenueBySlug } from "@/lib/data/public";
+import { getCityBySlug, getVenueBySlug, getNearbyVenues } from "@/lib/data/public";
 import { env } from "@/lib/env";
 import { isOpenNow } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
@@ -53,12 +53,13 @@ export default async function VenuePage({
   if (!venue) notFound();
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: photos }] = await Promise.all([
+  const [{ data: photos }, nearbyVenues] = await Promise.all([
     supabase
       .from("venue_photos")
       .select("id, storage_path")
       .eq("venue_id", venue.id)
       .limit(5),
+    getNearbyVenues(venue.city_id, venue.id, venue.lat, venue.lng),
   ]);
 
   const permanentlyClosed = venue.closed === true;
@@ -233,30 +234,38 @@ export default async function VenuePage({
         </VenueSectionRow>
       )}
 
-      {/* Section 5 — Nearby venues (static placeholder) */}
-      <VenueSectionRow label="Nearby">
-        <p className="text-[13px] text-[var(--foreground)]">
-          <span>Lab.oratory</span>
-          <span className="mx-[5px]">·</span>
-          <span>Prinzknecht</span>
-          <span className="mx-[5px]">·</span>
-          <span>Möbel Olfe</span>
-        </p>
-      </VenueSectionRow>
+      {/* Section 5 — Nearby venues */}
+      {nearbyVenues.length > 0 && (
+        <VenueSectionRow label="Nearby">
+          <div className="flex items-center gap-0 text-[13px]">
+            {nearbyVenues.map((v, i) => (
+              <span key={v.id} className="flex items-center">
+                {i > 0 && <span className="mx-[8px] text-[var(--border)]">·</span>}
+                <Link
+                  href={`/city/${city.slug}/venue/${v.slug}`}
+                  className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
+                >
+                  {v.name}
+                </Link>
+              </span>
+            ))}
+          </div>
+        </VenueSectionRow>
+      )}
 
       {/* Section 6 — Contribute */}
       <VenueSectionRow label="Contribute" bordered={false}>
         <div className="flex items-center gap-0 text-[13px]">
           <Link
             href={`/venues/${venue.id}/suggest-edit`}
-            className="text-[var(--muted-foreground)] underline underline-offset-2 hover:text-[var(--foreground)]"
+            className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
           >
             Suggest an Edit
           </Link>
           <span className="mx-[8px] text-[var(--border)]">·</span>
           <Link
             href={`/venues/${venue.id}/upload-photo`}
-            className="text-[var(--muted-foreground)] underline underline-offset-2 hover:text-[var(--foreground)]"
+            className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
           >
             Upload a Photo
           </Link>
