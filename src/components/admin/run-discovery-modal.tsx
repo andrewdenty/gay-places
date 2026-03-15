@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface Source {
@@ -217,14 +217,14 @@ export function RunDiscoveryModal({ availableSources, availableCities }: Props) 
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                           {Object.entries(result.sourceBreakdown).map(
                             ([sourceId, stats]) => (
-                              <>
-                                <span key={`${sourceId}-label`} className="text-muted-foreground capitalize">
+                              <React.Fragment key={sourceId}>
+                                <span className="text-muted-foreground capitalize">
                                   {sourceId}
                                 </span>
-                                <span key={`${sourceId}-val`}>
+                                <span>
                                   {stats.new} new / {stats.discovered} found
                                 </span>
-                              </>
+                              </React.Fragment>
                             ),
                           )}
                         </div>
