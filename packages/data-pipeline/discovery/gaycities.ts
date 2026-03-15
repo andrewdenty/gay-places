@@ -9,6 +9,12 @@
  *
  * This is a DISCOVERY source — it produces candidate venues for admin
  * review. It is NOT an enrichment provider.
+ *
+ * Extraction strategies (tried in order):
+ *   1. __NEXT_DATA__ JSON embedded in the page (most reliable for React/Next.js sites).
+ *   2. JSON-LD structured data (LocalBusiness / ItemList).
+ *   3. Regex link matching against /cities/{city}/{category}/ URL patterns,
+ *      handling both relative and absolute URLs.
  */
 
 import type { ScrapedVenue } from "../scrapers/types";
@@ -50,11 +56,12 @@ const CATEGORIES: CategoryConfig[] = [
 // ─── HTML parsing helpers ─────────────────────────────────────────────────────
 
 /**
- * Extract venue listings from a GayCities listing page using regex.
+ * Extract venue listings from a GayCities listing page.
  *
- * We use regex-based parsing to avoid adding heavy HTML parsing dependencies.
- * This is intentionally simple — discovery scraping is expected to be imperfect
- * and results go through human moderation anyway.
+ * We use multiple extraction strategies to maximise discovery:
+ *   1. __NEXT_DATA__ embedded JSON — most reliable for React/Next.js sites.
+ *   2. JSON-LD structured data (LocalBusiness, ItemList).
+ *   3. Regex link matching — handles both relative and absolute URLs.
  */
 function parseListingPage(
   html: string,
@@ -65,40 +72,204 @@ function parseListingPage(
   const venues: ScrapedVenue[] = [];
   const seen = new Set<string>();
 
-  // GayCities listing pages typically contain venue cards with:
-  //   - Venue name in a heading or link
-  //   - Address text
-  //   - Optional description
-  //
-  // We look for patterns like:
-  //   <a href="/cities/{city}/bars/{venue-slug}">Venue Name</a>
-  //   or <h2>...<a href="...">Venue Name</a>...</h2>
-  //   with nearby address and description text.
+  const baseCategoryUrl = `https://gaycities.com/cities/${gcCitySlug}/${category.urlPath}/`;
 
-  // Pattern 1: links pointing to individual venue pages
+  // ── Strategy 1: __NEXT_DATA__ embedded JSON ────────────────────────────────
+  // GayCities is likely a Next.js application. Data is often embedded in the
+  // __NEXT_DATA__ script tag as server-side rendered props.
+  const nextDataMatch = /<script[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i.exec(html);
+  if (nextDataMatch) {
+    try {
+      const nextData = JSON.parse(nextDataMatch[1]) as Record<string, unknown>;
+      const pageProps = (
+        (nextData as { props?: { pageProps?: unknown } }).props?.pageProps
+      ) as Record<string, unknown> | undefined;
+
+      // GayCities may embed venue arrays under various keys.
+      const candidates: unknown[] = [];
+      for (const key of ["venues", "places", "listings", "items", "data", "results", "pois"]) {
+        const val = pageProps?.[key];
+        if (Array.isArray(val)) {
+          candidates.push(...val);
+        } else if (val && typeof val === "object") {
+          for (const subkey of ["items", "venues", "results", "data", "list"]) {
+            const nested = (val as Record<string, unknown>)[subkey];
+            if (Array.isArray(nested)) {
+              candidates.push(...nested);
+              break;
+            }
+          }
+        }
+      }
+
+      for (const item of candidates) {
+        if (!item || typeof item !== "object") continue;
+        const v = item as Record<string, unknown>;
+        const name = typeof v["name"] === "string" ? v["name"].trim() :
+          typeof v["title"] === "string" ? v["title"].trim() : null;
+        if (!name || seen.has(name.toLowerCase())) continue;
+        seen.add(name.toLowerCase());
+
+        const slug = typeof v["slug"] === "string" ? v["slug"] :
+          typeof v["permalink"] === "string" ? v["permalink"] : null;
+        const address = typeof v["address"] === "string" ? v["address"] :
+          typeof v["full_address"] === "string" ? v["full_address"] :
+          typeof v["street"] === "string" ? v["street"] : "";
+        const lat = typeof v["lat"] === "number" ? v["lat"] :
+          typeof v["latitude"] === "number" ? v["latitude"] : null;
+        const lng = typeof v["lng"] === "number" ? v["lng"] :
+          typeof v["longitude"] === "number" ? v["longitude"] :
+          typeof v["long"] === "number" ? v["long"] : null;
+        const sourceUrl = slug
+          ? `https://gaycities.com/cities/${gcCitySlug}/${category.urlPath}/${slug}/`
+          : typeof v["url"] === "string" ? v["url"] : baseCategoryUrl;
+        const description = typeof v["description"] === "string" ? v["description"] :
+          typeof v["excerpt"] === "string" ? v["excerpt"] : undefined;
+
+        venues.push({
+          name,
+          address: address as string,
+          lat,
+          lng,
+          city: citySlug,
+          venue_type: category.venueType,
+          website_url: typeof v["website"] === "string" ? v["website"] :
+            typeof v["website_url"] === "string" ? v["website_url"] : null,
+          tags: [],
+          source: "gaycities",
+          source_id: `gaycities:${gcCitySlug}/${category.urlPath}/${slug ?? name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+          source_url: sourceUrl,
+          raw: v,
+          description,
+          source_category: category.label,
+        });
+      }
+    } catch {
+      // Invalid JSON — skip silently.
+    }
+  }
+
+  // ── Strategy 2: JSON-LD structured data ────────────────────────────────────
+  const jsonLdPattern = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let jsonLdMatch: RegExpExecArray | null;
+  while ((jsonLdMatch = jsonLdPattern.exec(html)) !== null) {
+    try {
+      const data = JSON.parse(jsonLdMatch[1]) as unknown;
+      const items = Array.isArray(data) ? data : [data];
+      for (const item of items) {
+        if (!item || typeof item !== "object") continue;
+        const obj = item as Record<string, unknown>;
+
+        // ItemList container (e.g. a list of venues)
+        if (obj["@type"] === "ItemList") {
+          const elements = Array.isArray(obj["itemListElement"]) ? obj["itemListElement"] : [];
+          for (const el of elements) {
+            if (!el || typeof el !== "object") continue;
+            const e = el as Record<string, unknown>;
+            const inner = (e["item"] ?? e) as Record<string, unknown>;
+            const name = typeof inner["name"] === "string" ? inner["name"].trim() : null;
+            if (!name || seen.has(name.toLowerCase())) continue;
+            seen.add(name.toLowerCase());
+            venues.push({
+              name,
+              address: "",
+              lat: null, lng: null,
+              city: citySlug,
+              venue_type: category.venueType,
+              website_url: typeof inner["url"] === "string" ? inner["url"] : null,
+              tags: [],
+              source: "gaycities",
+              source_id: `gaycities:jsonld:${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}:${citySlug}`,
+              source_url: typeof inner["url"] === "string" ? inner["url"] : baseCategoryUrl,
+              raw: inner,
+              source_category: category.label,
+            });
+          }
+          continue;
+        }
+
+        // Individual venue
+        if (
+          obj["@type"] === "LocalBusiness" ||
+          obj["@type"] === "BarOrPub" ||
+          obj["@type"] === "NightClub" ||
+          obj["@type"] === "Restaurant"
+        ) {
+          const name = typeof obj["name"] === "string" ? obj["name"].trim() : null;
+          if (!name || seen.has(name.toLowerCase())) continue;
+          seen.add(name.toLowerCase());
+
+          const addr = obj["address"] as Record<string, string> | undefined;
+          const addressStr = addr
+            ? [addr["streetAddress"], addr["postalCode"], addr["addressLocality"]]
+                .filter(Boolean)
+                .join(", ")
+            : "";
+
+          venues.push({
+            name,
+            address: addressStr,
+            lat: typeof (obj["geo"] as Record<string, unknown> | undefined)?.["latitude"] === "number"
+              ? (obj["geo"] as Record<string, number>)["latitude"] : null,
+            lng: typeof (obj["geo"] as Record<string, unknown> | undefined)?.["longitude"] === "number"
+              ? (obj["geo"] as Record<string, number>)["longitude"] : null,
+            city: citySlug,
+            venue_type: category.venueType,
+            website_url: typeof obj["url"] === "string" ? obj["url"] : null,
+            tags: [],
+            source: "gaycities",
+            source_id: `gaycities:jsonld:${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}:${citySlug}`,
+            source_url: typeof obj["url"] === "string" ? obj["url"] : baseCategoryUrl,
+            raw: obj,
+            description: typeof obj["description"] === "string" ? obj["description"] : undefined,
+            source_category: category.label,
+          });
+        }
+      }
+    } catch {
+      // Invalid JSON-LD — skip silently
+    }
+  }
+
+  // ── Strategy 3: regex link matching ────────────────────────────────────────
+  // Handles both relative (/cities/berlin/bars/...) and absolute URLs.
+  // Also handles URLs without trailing slashes.
   const linkPattern = new RegExp(
-    `href=["']/cities/${gcCitySlug}/${category.urlPath}/([^"']+)["'][^>]*>([^<]+)<`,
+    `href=["']((?:https://(?:www\\.)?gaycities\\.com)?/cities/${gcCitySlug}/${category.urlPath}/([^"'/?#][^"'?#]*))/?["']`,
     "gi",
   );
 
   let match: RegExpExecArray | null;
   while ((match = linkPattern.exec(html)) !== null) {
-    const venueSlug = match[1].replace(/\/$/, "");
-    const venueName = decodeHTMLEntities(match[2]).trim();
+    const venueSlug = match[2].replace(/\/$/, "").trim();
 
-    if (!venueName || venueName.length < 2) continue;
+    if (!venueSlug || venueSlug.length < 2) continue;
     if (seen.has(venueSlug)) continue;
     seen.add(venueSlug);
 
-    // Try to extract address near this match
+    // Extract venue name from nearby HTML (anchor text or heading).
     const nearbyText = html.slice(
-      Math.max(0, match.index - 200),
-      Math.min(html.length, match.index + 500),
+      Math.max(0, match.index),
+      Math.min(html.length, match.index + 400),
     );
-    const address = extractAddress(nearbyText);
-    const description = extractDescription(nearbyText);
 
-    const sourceUrl = `https://gaycities.com/cities/${gcCitySlug}/${category.urlPath}/${venueSlug}`;
+    // Try to find anchor text right after the href.
+    const anchorTextMatch = />([^<]{2,80})<\/a/i.exec(nearbyText);
+    const venueName = anchorTextMatch
+      ? decodeHTMLEntities(anchorTextMatch[1]).trim()
+      : venueSlug.replace(/-/g, " ");
+
+    if (!venueName || venueName.length < 2) continue;
+
+    // Try to extract address and description from surrounding context.
+    const contextText = html.slice(
+      Math.max(0, match.index - 200),
+      Math.min(html.length, match.index + 600),
+    );
+    const address = extractAddress(contextText);
+    const description = extractDescription(contextText);
+
+    const sourceUrl = `https://gaycities.com/cities/${gcCitySlug}/${category.urlPath}/${venueSlug}/`;
 
     venues.push({
       name: venueName,
@@ -116,56 +287,6 @@ function parseListingPage(
       description: description ?? undefined,
       source_category: category.label,
     });
-  }
-
-  // Pattern 2: structured data (JSON-LD) if present
-  const jsonLdPattern = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-  let jsonLdMatch: RegExpExecArray | null;
-  while ((jsonLdMatch = jsonLdPattern.exec(html)) !== null) {
-    try {
-      const data = JSON.parse(jsonLdMatch[1]);
-      const items = Array.isArray(data) ? data : [data];
-      for (const item of items) {
-        if (
-          item["@type"] === "LocalBusiness" ||
-          item["@type"] === "BarOrPub" ||
-          item["@type"] === "NightClub" ||
-          item["@type"] === "Restaurant"
-        ) {
-          const name = item.name?.trim();
-          if (!name || seen.has(name.toLowerCase())) continue;
-          seen.add(name.toLowerCase());
-
-          const addr = item.address;
-          const addressStr = addr
-            ? [addr.streetAddress, addr.postalCode, addr.addressLocality]
-                .filter(Boolean)
-                .join(", ")
-            : "";
-
-          venues.push({
-            name,
-            address: addressStr,
-            lat: item.geo?.latitude ?? null,
-            lng: item.geo?.longitude ?? null,
-            city: citySlug,
-            venue_type: category.venueType,
-            website_url: item.url ?? null,
-            tags: [],
-            source: "gaycities",
-            source_id: `gaycities:jsonld:${name.toLowerCase().replace(/\s+/g, "-")}:${citySlug}`,
-            source_url:
-              item.url ??
-              `https://gaycities.com/cities/${gcCitySlug}/${category.urlPath}/`,
-            raw: item as Record<string, unknown>,
-            description: item.description ?? undefined,
-            source_category: category.label,
-          });
-        }
-      }
-    } catch {
-      // Invalid JSON-LD — skip silently
-    }
   }
 
   return venues;

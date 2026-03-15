@@ -12,21 +12,21 @@
 
 export type { DiscoverySource } from "./types";
 export { GayCitiesDiscovery } from "./gaycities";
+export { TravelGayDiscovery } from "./travelgay";
+export { PatrocDiscovery } from "./patroc";
 
 import type { DiscoverySource } from "./types";
 import { GayCitiesDiscovery } from "./gaycities";
+import { TravelGayDiscovery } from "./travelgay";
+import { PatrocDiscovery } from "./patroc";
 
 /**
  * All registered discovery sources.
- *
- * Add new sources here as they are implemented:
- *   - TravelGay
- *   - Patroc
- *   - Nomadic Boys
- *   - etc.
  */
 export const DISCOVERY_SOURCES: DiscoverySource[] = [
   new GayCitiesDiscovery(),
+  new TravelGayDiscovery(),
+  new PatrocDiscovery(),
 ];
 
 /** Look up a discovery source by ID. */

@@ -3,6 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CandidateActions } from "@/components/admin/candidate-actions";
 import { ClearCandidatesButton } from "@/components/admin/clear-candidates-button";
+import { RunDiscoveryModal } from "@/components/admin/run-discovery-modal";
+import { DISCOVERY_SOURCES } from "@data-pipeline/discovery/index";
+import { CITY_REGISTRY } from "@data-pipeline/config/cities";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +40,20 @@ type Candidate = {
   created_at: string;
 };
 
+type JobRun = {
+  id: string;
+  started_at: string;
+  completed_at: string | null;
+  triggered_by: string;
+  cities: string[];
+  sources: string[];
+  total_discovered: number;
+  total_new: number;
+  total_duplicates: number;
+  source_breakdown: Record<string, { discovered: number; new: number }> | null;
+  errors: string[];
+};
+
 function ConfidenceBadge({ score }: { score: number | null }) {
   if (score == null) return <Badge>not scored</Badge>;
   const pct = Math.round(score * 100);
@@ -45,21 +62,131 @@ function ConfidenceBadge({ score }: { score: number | null }) {
   return <Badge>✗ {pct}%</Badge>;
 }
 
+function formatRelativeTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60_000);
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return "yesterday";
+  return `${diffDays} days ago`;
+}
+
+function LastRunBanner({ run }: { run: JobRun | null }) {
+  if (!run) {
+    return (
+      <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+        No discovery runs recorded yet. Run discovery below or trigger the
+        nightly GitHub Actions workflow.
+      </div>
+    );
+  }
+
+  const completedAt = run.completed_at ?? run.started_at;
+  const breakdown = run.source_breakdown ?? {};
+  const sourceEntries = Object.entries(breakdown);
+
+  return (
+    <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <span className="font-medium">Last run:</span>
+        <span className="text-muted-foreground">
+          {formatRelativeTime(completedAt)}{" "}
+          <span className="text-xs">
+            ({new Date(completedAt).toLocaleString()})
+          </span>
+        </span>
+        <span className="text-muted-foreground capitalize">
+          via {run.triggered_by}
+        </span>
+      </div>
+
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
+        <span>
+          <span className="font-medium text-foreground">{run.total_new}</span>{" "}
+          new venues found
+        </span>
+        <span>
+          <span className="font-medium text-foreground">
+            {run.total_discovered}
+          </span>{" "}
+          total discovered
+        </span>
+        {run.total_duplicates > 0 && (
+          <span>
+            <span className="font-medium text-foreground">
+              {run.total_duplicates}
+            </span>{" "}
+            auto-matched
+          </span>
+        )}
+      </div>
+
+      {sourceEntries.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {sourceEntries.map(([sourceId, stats]) => (
+            <span
+              key={sourceId}
+              className="rounded-full bg-muted px-2.5 py-0.5 text-xs capitalize"
+            >
+              {sourceId}: {stats.new} new / {stats.discovered} found
+            </span>
+          ))}
+        </div>
+      )}
+
+      {run.errors.length > 0 && (
+        <div className="mt-1.5 text-xs text-destructive">
+          {run.errors.length} error(s) during last run
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default async function AdminCandidatesPage() {
   const supabase = await createSupabaseServerClient();
-  const { data: candidates } = await supabase
-    .from("venue_candidates")
-    .select(
-      "id,name,address,city_slug,venue_type,website_url,tags,source,source_url," +
-      "source_description,source_category,enrichment_data,confidence_score," +
-      "lat,lng,created_at",
-    )
-    .eq("status", "pending")
-    .order("confidence_score", { ascending: false, nullsFirst: false })
-    .order("created_at", { ascending: true })
-    .limit(100);
+
+  const [{ data: candidates }, { data: lastRunData }] = await Promise.all([
+    supabase
+      .from("venue_candidates")
+      .select(
+        "id,name,address,city_slug,venue_type,website_url,tags,source,source_url," +
+          "source_description,source_category,enrichment_data,confidence_score," +
+          "lat,lng,created_at",
+      )
+      .eq("status", "pending")
+      .order("confidence_score", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: true })
+      .limit(100),
+    supabase
+      .from("discovery_job_runs")
+      .select(
+        "id,started_at,completed_at,triggered_by,cities,sources," +
+          "total_discovered,total_new,total_duplicates,source_breakdown,errors",
+      )
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   const count = (candidates ?? []).length;
+  const lastRun = lastRunData as JobRun | null;
+
+  const availableSources = DISCOVERY_SOURCES.map((s) => ({
+    id: s.id,
+    name: s.displayName,
+    baseUrl: s.baseUrl,
+  }));
+  const availableCities = CITY_REGISTRY.map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    country: c.country,
+  }));
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -78,7 +205,18 @@ export default async function AdminCandidatesPage() {
             unpublished venue for further review, or reject to dismiss.
           </div>
         </div>
-        {count > 0 && <ClearCandidatesButton />}
+        <div className="flex items-center gap-2">
+          <RunDiscoveryModal
+            availableSources={availableSources}
+            availableCities={availableCities}
+          />
+          {count > 0 && <ClearCandidatesButton />}
+        </div>
+      </div>
+
+      {/* Last job run info */}
+      <div className="mt-4">
+        <LastRunBanner run={lastRun} />
       </div>
 
       <div className="mt-6 grid gap-3">
@@ -88,7 +226,7 @@ export default async function AdminCandidatesPage() {
               No pending candidates.{" "}
               <span className="font-medium">
                 The discovery job runs nightly at 02:00 UTC, or can be
-                triggered manually from GitHub Actions.
+                triggered using the &quot;Run discovery&quot; button above.
               </span>
             </div>
           </Card>
@@ -264,3 +402,4 @@ export default async function AdminCandidatesPage() {
     </div>
   );
 }
+
