@@ -186,6 +186,32 @@ export async function getVenuesByIds(ids: string[]): Promise<(Venue & { city_slu
   });
 }
 
+export async function getNearbyVenues(
+  cityId: string,
+  currentVenueId: string,
+  lat: number,
+  lng: number,
+  limit = 3,
+): Promise<Venue[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("venues")
+    .select(VENUE_FIELDS)
+    .eq("city_id", cityId)
+    .eq("published", true)
+    .neq("id", currentVenueId);
+  if (error) throw error;
+  const venues = (data ?? []) as Venue[];
+  return venues
+    .map((v) => ({
+      venue: v,
+      dist: Math.hypot(v.lat - lat, v.lng - lng),
+    }))
+    .sort((a, b) => a.dist - b.dist)
+    .slice(0, limit)
+    .map((x) => x.venue);
+}
+
 /** @deprecated Use getVenueBySlug for public pages. Kept for internal/admin use. */
 export async function getVenueById(id: string): Promise<Venue | null> {
   const supabase = await createSupabaseServerClient();
