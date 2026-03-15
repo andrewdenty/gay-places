@@ -1,8 +1,13 @@
 /**
  * Venue discovery job.
  *
- * Queries the OpenStreetMap Overpass API for LGBTQ+ venues in each configured
- * city and upserts the results into the venue_candidates table for admin review.
+ * Scrapes LGBTQ-focused discovery websites for venue candidates and upserts
+ * the results into the venue_candidates table for admin review.
+ *
+ * ARCHITECTURE:
+ *   Discovery sources (GayCities, TravelGay, Patroc, etc.) are the PRIMARY
+ *   mechanism for finding venues. OpenStreetMap is used only for enrichment
+ *   (see enrich.ts), never for discovery.
  *
  * Usage:
  *   npx tsx packages/data-pipeline/jobs/discover.ts
@@ -11,7 +16,9 @@
  *   SUPABASE_URL              — Supabase project URL
  *   SUPABASE_SERVICE_ROLE_KEY — Service-role key (bypasses RLS)
  *   DISCOVER_CITIES           — Comma-separated city slugs to scan
- *                               (default: all cities in overpass.ts CITY_BBOXES)
+ *                               (default: all cities in config/cities.ts)
+ *   DISCOVER_SOURCES          — Comma-separated source IDs to use
+ *                               (default: all registered discovery sources)
  *
  * This script is called from .github/workflows/discover-venues.yml on a
  * nightly schedule (02:00 UTC). It can also be triggered manually from the
@@ -19,22 +26,19 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { getAllCitySlugs, getCityConfig } from "../config/cities";
 import {
-  scrapeOverpass,
-  getOverpassAvailableSlots,
-  SUPPORTED_CITIES,
-} from "../scrapers/index";
+  DISCOVERY_SOURCES,
+  getDiscoverySource,
+} from "../discovery/index";
 import type { ScrapedVenue } from "../scrapers/types";
 
-// Minimum delay between Overpass API requests — keeps us within polite usage
-// limits and avoids triggering rate-limiting (429) responses.
-const OVERPASS_API_DELAY_MS = 5_000;
+// Delay between discovery source requests per city — polite scraping.
+const SCRAPE_DELAY_MS = 3_000;
 
 // ─── Supabase client ──────────────────────────────────────────────────────────
 
 function createSupabase() {
-  // Accept both the plain name (for CI) and the NEXT_PUBLIC_ variant (for
-  // local development where .env.local is sourced).
   const url =
     process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -71,6 +75,8 @@ interface CandidateRow {
   tags: string[];
   raw_data: Record<string, unknown>;
   status: "pending";
+  source_description: string;
+  source_category: string;
 }
 
 function venueToRow(v: ScrapedVenue): CandidateRow {
@@ -88,6 +94,8 @@ function venueToRow(v: ScrapedVenue): CandidateRow {
     tags: v.tags,
     raw_data: v.raw,
     status: "pending",
+    source_description: v.description ?? "",
+    source_category: v.source_category ?? "",
   };
 }
 
@@ -127,9 +135,29 @@ async function main() {
   const envCities = process.env.DISCOVER_CITIES;
   const cities = envCities
     ? envCities.split(",").map((c) => c.trim()).filter(Boolean)
-    : SUPPORTED_CITIES;
+    : getAllCitySlugs();
 
-  console.log(`🔍 Venue discovery starting — cities: ${cities.join(", ")}`);
+  // Determine which discovery sources to use.
+  const envSources = process.env.DISCOVER_SOURCES;
+  const sources = envSources
+    ? envSources
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((id) => getDiscoverySource(id))
+        .filter((s) => s !== undefined)
+    : DISCOVERY_SOURCES;
+
+  if (sources.length === 0) {
+    console.error("❌ No discovery sources configured.");
+    process.exit(1);
+  }
+
+  console.log(
+    `🔍 Venue discovery starting\n` +
+    `   Cities:  ${cities.join(", ")}\n` +
+    `   Sources: ${sources.map((s) => s.displayName).join(", ")}`,
+  );
 
   let totalDiscovered = 0;
   let totalInserted = 0;
@@ -137,56 +165,66 @@ async function main() {
   const errors: string[] = [];
 
   for (let i = 0; i < cities.length; i++) {
-    const city = cities[i];
+    const citySlug = cities[i];
+    const cityConfig = getCityConfig(citySlug);
 
-    // Optional: check Overpass API quota before scraping.
-    const availableSlots = await getOverpassAvailableSlots();
-    if (availableSlots === 0) {
-      const msg = `${city}: scrape skipped — Overpass API reports 0 available slots`;
-      console.warn(`\n  ⚠ ${msg}`);
+    if (!cityConfig) {
+      const msg = `${citySlug}: unknown city — add it to config/cities.ts`;
+      console.warn(`  ⚠ ${msg}`);
       errors.push(msg);
       continue;
     }
 
-    process.stdout.write(`  ${city}: scraping… `);
+    // Determine which sources to use for this city.
+    const citySources = cityConfig.discoverySources
+      ? sources.filter((s) => cityConfig.discoverySources!.includes(s.id))
+      : sources;
 
-    let venues: ScrapedVenue[] = [];
-    try {
-      venues = await scrapeOverpass(city);
-    } catch (err) {
-      const msg = `${city}: scrape failed — ${String(err)}`;
-      errors.push(msg);
-      console.error(`\n  ✗ ${msg}`);
-      continue;
-    }
+    for (const source of citySources) {
+      process.stdout.write(
+        `  ${citySlug} [${source.displayName}]: discovering… `,
+      );
 
-    process.stdout.write(`found ${venues.length}. Upserting… `);
+      let venues: ScrapedVenue[] = [];
+      try {
+        venues = await source.discover(
+          citySlug,
+          cityConfig.name,
+          cityConfig.country,
+        );
+      } catch (err) {
+        const msg = `${citySlug} [${source.displayName}]: discovery failed — ${String(err)}`;
+        errors.push(msg);
+        console.error(`\n  ✗ ${msg}`);
+        continue;
+      }
 
-    let stats = { inserted: 0, skipped: 0 };
-    try {
-      stats = await upsertCandidates(supabase, venues);
-    } catch (err) {
-      const msg = `${city}: DB upsert failed — ${String(err)}`;
-      errors.push(msg);
-      console.error(`\n  ✗ ${msg}`);
-      continue;
-    }
+      process.stdout.write(`found ${venues.length}. Upserting… `);
 
-    totalDiscovered += venues.length;
-    totalInserted += stats.inserted;
-    totalSkipped += stats.skipped;
+      let stats = { inserted: 0, skipped: 0 };
+      try {
+        stats = await upsertCandidates(supabase, venues);
+      } catch (err) {
+        const msg = `${citySlug} [${source.displayName}]: DB upsert failed — ${String(err)}`;
+        errors.push(msg);
+        console.error(`\n  ✗ ${msg}`);
+        continue;
+      }
 
-    console.log(`inserted ${stats.inserted}, skipped ${stats.skipped}.`);
+      totalDiscovered += venues.length;
+      totalInserted += stats.inserted;
+      totalSkipped += stats.skipped;
 
-    // Be polite to the Overpass API — see OVERPASS_API_DELAY_MS.
-    if (i < cities.length - 1) {
-      await new Promise((r) => setTimeout(r, OVERPASS_API_DELAY_MS));
+      console.log(`inserted ${stats.inserted}, skipped ${stats.skipped}.`);
+
+      // Polite delay between requests.
+      await new Promise((r) => setTimeout(r, SCRAPE_DELAY_MS));
     }
   }
 
   console.log(
     `\n✅ Done. Discovered ${totalDiscovered} venue(s) total — ` +
-    `${totalInserted} new, ${totalSkipped} already known.`,
+      `${totalInserted} new, ${totalSkipped} already known.`,
   );
 
   if (errors.length > 0) {

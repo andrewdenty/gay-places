@@ -31,4 +31,8 @@ export interface ScrapedVenue {
   source_url: string;
   /** Full raw payload from the source — stored as-is for debugging / reprocessing. */
   raw: Record<string, unknown>;
+  /** Optional short description from the discovery source. */
+  description?: string;
+  /** Optional category label from the discovery source (e.g. "Gay Bar", "Cruise Club"). */
+  source_category?: string;
 }
