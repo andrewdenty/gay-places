@@ -5,6 +5,7 @@ import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
 import { VenueSectionRow } from "@/components/venue/venue-section-row";
 import { PhotoGallery } from "@/components/venue/photo-gallery";
 import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
+import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug } from "@/lib/data/public";
 import { env } from "@/lib/env";
@@ -191,6 +192,36 @@ export default async function VenuePage({
               .toUpperCase()}{" "}
             ↗
           </a>
+        </VenueSectionRow>
+      )}
+
+      {/* Section 4c — Social */}
+      {(venue.instagram_url || venue.facebook_url) && (
+        <VenueSectionRow label="Social">
+          <div className="flex items-center" style={{ gap: "12px" }}>
+            {venue.instagram_url && (
+              <a
+                href={venue.instagram_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${venue.name} on Instagram`}
+                className="text-black hover:opacity-70 transition-opacity"
+              >
+                <InstagramIcon size={24} />
+              </a>
+            )}
+            {venue.facebook_url && (
+              <a
+                href={venue.facebook_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${venue.name} on Facebook`}
+                className="text-black hover:opacity-70 transition-opacity"
+              >
+                <FacebookIcon size={24} />
+              </a>
+            )}
+          </div>
         </VenueSectionRow>
       )}
 

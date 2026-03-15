@@ -6,12 +6,23 @@ import { NewCityModal } from "@/components/admin/new-city-modal";
 
 export const dynamic = "force-dynamic";
 
+const INPUT = "h-11 w-full rounded-xl border border-border bg-background px-3 text-sm";
+const SELECT = "h-11 w-full rounded-xl border border-border bg-background px-3 text-sm";
+
 export default async function AdminCitiesPage() {
   const supabase = await createSupabaseServerClient();
-  const { data: cities } = await supabase
-    .from("cities")
-    .select("id,slug,name,country,center_lat,center_lng,published,created_at")
-    .order("name", { ascending: true });
+  const [{ data: cities }, { data: countries }] = await Promise.all([
+    supabase
+      .from("cities")
+      .select("id,slug,name,country,center_lat,center_lng,published,created_at")
+      .order("name", { ascending: true }),
+    supabase
+      .from("countries")
+      .select("name")
+      .order("name", { ascending: true }),
+  ]);
+
+  const countryOptions = (countries ?? []) as { name: string }[];
 
   return (
     <div>
@@ -22,7 +33,7 @@ export default async function AdminCitiesPage() {
             {(cities ?? []).length} cit{(cities ?? []).length !== 1 ? "ies" : "y"}
           </p>
         </div>
-        <NewCityModal />
+        <NewCityModal countries={countryOptions} />
       </div>
 
       <div className="mt-6 grid gap-3">
@@ -36,17 +47,24 @@ export default async function AdminCitiesPage() {
               <input
                 name="name"
                 defaultValue={c.name}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
+                className={INPUT}
               />
-              <input
+              <select
                 name="country"
                 defaultValue={c.country}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              />
+                className={SELECT}
+              >
+                <option value="">Select country…</option>
+                {countryOptions.map((co) => (
+                  <option key={co.name} value={co.name}>
+                    {co.name}
+                  </option>
+                ))}
+              </select>
               <select
                 name="published"
                 defaultValue={c.published ? "true" : "false"}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
+                className={SELECT}
               >
                 <option value="true">Published</option>
                 <option value="false">Hidden</option>
@@ -54,12 +72,12 @@ export default async function AdminCitiesPage() {
               <input
                 name="center_lat"
                 defaultValue={String(c.center_lat)}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
+                className={INPUT}
               />
               <input
                 name="center_lng"
                 defaultValue={String(c.center_lng)}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
+                className={INPUT}
               />
               <div className="sm:col-span-2">
                 <Button type="submit" variant="secondary">

@@ -34,6 +34,8 @@ export async function updateVenueDetails(formData: FormData) {
   const description_editorial = getText(formData, "description_editorial") || null;
   const website_url = getText(formData, "website_url") || null;
   const google_maps_url = getText(formData, "google_maps_url") || null;
+  const instagram_url = getText(formData, "instagram_url") || null;
+  const facebook_url = getText(formData, "facebook_url") || null;
   const published = formData.get("published") === "on";
   const closed = formData.get("closed") === "on";
   const tags = getText(formData, "tags")
@@ -73,6 +75,8 @@ export async function updateVenueDetails(formData: FormData) {
       }),
       website_url,
       google_maps_url,
+      instagram_url,
+      facebook_url,
       tags,
       opening_hours,
       published,

@@ -10,7 +10,9 @@ const INPUT =
 const SELECT =
   "h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm";
 
-export function NewCityModal() {
+type CountryOption = { name: string };
+
+export function NewCityModal({ countries }: { countries: CountryOption[] }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -43,27 +45,27 @@ export function NewCityModal() {
             className={INPUT}
             required
           />
-          <input
-            name="country"
-            placeholder="Country (e.g. Denmark)"
-            className={INPUT}
-            required
-          />
+          <select name="country" required className={SELECT}>
+            <option value="">Select country…</option>
+            {countries.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
           <select name="published" defaultValue="true" className={SELECT}>
             <option value="true">Published</option>
             <option value="false">Hidden</option>
           </select>
           <input
             name="center_lat"
-            placeholder="Center latitude"
+            placeholder="Center latitude (auto-geocoded if blank)"
             className={INPUT}
-            required
           />
           <input
             name="center_lng"
-            placeholder="Center longitude"
+            placeholder="Center longitude (auto-geocoded if blank)"
             className={INPUT}
-            required
           />
           <div className="flex gap-3 sm:col-span-2">
             <Button type="submit">Create city</Button>

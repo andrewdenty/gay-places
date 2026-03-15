@@ -39,7 +39,7 @@ export default async function EditVenuePage({
   const { data: venue } = await supabase
     .from("venues")
     .select(
-      "id,name,address,lat,lng,venue_type,tags,website_url,google_maps_url,description,description_base,description_editorial,description_generation_status,description_last_generated_at,published,closed,city_id,slug,opening_hours",
+      "id,name,address,lat,lng,venue_type,tags,website_url,google_maps_url,instagram_url,facebook_url,description,description_base,description_editorial,description_generation_status,description_last_generated_at,published,closed,city_id,slug,opening_hours",
     )
     .eq("slug", venueSlug)
     .maybeSingle();
@@ -156,6 +156,18 @@ export default async function EditVenuePage({
             name="google_maps_url"
             defaultValue={venue.google_maps_url ?? ""}
             placeholder="Google Maps URL"
+            className={INPUT}
+          />
+          <input
+            name="instagram_url"
+            defaultValue={venue.instagram_url ?? ""}
+            placeholder="Instagram URL"
+            className={INPUT}
+          />
+          <input
+            name="facebook_url"
+            defaultValue={venue.facebook_url ?? ""}
+            placeholder="Facebook URL"
             className={INPUT}
           />
           <input
