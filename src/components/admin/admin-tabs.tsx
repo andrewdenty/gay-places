@@ -24,7 +24,7 @@ export function AdminTabs() {
   return (
     <div className="border-b border-[var(--border)] bg-[var(--background)]">
       <nav
-        className="mx-auto flex w-full max-w-[720px] justify-center overflow-x-auto px-4 sm:px-6 scrollbar-none"
+        className="mx-auto flex w-full max-w-[720px] overflow-x-auto px-4 sm:px-6 scrollbar-none"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {tabs.map((tab) => {

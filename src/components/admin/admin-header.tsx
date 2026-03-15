@@ -30,7 +30,7 @@ export function AdminHeader({ userEmail }: { userEmail: string }) {
               href="/"
               className="text-sm text-[var(--muted-foreground)] transition-colors hover:text-[var(--foreground)]"
             >
-              View Site ↗
+              View Site
             </Link>
             <IconButton label="Menu" onClick={() => setMenuOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
