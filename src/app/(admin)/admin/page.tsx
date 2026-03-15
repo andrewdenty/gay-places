@@ -58,7 +58,7 @@ export default async function AdminHomePage() {
             href={stat.href}
             className="group rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 transition-shadow hover:shadow-md"
           >
-            <div className="text-3xl font-semibold tabular-nums">
+            <div className="text-3xl font-semibold tabular-nums" style={{ fontFamily: 'var(--font-instrument-serif), Georgia, "Times New Roman", serif' }}>
               {stat.value}
             </div>
             <div className="mt-1 text-sm text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">

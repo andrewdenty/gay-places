@@ -18,7 +18,9 @@ export default async function AdminLayout({ children }: PropsWithChildren) {
       {/* Admin header */}
       <div className="sticky top-0 z-20 bg-[var(--background)]">
         <AdminHeader userEmail={user.email!} />
-        <AdminTabs />
+        <div className="pt-4">
+          <AdminTabs />
+        </div>
       </div>
 
       {/* Page content */}
