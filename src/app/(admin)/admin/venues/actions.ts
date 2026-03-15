@@ -31,10 +31,6 @@ export async function createVenue(formData: FormData) {
   const website_url = getText(formData, "website_url") || null;
   const google_maps_url = getText(formData, "google_maps_url") || null;
   const published = getText(formData, "published") !== "false";
-  const tags = getText(formData, "tags")
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
 
   const slug = name
     .toLowerCase()
@@ -53,7 +49,6 @@ export async function createVenue(formData: FormData) {
     description,
     website_url,
     google_maps_url,
-    tags,
     opening_hours: {},
     published,
   });
@@ -73,10 +68,6 @@ export async function updateVenue(formData: FormData) {
   const website_url = getText(formData, "website_url") || null;
   const google_maps_url = getText(formData, "google_maps_url") || null;
   const published = getText(formData, "published") !== "false";
-  const tags = getText(formData, "tags")
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
 
   const { error } = await supabase
     .from("venues")
@@ -89,7 +80,6 @@ export async function updateVenue(formData: FormData) {
       description,
       website_url,
       google_maps_url,
-      tags,
       published,
     })
     .eq("id", id);

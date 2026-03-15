@@ -27,17 +27,21 @@ export async function suggestVenueEdit(formData: FormData) {
     "description",
     "website_url",
     "google_maps_url",
-    "tags",
   ]) {
     const v = getText(formData, k);
     if (!v) continue;
     if (k === "lat" || k === "lng") patch[k] = Number(v);
-    else if (k === "tags")
-      patch[k] = v
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
     else patch[k] = v;
+  }
+
+  // Handle structured venue_tags from the tag picker
+  const venueTagsRaw = getText(formData, "venue_tags");
+  if (venueTagsRaw) {
+    try {
+      patch["venue_tags"] = JSON.parse(venueTagsRaw);
+    } catch {
+      // Ignore invalid JSON
+    }
   }
 
   const { data: existing } = await supabase

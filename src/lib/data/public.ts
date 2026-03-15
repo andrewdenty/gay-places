@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { OpeningHours } from "@/lib/types/opening-hours";
+import type { VenueTags } from "@/lib/venue-tags";
 
 export type Country = {
   id: string;
@@ -45,7 +46,7 @@ export type Venue = {
   description_base: string | null;
   /** Human-curated editorial description. Takes priority over description_base on the public page. */
   description_editorial: string | null;
-  tags: string[];
+  venue_tags: VenueTags;
   website_url: string | null;
   google_maps_url: string | null;
   instagram_url: string | null;
@@ -55,7 +56,7 @@ export type Venue = {
 };
 
 const VENUE_FIELDS =
-  "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours";
+  "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours";
 
 export async function getCities(): Promise<City[]> {
   const supabase = await createSupabaseServerClient();

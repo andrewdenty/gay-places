@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
+import { VenueTagPicker } from "@/components/venue/venue-tag-picker";
+import type { VenueTags } from "@/lib/venue-tags";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { suggestVenueEdit } from "./actions";
 
@@ -17,7 +19,7 @@ export default async function SuggestEditPage({
   const { data: venue } = await supabase
     .from("venues")
     .select(
-      "id,name,address,lat,lng,venue_type,description,tags,website_url,google_maps_url",
+      "id,name,address,lat,lng,venue_type,description,venue_tags,website_url,google_maps_url",
     )
     .eq("id", id)
     .eq("published", true)
@@ -97,13 +99,9 @@ export default async function SuggestEditPage({
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm font-medium">
-                Tags (comma-separated)
-              </label>
-              <input
-                name="tags"
-                defaultValue={(venue.tags ?? []).join(", ")}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
+              <label className="text-sm font-medium">Tags</label>
+              <VenueTagPicker
+                initialTags={(venue.venue_tags as VenueTags) ?? {}}
               />
             </div>
 
