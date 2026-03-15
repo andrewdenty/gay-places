@@ -5,7 +5,7 @@
  * GayCities is a community-driven LGBTQ+ travel guide with bar, club,
  * and venue listings organised by city.
  *
- * URL pattern: https://gaycities.com/{city}/{category}/
+ * URL pattern: https://gaycities.com/cities/{city}/{category}/
  *
  * This is a DISCOVERY source — it produces candidate venues for admin
  * review. It is NOT an enrichment provider.
@@ -13,7 +13,7 @@
  * Extraction strategies (tried in order):
  *   1. __NEXT_DATA__ JSON embedded in the page (most reliable for React/Next.js sites).
  *   2. JSON-LD structured data (LocalBusiness / ItemList).
- *   3. Regex link matching against /{city}/{category}/ URL patterns,
+ *   3. Regex link matching against /cities/{city}/{category}/ URL patterns,
  *      handling both relative and absolute URLs.
  */
 
@@ -72,7 +72,7 @@ function parseListingPage(
   const venues: ScrapedVenue[] = [];
   const seen = new Set<string>();
 
-  const baseCategoryUrl = `https://gaycities.com/${gcCitySlug}/${category.urlPath}/`;
+  const baseCategoryUrl = `https://gaycities.com/cities/${gcCitySlug}/${category.urlPath}/`;
 
   // ── Strategy 1: __NEXT_DATA__ embedded JSON ────────────────────────────────
   // GayCities is likely a Next.js application. Data is often embedded in the
@@ -121,7 +121,7 @@ function parseListingPage(
           typeof v["longitude"] === "number" ? v["longitude"] :
           typeof v["long"] === "number" ? v["long"] : null;
         const sourceUrl = slug
-          ? `https://gaycities.com/${gcCitySlug}/${category.urlPath}/${slug}/`
+          ? `https://gaycities.com/cities/${gcCitySlug}/${category.urlPath}/${slug}/`
           : typeof v["url"] === "string" ? v["url"] : baseCategoryUrl;
         const description = typeof v["description"] === "string" ? v["description"] :
           typeof v["excerpt"] === "string" ? v["excerpt"] : undefined;
@@ -232,10 +232,10 @@ function parseListingPage(
   }
 
   // ── Strategy 3: regex link matching ────────────────────────────────────────
-  // Handles both relative (/{city}/{category}/...) and absolute URLs.
+  // Handles both relative (/cities/berlin/bars/...) and absolute URLs.
   // Also handles URLs without trailing slashes.
   const linkPattern = new RegExp(
-    `href=["']((?:https://(?:www\\.)?gaycities\\.com)?/${gcCitySlug}/${category.urlPath}/([^"'/?#][^"'?#]*))/?["']`,
+    `href=["']((?:https://(?:www\\.)?gaycities\\.com)?/cities/${gcCitySlug}/${category.urlPath}/([^"'/?#][^"'?#]*))/?["']`,
     "gi",
   );
 
@@ -269,7 +269,7 @@ function parseListingPage(
     const address = extractAddress(contextText);
     const description = extractDescription(contextText);
 
-    const sourceUrl = `https://gaycities.com/${gcCitySlug}/${category.urlPath}/${venueSlug}/`;
+    const sourceUrl = `https://gaycities.com/cities/${gcCitySlug}/${category.urlPath}/${venueSlug}/`;
 
     venues.push({
       name: venueName,
@@ -344,45 +344,40 @@ async function fetchWithRetry(
   retries = 3,
   delayMs = 2000,
 ): Promise<string> {
-  console.log(`  🔍 GayCities fetching: ${url}`);
   for (let attempt = 1; attempt <= retries; attempt++) {
-    let resp: Response;
     try {
-      resp = await fetch(url, {
+      const resp = await fetch(url, {
         headers: {
           "User-Agent":
             "GayPlaces-VenueDiscovery/1.0 (https://github.com/andrewdenty/gay-places)",
           Accept: "text/html,application/xhtml+xml",
         },
       });
+
+      if (resp.ok) return await resp.text();
+
+      if (resp.status === 429 || resp.status >= 500) {
+        if (attempt < retries) {
+          console.warn(
+            `  ⚠ GayCities returned ${resp.status} (attempt ${attempt}/${retries}), retrying…`,
+          );
+          await new Promise((r) => setTimeout(r, delayMs));
+          continue;
+        }
+      }
+
+      throw new Error(`GayCities returned HTTP ${resp.status} for ${url}`);
     } catch (err) {
       if (attempt < retries) {
         console.warn(
-          `  ⚠ GayCities network error (attempt ${attempt}/${retries}), retrying… ${err}`,
+          `  ⚠ GayCities fetch error (attempt ${attempt}/${retries}), retrying…`,
+          err,
         );
         await new Promise((r) => setTimeout(r, delayMs));
         continue;
       }
       throw err;
     }
-
-    if (resp.ok) return await resp.text();
-
-    // 4xx errors are client errors — retrying won't help.
-    if (resp.status >= 400 && resp.status < 500) {
-      throw new Error(`GayCities returned HTTP ${resp.status} for ${url}`);
-    }
-
-    // Retry on 429 and 5xx server errors.
-    if (attempt < retries) {
-      console.warn(
-        `  ⚠ GayCities returned ${resp.status} (attempt ${attempt}/${retries}), retrying…`,
-      );
-      await new Promise((r) => setTimeout(r, delayMs));
-      continue;
-    }
-
-    throw new Error(`GayCities returned HTTP ${resp.status} for ${url}`);
   }
   throw new Error("fetchWithRetry: exhausted retries unexpectedly.");
 }
@@ -405,17 +400,11 @@ export class GayCitiesDiscovery implements DiscoverySource {
     const seen = new Set<string>();
 
     for (const category of CATEGORIES) {
-      const url = `${this.baseUrl}/${gcCitySlug}/${category.urlPath}/`;
+      const url = `${this.baseUrl}/cities/${gcCitySlug}/${category.urlPath}/`;
 
       try {
         const html = await fetchWithRetry(url);
         const venues = parseListingPage(html, citySlug, gcCitySlug, category);
-
-        if (venues.length === 0) {
-          console.warn(
-            `  ⚠ GayCities: fetched ${url} but found 0 venues (check parsing logic)`,
-          );
-        }
 
         for (const v of venues) {
           if (!seen.has(v.source_id)) {

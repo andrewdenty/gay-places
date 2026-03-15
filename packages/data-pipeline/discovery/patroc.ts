@@ -7,8 +7,6 @@
  *
  * URL pattern: https://patroc.com/en/cities/{city}
  *
- * Fetches the city listing page once and extracts all venue types from it.
- *
  * This is a DISCOVERY source — it produces candidate venues for admin
  * review. It is NOT an enrichment provider.
  */
@@ -30,38 +28,40 @@ const PATROC_CITY_SLUGS: Record<string, string> = {
   madrid: "madrid",
 };
 
-// ─── Venue type inference ─────────────────────────────────────────────────────
+// ─── Category mapping ─────────────────────────────────────────────────────────
 
-/**
- * Infer a normalised venue_type from a raw type/category string from the site,
- * or from a JSON-LD @type value.
- */
-function inferVenueType(raw: string | null | undefined): string {
-  if (!raw) return "bar";
-  const s = raw.toLowerCase();
-  if (s.includes("club") || s.includes("disco") || s === "nightclub") return "club";
-  if (s.includes("sauna") || s.includes("bath") || s.includes("spa")) return "sauna";
-  if (s.includes("restaurant") || s.includes("dining")) return "restaurant";
-  if (s.includes("cafe") || s.includes("coffee") || s.includes("cafeorcoffeeshop")) return "cafe";
-  if (s.includes("hotel") || s.includes("accommodation")) return "hotel";
-  if (s.includes("bar") || s.includes("pub") || s === "barorpub") return "bar";
-  return "bar"; // sensible default for LGBTQ+ listings
+interface CategoryConfig {
+  /** Patroc URL path segment (appended after the city). */
+  urlPath: string;
+  /** Mapped venue_type for our database. */
+  venueType: string;
+  /** Human-readable category label. */
+  label: string;
 }
+
+const CATEGORIES: CategoryConfig[] = [
+  { urlPath: "bars", venueType: "bar", label: "Gay Bar" },
+  { urlPath: "clubs", venueType: "club", label: "Gay Club" },
+  { urlPath: "saunas", venueType: "sauna", label: "Gay Sauna" },
+  { urlPath: "restaurants", venueType: "restaurant", label: "Gay Restaurant" },
+  { urlPath: "cafes", venueType: "cafe", label: "Gay Café" },
+];
 
 // ─── HTML parsing helpers ─────────────────────────────────────────────────────
 
 /**
- * Extract all venue listings from a Patroc city listing page.
+ * Extract venue listings from a Patroc listing page.
  *
  * Patroc uses a modern React/Next.js frontend. We try multiple strategies:
  *   1. __NEXT_DATA__ embedded JSON for server-rendered venue data.
  *   2. JSON-LD structured data (LocalBusiness, ItemList).
  *   3. Regex link matching for venue page URLs.
  */
-function parseCityPage(
+function parseListingPage(
   html: string,
   citySlug: string,
   patrocCitySlug: string,
+  category: CategoryConfig,
 ): ScrapedVenue[] {
   const venues: ScrapedVenue[] = [];
   const seen = new Set<string>();
@@ -78,12 +78,12 @@ function parseCityPage(
       ) as Record<string, unknown> | undefined;
 
       const candidates: unknown[] = [];
-      for (const key of ["venues", "places", "listings", "items", "data", "results", "pois"]) {
+      for (const key of ["venues", "places", "listings", "items", "data", "results"]) {
         const val = pageProps?.[key];
         if (Array.isArray(val)) {
           candidates.push(...val);
         } else if (val && typeof val === "object") {
-          for (const subkey of ["items", "venues", "results", "data", "list"]) {
+          for (const subkey of ["items", "venues", "results", "data"]) {
             const nested = (val as Record<string, unknown>)[subkey];
             if (Array.isArray(nested)) {
               candidates.push(...nested);
@@ -118,28 +118,21 @@ function parseCityPage(
         const website = typeof v["website"] === "string" ? v["website"] :
           typeof v["website_url"] === "string" ? v["website_url"] : null;
 
-        // Infer venue type from the venue object's own type/category field.
-        const rawType = typeof v["type"] === "string" ? v["type"] :
-          typeof v["category"] === "string" ? v["category"] :
-          typeof v["venue_type"] === "string" ? v["venue_type"] :
-          typeof v["venueType"] === "string" ? v["venueType"] : null;
-        const venueType = inferVenueType(rawType);
-
         venues.push({
           name,
           address: address as string,
           lat,
           lng,
           city: citySlug,
-          venue_type: venueType,
+          venue_type: category.venueType,
           website_url: website,
           tags: [],
           source: "patroc",
-          source_id: `patroc:${patrocCitySlug}/${slug ?? name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`,
-          source_url: venueUrl ?? baseCityUrl,
+          source_id: `patroc:${patrocCitySlug}/${category.urlPath}/${slug ?? name.toLowerCase().replace(/\s+/g, "-")}`,
+          source_url: venueUrl ?? `${baseCityUrl}/${category.urlPath}`,
           raw: v,
           description,
-          source_category: venueType,
+          source_category: category.label,
         });
       }
     } catch {
@@ -170,20 +163,19 @@ function parseCityPage(
               const name = typeof inner["name"] === "string" ? inner["name"].trim() : null;
               if (!name || seen.has(name.toLowerCase())) continue;
               seen.add(name.toLowerCase());
-              const innerType = typeof inner["@type"] === "string" ? inner["@type"] : null;
               venues.push({
                 name,
                 address: "",
                 lat: null, lng: null,
                 city: citySlug,
-                venue_type: inferVenueType(innerType),
+                venue_type: category.venueType,
                 website_url: typeof inner["url"] === "string" ? inner["url"] : null,
                 tags: [],
                 source: "patroc",
-                source_id: `patroc:jsonld:${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}:${citySlug}`,
-                source_url: typeof inner["url"] === "string" ? inner["url"] : baseCityUrl,
+                source_id: `patroc:jsonld:${name.toLowerCase().replace(/\s+/g, "-")}:${citySlug}`,
+                source_url: typeof inner["url"] === "string" ? inner["url"] : `${baseCityUrl}/${category.urlPath}`,
                 raw: inner,
-                source_category: innerType ?? "Venue",
+                source_category: category.label,
               });
             }
             continue;
@@ -193,8 +185,7 @@ function parseCityPage(
             obj["@type"] === "LocalBusiness" ||
             obj["@type"] === "BarOrPub" ||
             obj["@type"] === "NightClub" ||
-            obj["@type"] === "Restaurant" ||
-            obj["@type"] === "CafeOrCoffeeShop"
+            obj["@type"] === "Restaurant"
           ) {
             const name = typeof obj["name"] === "string" ? obj["name"].trim() : null;
             if (!name || seen.has(name.toLowerCase())) continue;
@@ -207,7 +198,6 @@ function parseCityPage(
                   .join(", ")
               : "";
 
-            const jsonLdType = typeof obj["@type"] === "string" ? obj["@type"] : null;
             venues.push({
               name,
               address: addressStr,
@@ -216,15 +206,15 @@ function parseCityPage(
               lng: typeof (obj["geo"] as Record<string, unknown> | undefined)?.["longitude"] === "number"
                 ? (obj["geo"] as Record<string, number>)["longitude"] : null,
               city: citySlug,
-              venue_type: inferVenueType(jsonLdType),
+              venue_type: category.venueType,
               website_url: typeof obj["url"] === "string" ? obj["url"] : null,
               tags: [],
               source: "patroc",
-              source_id: `patroc:jsonld:${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}:${citySlug}`,
-              source_url: typeof obj["url"] === "string" ? obj["url"] : baseCityUrl,
+              source_id: `patroc:jsonld:${name.toLowerCase().replace(/\s+/g, "-")}:${citySlug}`,
+              source_url: typeof obj["url"] === "string" ? obj["url"] : `${baseCityUrl}/${category.urlPath}`,
               raw: obj,
               description: typeof obj["description"] === "string" ? obj["description"] : undefined,
-              source_category: jsonLdType ?? "Venue",
+              source_category: category.label,
             });
           }
         }
@@ -237,7 +227,7 @@ function parseCityPage(
   // ── Strategy 3: regex link matching ────────────────────────────────────────
   if (venues.length === 0) {
     // Patroc venue URLs look like: /en/venues/{venue-slug}
-    // or relative links within the city page.
+    // or relative links within the city category page.
     const linkPatterns = [
       // Venue detail pages
       new RegExp(
@@ -256,6 +246,8 @@ function parseCityPage(
       while ((m = linkPattern.exec(html)) !== null) {
         const venueSlug = m[2].trim();
         if (!venueSlug || venueSlug.length < 3) continue;
+        // Skip known category slugs.
+        if (CATEGORIES.some((c) => c.urlPath === venueSlug)) continue;
         if (seen.has(venueSlug)) continue;
         seen.add(venueSlug);
 
@@ -275,14 +267,14 @@ function parseCityPage(
           address: "",
           lat: null, lng: null,
           city: citySlug,
-          venue_type: "bar", // default — can't infer type from URL alone
+          venue_type: category.venueType,
           website_url: null,
           tags: [],
           source: "patroc",
-          source_id: `patroc:${patrocCitySlug}/${venueSlug}`,
+          source_id: `patroc:${patrocCitySlug}/${category.urlPath}/${venueSlug}`,
           source_url: `https://patroc.com/en/venues/${venueSlug}`,
-          raw: { venueSlug },
-          source_category: "Venue",
+          raw: { venueSlug, category: category.urlPath },
+          source_category: category.label,
         });
       }
     }
@@ -310,45 +302,40 @@ async function fetchWithRetry(
   retries = 3,
   delayMs = 2000,
 ): Promise<string> {
-  console.log(`  🔍 Patroc fetching: ${url}`);
   for (let attempt = 1; attempt <= retries; attempt++) {
-    let resp: Response;
     try {
-      resp = await fetch(url, {
+      const resp = await fetch(url, {
         headers: {
           "User-Agent":
             "GayPlaces-VenueDiscovery/1.0 (https://github.com/andrewdenty/gay-places)",
           Accept: "text/html,application/xhtml+xml",
         },
       });
+
+      if (resp.ok) return await resp.text();
+
+      if (resp.status === 429 || resp.status >= 500) {
+        if (attempt < retries) {
+          console.warn(
+            `  ⚠ Patroc returned ${resp.status} (attempt ${attempt}/${retries}), retrying…`,
+          );
+          await new Promise((r) => setTimeout(r, delayMs));
+          continue;
+        }
+      }
+
+      throw new Error(`Patroc returned HTTP ${resp.status} for ${url}`);
     } catch (err) {
       if (attempt < retries) {
         console.warn(
-          `  ⚠ Patroc network error (attempt ${attempt}/${retries}), retrying… ${err}`,
+          `  ⚠ Patroc fetch error (attempt ${attempt}/${retries}), retrying…`,
+          err,
         );
         await new Promise((r) => setTimeout(r, delayMs));
         continue;
       }
       throw err;
     }
-
-    if (resp.ok) return await resp.text();
-
-    // 4xx errors are client errors — retrying won't help.
-    if (resp.status >= 400 && resp.status < 500) {
-      throw new Error(`Patroc returned HTTP ${resp.status} for ${url}`);
-    }
-
-    // Retry on 429 and 5xx server errors.
-    if (attempt < retries) {
-      console.warn(
-        `  ⚠ Patroc returned ${resp.status} (attempt ${attempt}/${retries}), retrying…`,
-      );
-      await new Promise((r) => setTimeout(r, delayMs));
-      continue;
-    }
-
-    throw new Error(`Patroc returned HTTP ${resp.status} for ${url}`);
   }
   throw new Error("fetchWithRetry: exhausted retries unexpectedly.");
 }
@@ -368,23 +355,33 @@ export class PatrocDiscovery implements DiscoverySource {
     const patrocCitySlug =
       PATROC_CITY_SLUGS[citySlug] ?? cityName.toLowerCase().replace(/\s+/g, "-");
 
-    // Fetch the city listing page once — category subpages are not supported.
-    const url = `${this.baseUrl}/en/cities/${patrocCitySlug}`;
+    const allVenues: ScrapedVenue[] = [];
+    const seen = new Set<string>();
 
-    try {
-      const html = await fetchWithRetry(url);
-      const venues = parseCityPage(html, citySlug, patrocCitySlug);
+    for (const category of CATEGORIES) {
+      const url = `${this.baseUrl}/en/cities/${patrocCitySlug}/${category.urlPath}`;
 
-      if (venues.length === 0) {
+      try {
+        const html = await fetchWithRetry(url);
+        const venues = parseListingPage(html, citySlug, patrocCitySlug, category);
+
+        for (const v of venues) {
+          if (!seen.has(v.source_id)) {
+            seen.add(v.source_id);
+            allVenues.push(v);
+          }
+        }
+      } catch (err) {
         console.warn(
-          `  ⚠ Patroc: fetched ${url} but found 0 venues (check parsing logic)`,
+          `  ⚠ Patroc: failed to scrape ${citySlug}/${category.urlPath}: ${err}`,
         );
+        // Continue with other categories — partial results are acceptable.
       }
 
-      return venues;
-    } catch (err) {
-      console.warn(`  ⚠ Patroc: failed to scrape ${citySlug}: ${err}`);
-      return [];
+      // Be polite — small delay between category requests.
+      await new Promise((r) => setTimeout(r, 1000));
     }
+
+    return allVenues;
   }
 }
