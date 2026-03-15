@@ -16,7 +16,7 @@ export function Button({
   }
 >) {
   const base =
-    "inline-flex items-center justify-center rounded-full font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none";
+    "inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none";
 
   const sizes: Record<Size, string> = {
     sm: "h-9 px-4 text-sm",
