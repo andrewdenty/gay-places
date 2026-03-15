@@ -173,52 +173,55 @@ function RegionRow({ group, publishedCountrySlugs }: RegionRowProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-[var(--border)] -mx-4 px-4 sm:-mx-6 sm:px-6">
+    <div className="-mx-4 sm:-mx-6">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center justify-between py-5 text-left hover:bg-[var(--muted)] -mx-4 px-4 sm:-mx-6 sm:px-6 transition-colors"
+        className="group flex w-full items-center justify-between border-b border-[var(--border)] px-4 sm:px-6 py-4 text-left hover:bg-[var(--muted)] transition-colors"
       >
-        <div className="flex items-baseline gap-3">
-          <span className="text-[17px] font-medium tracking-tight text-[var(--foreground)]">
-            {group.region}
-          </span>
-          <span className="label-xs text-[var(--muted-foreground)]">
-            ({group.totalCities})
-          </span>
-        </div>
-        <span className="text-[var(--muted-foreground)]">
-          <ChevronIcon open={open} />
+        <span className="text-[15px] font-medium text-[var(--foreground)]">
+          {group.region}
         </span>
+        <div className="flex items-center gap-3">
+          <span className="label-xs text-[var(--muted-foreground)]">
+            {group.totalCities} {group.totalCities === 1 ? "CITY" : "CITIES"}
+          </span>
+          <ChevronIcon open={open} />
+        </div>
       </button>
 
       {open && (
-        <div className="pb-6 space-y-6">
+        <div>
           {group.countries.map((country) => (
             <div key={country.name}>
-              <div className="label-xs text-[var(--muted-foreground)] mb-3">
+              <div className="border-b border-[var(--border)] px-4 sm:px-6 py-3">
                 {publishedCountrySlugs.has(toCountrySlug(country.name)) ? (
                   <Link
                     href={`/country/${toCountrySlug(country.name)}`}
-                    className="hover:text-[var(--foreground)] transition-colors"
+                    className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
                   >
                     {country.name.toUpperCase()}
                   </Link>
                 ) : (
-                  <span>{country.name.toUpperCase()}</span>
+                  <span className="label-xs text-[var(--muted-foreground)]">
+                    {country.name.toUpperCase()}
+                  </span>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-                {country.cities.map((city) => (
-                  <Link
-                    key={city.id}
-                    href={`/city/${city.slug}`}
-                    className="text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors py-[3px]"
-                  >
+              {country.cities.map((city) => (
+                <Link
+                  key={city.id}
+                  href={`/city/${city.slug}`}
+                  className="group flex items-center justify-between border-b border-[var(--border)] px-4 sm:px-6 pl-8 sm:pl-10 py-4 hover:bg-[var(--muted)] transition-colors"
+                >
+                  <span className="text-[15px] text-[var(--foreground)]">
                     {city.name}
-                  </Link>
-                ))}
-              </div>
+                  </span>
+                  <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
+                    EXPLORE ↗
+                  </span>
+                </Link>
+              ))}
             </div>
           ))}
         </div>

@@ -32,8 +32,8 @@ export default async function LandingPage() {
       </header>
 
       {/* Featured cities */}
-      <section className="mb-10">
-        <div className="flex items-baseline justify-between mb-5">
+      <section className="mb-12">
+        <div className="flex items-baseline justify-between mb-3">
           <h2 className="h2-editorial">Featured guides</h2>
         </div>
 
@@ -67,15 +67,15 @@ export default async function LandingPage() {
 
       {/* All cities by region */}
       <section>
-        <div className="flex items-baseline justify-between mb-2">
+        <div className="flex items-baseline justify-between mb-[6px]">
           <h2 className="h2-editorial">All city guides</h2>
           {cities.length > 0 && (
             <span className="label-xs text-[var(--muted-foreground)]">
-              {cities.length} cities
+              {cities.length} {cities.length === 1 ? "CITY" : "CITIES"}
             </span>
           )}
         </div>
-        <p className="text-[14px] text-[var(--muted-foreground)] mb-6">
+        <p className="text-[13px] text-[var(--muted-foreground)] mb-4">
           Browse by region and country.
         </p>
 
@@ -83,10 +83,10 @@ export default async function LandingPage() {
           <RegionBrowser cities={cities} publishedCountrySlugs={publishedCountrySlugs} />
         ) : (
           // Fallback skeleton rows when no Supabase or no data
-          <div className="space-y-0">
+          <div className="-mx-4 sm:-mx-6">
             {["North America", "Europe", "Latin America", "Asia", "Australia Pacific", "Africa", "Middle East"].map((region) => (
-              <div key={region} className="border-b border-[var(--border)] py-5 -mx-4 px-4 sm:-mx-6 sm:px-6">
-                <span className="text-[17px] font-medium tracking-tight text-[var(--foreground)]">
+              <div key={region} className="flex items-center justify-between border-b border-[var(--border)] px-4 sm:px-6 py-4">
+                <span className="text-[15px] font-medium text-[var(--foreground)]">
                   {region}
                 </span>
               </div>
