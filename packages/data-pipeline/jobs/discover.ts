@@ -26,15 +26,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { getAllCitySlugs, getCityConfig } from "../config/cities";
-import {
-  DISCOVERY_SOURCES,
-  getDiscoverySource,
-} from "../discovery/index";
-import type { ScrapedVenue } from "../scrapers/types";
-
-// Delay between discovery source requests per city — polite scraping.
-const SCRAPE_DELAY_MS = 3_000;
+import { runDiscovery } from "./run-discovery";
 
 // ─── Supabase client ──────────────────────────────────────────────────────────
 
@@ -59,160 +51,6 @@ function createSupabase() {
   });
 }
 
-// ─── DB row type ──────────────────────────────────────────────────────────────
-
-interface CandidateRow {
-  source: string;
-  source_id: string;
-  source_url: string | null;
-  name: string;
-  address: string;
-  lat: number | null;
-  lng: number | null;
-  city_slug: string;
-  venue_type: string;
-  website_url: string | null;
-  tags: string[];
-  raw_data: Record<string, unknown>;
-  status: "pending";
-  source_description: string;
-  source_category: string;
-}
-
-function venueToRow(v: ScrapedVenue): CandidateRow {
-  return {
-    source: v.source,
-    source_id: v.source_id,
-    source_url: v.source_url,
-    name: v.name,
-    address: v.address,
-    lat: v.lat,
-    lng: v.lng,
-    city_slug: v.city,
-    venue_type: v.venue_type,
-    website_url: v.website_url,
-    tags: v.tags,
-    raw_data: v.raw,
-    status: "pending",
-    source_description: v.description ?? "",
-    source_category: v.source_category ?? "",
-  };
-}
-
-// ─── Upsert helpers ───────────────────────────────────────────────────────────
-
-async function upsertCandidates(
-  supabase: ReturnType<typeof createSupabase>,
-  venues: ScrapedVenue[],
-): Promise<{ inserted: number; skipped: number; duplicates: number }> {
-  if (venues.length === 0) return { inserted: 0, skipped: 0, duplicates: 0 };
-
-  const rows = venues.map(venueToRow);
-
-  // ON CONFLICT (source, source_id) DO NOTHING:
-  //   • Already-pending rows are left untouched (admin hasn't reviewed yet).
-  //   • Already-reviewed rows (approved/rejected) are never overwritten.
-  const { error, count } = await supabase
-    .from("venue_candidates")
-    .upsert(rows, {
-      onConflict: "source,source_id",
-      ignoreDuplicates: true,
-      count: "exact",
-    });
-
-  if (error) throw error;
-
-  const inserted = count ?? 0;
-
-  // Auto-match newly inserted candidates against existing venues.
-  const duplicates = inserted > 0
-    ? await markDuplicateCandidates(supabase, venues)
-    : 0;
-
-  return { inserted, skipped: venues.length - inserted, duplicates };
-}
-
-// ─── Auto-matching against existing venues ────────────────────────────────────
-
-/** Normalise a venue name for comparison: lowercase, strip diacritics and non-alphanumeric chars. */
-function normaliseName(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, "");
-}
-
-/**
- * Check newly inserted candidates against existing published/unpublished venues.
- * If a candidate matches an existing venue by normalised name + city, mark it
- * as "duplicate" with a reference to the matching venue.
- *
- * This avoids cluttering the admin queue with venues that already exist.
- */
-async function markDuplicateCandidates(
-  supabase: ReturnType<typeof createSupabase>,
-  discoveredVenues: ScrapedVenue[],
-): Promise<number> {
-  // Collect unique city slugs from the discovered venues.
-  const citySlugs = [...new Set(discoveredVenues.map((v) => v.city))];
-
-  // Fetch all cities and their IDs.
-  const { data: cities } = await supabase
-    .from("cities")
-    .select("id,slug")
-    .in("slug", citySlugs);
-
-  if (!cities || cities.length === 0) return 0;
-
-  const citySlugToId: Record<string, string> = {};
-  for (const c of cities) citySlugToId[c.slug] = c.id;
-
-  // Fetch existing venues for the relevant cities.
-  const cityIds = cities.map((c) => c.id);
-  const { data: existingVenues } = await supabase
-    .from("venues")
-    .select("id,name,city_id")
-    .in("city_id", cityIds);
-
-  if (!existingVenues || existingVenues.length === 0) return 0;
-
-  // Build a lookup: normalised name + city_id → venue_id.
-  const venueIndex = new Map<string, string>();
-  for (const v of existingVenues) {
-    const key = `${normaliseName(v.name)}::${v.city_id}`;
-    venueIndex.set(key, v.id);
-  }
-
-  // For each discovered venue, check if it matches an existing venue.
-  let duplicateCount = 0;
-
-  for (const v of discoveredVenues) {
-    const cityId = citySlugToId[v.city];
-    if (!cityId) continue;
-
-    const key = `${normaliseName(v.name)}::${cityId}`;
-    const matchingVenueId = venueIndex.get(key);
-    if (!matchingVenueId) continue;
-
-    // Mark the candidate as duplicate, linking to the existing venue.
-    const { error } = await supabase
-      .from("venue_candidates")
-      .update({
-        status: "duplicate",
-        venue_id: matchingVenueId,
-        admin_notes: `Auto-matched to existing venue (name match in same city).`,
-      })
-      .eq("source", v.source)
-      .eq("source_id", v.source_id)
-      .eq("status", "pending");
-
-    if (!error) duplicateCount++;
-  }
-
-  return duplicateCount;
-}
-
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -222,107 +60,24 @@ async function main() {
   const envCities = process.env.DISCOVER_CITIES;
   const cities = envCities
     ? envCities.split(",").map((c) => c.trim()).filter(Boolean)
-    : getAllCitySlugs();
+    : undefined;
 
   // Determine which discovery sources to use.
   const envSources = process.env.DISCOVER_SOURCES;
   const sources = envSources
-    ? envSources
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .map((id) => getDiscoverySource(id))
-        .filter((s) => s !== undefined)
-    : DISCOVERY_SOURCES;
+    ? envSources.split(",").map((s) => s.trim()).filter(Boolean)
+    : undefined;
 
-  if (sources.length === 0) {
-    console.error("❌ No discovery sources configured.");
-    process.exit(1);
-  }
+  const result = await runDiscovery({
+    supabase,
+    cities,
+    sources,
+    triggeredBy: "scheduled",
+  });
 
-  console.log(
-    `🔍 Venue discovery starting\n` +
-    `   Cities:  ${cities.join(", ")}\n` +
-    `   Sources: ${sources.map((s) => s.displayName).join(", ")}`,
-  );
-
-  let totalDiscovered = 0;
-  let totalInserted = 0;
-  let totalSkipped = 0;
-  let totalDuplicates = 0;
-  const errors: string[] = [];
-
-  for (let i = 0; i < cities.length; i++) {
-    const citySlug = cities[i];
-    const cityConfig = getCityConfig(citySlug);
-
-    if (!cityConfig) {
-      const msg = `${citySlug}: unknown city — add it to config/cities.ts`;
-      console.warn(`  ⚠ ${msg}`);
-      errors.push(msg);
-      continue;
-    }
-
-    // Determine which sources to use for this city.
-    const citySources = cityConfig.discoverySources
-      ? sources.filter((s) => cityConfig.discoverySources!.includes(s.id))
-      : sources;
-
-    for (const source of citySources) {
-      process.stdout.write(
-        `  ${citySlug} [${source.displayName}]: discovering… `,
-      );
-
-      let venues: ScrapedVenue[] = [];
-      try {
-        venues = await source.discover(
-          citySlug,
-          cityConfig.name,
-          cityConfig.country,
-        );
-      } catch (err) {
-        const msg = `${citySlug} [${source.displayName}]: discovery failed — ${String(err)}`;
-        errors.push(msg);
-        console.error(`\n  ✗ ${msg}`);
-        continue;
-      }
-
-      process.stdout.write(`found ${venues.length}. Upserting… `);
-
-      let stats = { inserted: 0, skipped: 0, duplicates: 0 };
-      try {
-        stats = await upsertCandidates(supabase, venues);
-      } catch (err) {
-        const msg = `${citySlug} [${source.displayName}]: DB upsert failed — ${String(err)}`;
-        errors.push(msg);
-        console.error(`\n  ✗ ${msg}`);
-        continue;
-      }
-
-      totalDiscovered += venues.length;
-      totalInserted += stats.inserted;
-      totalSkipped += stats.skipped;
-      totalDuplicates += stats.duplicates;
-
-      console.log(
-        `inserted ${stats.inserted}, skipped ${stats.skipped}` +
-        (stats.duplicates > 0 ? `, ${stats.duplicates} auto-matched as duplicate.` : "."),
-      );
-
-      // Polite delay between requests.
-      await new Promise((r) => setTimeout(r, SCRAPE_DELAY_MS));
-    }
-  }
-
-  console.log(
-    `\n✅ Done. Discovered ${totalDiscovered} venue(s) total — ` +
-      `${totalInserted} new, ${totalSkipped} already known` +
-      (totalDuplicates > 0 ? `, ${totalDuplicates} auto-matched as duplicate.` : "."),
-  );
-
-  if (errors.length > 0) {
-    console.error(`\n⚠️  ${errors.length} error(s):`);
-    for (const e of errors) console.error(`   • ${e}`);
+  if (result.errors.length > 0) {
+    console.error(`\n⚠️  ${result.errors.length} error(s):`);
+    for (const e of result.errors) console.error(`   • ${e}`);
     process.exit(1);
   }
 }
