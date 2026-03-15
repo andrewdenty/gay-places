@@ -74,11 +74,6 @@ export function NewVenueModal({ cities }: { cities: City[] }) {
             <option value="other">Other</option>
           </select>
           <input
-            name="tags"
-            placeholder="Tags (comma-separated)"
-            className={INPUT}
-          />
-          <input
             name="website_url"
             placeholder="Website URL"
             className={INPUT}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { City, Venue } from "@/lib/data/public";
 import { isOpenNow } from "@/components/city/opening-hours";
+import { flattenVenueTags } from "@/lib/venue-tags";
 
 const CityMap = dynamic(
   () => import("@/components/maps/CityMap").then((m) => m.CityMap),
@@ -45,7 +46,7 @@ export function CityExplorer({ city, venues }: Props) {
       if (type !== "all" && v.venue_type !== type) return false;
       if (openNow && !isOpenNow(v.opening_hours)) return false;
       if (!q) return true;
-      const hay = `${v.name} ${(v.tags ?? []).join(" ")}`.toLowerCase();
+      const hay = `${v.name} ${flattenVenueTags(v.venue_tags ?? {}).join(" ")}`.toLowerCase();
       return hay.includes(q);
     });
   }, [venues, query, type, openNow]);
@@ -101,7 +102,7 @@ export function CityExplorer({ city, venues }: Props) {
       <div>
         {filtered.map((v) => {
           const open = !v.closed && isOpenNow(v.opening_hours);
-          const tags = (v.tags ?? []).slice(0, 3);
+          const flatTags = flattenVenueTags(v.venue_tags ?? {}).slice(0, 3);
 
           return (
             <div
@@ -140,9 +141,9 @@ export function CityExplorer({ city, venues }: Props) {
                 </div>
 
                 {/* Row 2: Tags as dot-separated text */}
-                {tags.length > 0 && (
+                {flatTags.length > 0 && (
                   <div className="mt-[4px] label-xs text-[var(--muted-foreground)]">
-                    {tags.map((t, i) => (
+                    {flatTags.map((t, i) => (
                       <span key={t}>
                         {i > 0 && <span className="mx-[6px]">·</span>}
                         {t.toUpperCase()}

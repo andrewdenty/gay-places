@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { VenueTagPicker } from "@/components/venue/venue-tag-picker";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { VenueTags } from "@/lib/venue-tags";
 import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto, generateBaseDescription } from "./actions";
 import { DeleteVenueButton } from "./delete-venue-button";
 import { AdminPhotoUpload } from "./admin-photo-upload";
@@ -39,7 +41,7 @@ export default async function EditVenuePage({
   const { data: venue } = await supabase
     .from("venues")
     .select(
-      "id,name,address,lat,lng,venue_type,tags,website_url,google_maps_url,instagram_url,facebook_url,description,description_base,description_editorial,description_generation_status,description_last_generated_at,published,closed,city_id,slug,opening_hours",
+      "id,name,address,lat,lng,venue_type,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,description,description_base,description_editorial,description_generation_status,description_last_generated_at,published,closed,city_id,slug,opening_hours",
     )
     .eq("slug", venueSlug)
     .maybeSingle();
@@ -170,12 +172,13 @@ export default async function EditVenuePage({
             placeholder="Facebook URL"
             className={INPUT}
           />
-          <input
-            name="tags"
-            defaultValue={(venue.tags ?? []).join(", ")}
-            placeholder="Tags (comma-separated)"
-            className={`${INPUT} sm:col-span-2`}
-          />
+          {/* Tags */}
+          <div className="sm:col-span-2">
+            <div className="mb-2 text-xs font-medium text-muted-foreground">Tags</div>
+            <VenueTagPicker
+              initialTags={(venue.venue_tags as VenueTags) ?? {}}
+            />
+          </div>
 
           {/* ── Description ──────────────────────────────────────────── */}
           {/* Editorial description (human-curated, takes priority) */}

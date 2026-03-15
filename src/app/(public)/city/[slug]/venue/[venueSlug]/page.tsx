@@ -10,6 +10,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug } from "@/lib/data/public";
 import { env } from "@/lib/env";
 import { isOpenNow } from "@/components/city/opening-hours";
+import { TAG_CATEGORIES } from "@/lib/venue-tags";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,11 @@ export default async function VenuePage({
 
   const permanentlyClosed = venue.closed === true;
   const open = !permanentlyClosed && isOpenNow(venue.opening_hours);
-  const tags = venue.tags ?? [];
+  const venueTags = venue.venue_tags ?? {};
+
+  // Detect "Leather" tag for venue subtitle (crowd category)
+  const crowdTags = (venueTags.crowd ?? []).map((t) => t.toLowerCase());
+  const isLeatherBar = venue.venue_type === "bar" && crowdTags.includes("leather");
 
   return (
     <div className="py-6 sm:py-8">
@@ -108,8 +113,7 @@ export default async function VenuePage({
             ? "Dance Club"
             : venue.venue_type === "cafe"
               ? "Café"
-              : venue.venue_type === "bar" &&
-                  tags.some((t) => t.toLowerCase().includes("leather"))
+              : isLeatherBar
                 ? "Leather Bar"
                 : venue.venue_type === "bar"
                   ? "Bar"
@@ -147,19 +151,23 @@ export default async function VenuePage({
         )}
       </section>
 
-      {/* Section 2 — Highlights */}
-      {tags.length > 0 && (
-        <VenueSectionRow label="Highlights">
-          <p className="text-[13px] text-[var(--foreground)] capitalize">
-            {tags.map((t, i) => (
-              <span key={t}>
-                {i > 0 && <span className="mx-[5px] text-[var(--muted-foreground)]">·</span>}
-                {t}
-              </span>
-            ))}
-          </p>
-        </VenueSectionRow>
-      )}
+      {/* Section 2 — Tag categories */}
+      {TAG_CATEGORIES.map(({ key, label }) => {
+        const categoryTags = venueTags[key];
+        if (!categoryTags || categoryTags.length === 0) return null;
+        return (
+          <VenueSectionRow key={key} label={label}>
+            <p className="text-[13px] text-[var(--foreground)]">
+              {categoryTags.map((t, i) => (
+                <span key={t}>
+                  {i > 0 && <span className="mx-[5px] text-[var(--muted-foreground)]">·</span>}
+                  {t}
+                </span>
+              ))}
+            </p>
+          </VenueSectionRow>
+        );
+      })}
 
       {/* Section 3 — Opening hours */}
       <div className="border-b border-[var(--border)] py-[24px]">

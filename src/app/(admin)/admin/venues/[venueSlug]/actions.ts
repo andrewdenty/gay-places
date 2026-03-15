@@ -38,10 +38,14 @@ export async function updateVenueDetails(formData: FormData) {
   const facebook_url = getText(formData, "facebook_url") || null;
   const published = formData.get("published") === "on";
   const closed = formData.get("closed") === "on";
-  const tags = getText(formData, "tags")
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
+
+  const venueTagsRaw = getText(formData, "venue_tags");
+  let venue_tags: Record<string, unknown> = {};
+  try {
+    venue_tags = venueTagsRaw ? JSON.parse(venueTagsRaw) : {};
+  } catch {
+    // Keep empty if invalid JSON
+  }
 
   const openingHoursRaw = getText(formData, "opening_hours");
   let opening_hours: Record<string, unknown> = {};
@@ -77,7 +81,7 @@ export async function updateVenueDetails(formData: FormData) {
       google_maps_url,
       instagram_url,
       facebook_url,
-      tags,
+      venue_tags,
       opening_hours,
       published,
       closed,
@@ -103,7 +107,7 @@ export async function generateBaseDescription(formData: FormData) {
   // Fetch the fields the generator needs, including the city name.
   const { data: venue, error: fetchError } = await supabase
     .from("venues")
-    .select("name,venue_type,tags,city_id,cities(name,country)")
+    .select("name,venue_type,venue_tags,city_id,cities(name,country)")
     .eq("id", id)
     .maybeSingle();
 
@@ -113,13 +117,18 @@ export async function generateBaseDescription(formData: FormData) {
   // cities join returns a single object for a many-to-one FK relationship.
   const cityRow = venue.cities as unknown as { name: string; country: string } | null;
 
+  // Flatten structured venue_tags into a simple string array for the generator.
+  const venueTags = (venue.venue_tags ?? {}) as Record<string, unknown>;
+  const flatTags = Object.values(venueTags)
+    .flatMap((v) => (Array.isArray(v) ? (v as string[]) : []));
+
   const generator = createDescriptionGenerator();
   const result = await generator.generate({
     name: venue.name,
     city: cityRow?.name ?? "",
     country: cityRow?.country ?? undefined,
     venue_type: venue.venue_type,
-    tags: venue.tags ?? [],
+    tags: flatTags,
   });
 
   const { error: updateError } = await supabase
