@@ -50,7 +50,7 @@ interface JsonVenue {
   slug?: string;
   venue_type?: string;
   summary_short?: string;
-  why_unique?: string;
+  why_unique?: string | string[];
   address_line_1?: string;
   address_line_2?: string;
   postal_code?: string;
@@ -191,9 +191,15 @@ function loadJsonFile(filename: string): JsonCity | null {
   try {
     const raw = fs.readFileSync(filePath, "utf-8");
     const parsed = JSON.parse(raw);
-    // Handle both direct object and array-wrapped formats
+    // Handle both direct object and array-of-venues formats
     if (Array.isArray(parsed)) {
-      return parsed[0] as JsonCity;
+      const venues = parsed as JsonVenue[];
+      const first = venues[0];
+      return {
+        city: first?.city ?? "",
+        country: first?.country ?? "",
+        venues,
+      };
     }
     return parsed as JsonCity;
   } catch (err) {
@@ -291,7 +297,9 @@ async function ingestCity(cityFile: CityFile): Promise<number> {
       venue_type: mapVenueType(v.venue_type),
       description: v.summary_short ?? "",
       description_base: v.summary_short ?? "",
-      description_editorial: v.why_unique ?? null,
+      description_editorial: Array.isArray(v.why_unique)
+        ? v.why_unique.join("\n")
+        : (v.why_unique ?? null),
       venue_tags: mapTags(v.tags),
       website_url: v.website_url ?? null,
       google_maps_url: v.google_maps_url ?? null,
