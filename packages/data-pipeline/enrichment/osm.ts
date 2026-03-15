@@ -103,8 +103,8 @@ async function searchOverpass(
 ): Promise<OverpassElement | null> {
   const [s, w, n, e] = bbox;
   const box = `${s},${w},${n},${e}`;
-  // Escape the venue name for Overpass QL (double backslash special chars).
-  const escaped = venueName.replace(/[\\'"]/g, "\\$&");
+  // Escape special regex and Overpass QL characters in the venue name.
+  const escaped = venueName.replace(/[\\'".*+?^${}()|[\]]/g, "\\$&");
 
   const query = `[out:json][timeout:15];
 (

@@ -67,6 +67,11 @@ export default async function AdminCandidatesPage() {
         <div>
           <h1 className="text-xl font-semibold tracking-tight">
             Venue candidates
+            {count > 0 && (
+              <span className="ml-2 inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                {count}
+              </span>
+            )}
           </h1>
           <div className="mt-2 text-sm text-muted-foreground">
             Venues discovered by LGBTQ+ travel sites. Approve to create an
