@@ -20,19 +20,23 @@ Gay Places is a minimal, Apple-inspired travel guide for gay tourists to discove
 
 ## Data pipeline
 
-### How it works
+### Architecture
 
-Venue discovery runs **automatically every night at 02:00 UTC** via GitHub
-Actions. The workflow scrapes OpenStreetMap for LGBTQ+ tagged venues across all
-configured cities, then stores the results as *candidates* for admin review.
-Nothing is published automatically — an admin must approve each candidate first.
+The venue ingestion pipeline has two distinct layers:
+
+1. **Discovery** — LGBTQ-focused websites (GayCities, TravelGay, etc.) provide
+   candidate venues. These are the PRIMARY source of venue discovery.
+2. **Enrichment** — OpenStreetMap validates candidates and adds structured
+   metadata (coordinates, address, tags). OSM is NEVER used for discovery.
 
 ```
-GitHub Actions (nightly 02:00 UTC)
-        ↓
-OpenStreetMap Overpass API
+Discovery sources (GayCities, TravelGay, Patroc, etc.)
         ↓
 venue_candidates table  (status = 'pending')
+        ↓
+Enrichment (OpenStreetMap → coordinates, address, tags)
+        ↓
+Confidence scoring (name similarity, proximity, etc.)
         ↓
 Admin reviews at /admin/candidates
         ↓
@@ -40,12 +44,22 @@ Approve → creates an unpublished venue → admin enriches & publishes
 Reject  → candidate dismissed
 ```
 
+### How it works
+
+Venue discovery + enrichment runs **automatically every night at 02:00 UTC**
+via GitHub Actions:
+
+1. **Discovery job** scrapes LGBTQ discovery websites for venue candidates
+2. **Enrichment job** validates candidates against OSM and scores confidence
+
+Nothing is published automatically — an admin must approve each candidate first.
+
 ### Schedule
 
 | Workflow | Trigger | What it does |
 |---|---|---|
 | **Deploy Database Migrations** | Push to `main` + manual dispatch | Runs `supabase db push` to apply any pending migrations |
-| **Discover Venues** | Nightly `0 2 * * *` + manual dispatch | Scrapes OSM, upserts into `venue_candidates` |
+| **Discover Venues** | Nightly `0 2 * * *` + manual dispatch | Scrapes LGBTQ sites, enriches via OSM, upserts into `venue_candidates` |
 
 The migration workflow runs automatically whenever changes land on `main`, so new
 migration files are always applied to the production database before the new
@@ -70,34 +84,55 @@ Set these in **GitHub → Settings → Secrets and variables → Actions**:
 
 Berlin, London, Barcelona, Prague, Copenhagen, Amsterdam, Paris, Madrid.
 
-To add a city: add its bounding box to `CITY_BBOXES` in
-`packages/data-pipeline/scrapers/overpass.ts` and create the city in the admin
-UI (`/admin/cities`) so candidates can be approved against it.
+To add a city: add an entry to `CITY_REGISTRY` in
+`packages/data-pipeline/config/cities.ts` and create the city in the admin UI
+(`/admin/cities`) so candidates can be approved against it.
+
+### Discovery sources
+
+Venue discovery uses LGBTQ-focused websites as the primary source:
+
+| Source | Type | Notes |
+|---|---|---|
+| **GayCities** | Discovery | Scrapes bars, clubs, restaurants, cafés, saunas |
+| **OpenStreetMap** | Enrichment | Validates venues, adds coordinates/address/tags |
+
+To add a new discovery source, implement the `DiscoverySource` interface in
+`packages/data-pipeline/discovery/` and register it in `discovery/index.ts`.
 
 ### Data source
 
-Discovery uses [OpenStreetMap](https://www.openstreetmap.org) via the free
-[Overpass API](https://overpass-api.de). No API key is required. OSM nodes and
-ways tagged with `lgbtq=primary/only/welcome` or the legacy `gay=yes` are
-returned. Data is licensed under the [ODbL](https://opendatacommons.org/licenses/odbl/).
+Enrichment uses [OpenStreetMap](https://www.openstreetmap.org) via the free
+[Overpass API](https://overpass-api.de) and [Nominatim](https://nominatim.org).
+No API key is required. Data is licensed under the
+[ODbL](https://opendatacommons.org/licenses/odbl/).
 
 ### Admin workflow
 
-1. Visit `/admin/candidates` to see pending candidates
-2. Click **Approve** to create an unpublished venue — then edit and publish it
+1. Visit `/admin/candidates` to see pending candidates (sorted by confidence score)
+2. Review discovery data (source, category, description) and enrichment data (OSM match, coordinates, tags)
+3. Click **Approve** to create an unpublished venue — then edit and publish it
    from `/admin/venues` when the details look correct
-3. Click **Reject** to dismiss a candidate (e.g. a false positive or duplicate)
+4. Click **Reject** to dismiss a candidate (e.g. a false positive or duplicate)
+5. Click **Clear all candidates** to reset the queue (useful for ingestion experiments)
 
 ### Pipeline code
 
 | Path | Purpose |
 |---|---|
-| `packages/data-pipeline/scrapers/overpass.ts` | OpenStreetMap scraper |
+| `packages/data-pipeline/config/cities.ts` | City configuration registry |
+| `packages/data-pipeline/discovery/` | LGBTQ discovery source scrapers |
+| `packages/data-pipeline/discovery/gaycities.ts` | GayCities discovery scraper |
+| `packages/data-pipeline/enrichment/` | Enrichment providers (OSM, etc.) |
+| `packages/data-pipeline/enrichment/osm.ts` | OpenStreetMap enrichment provider |
+| `packages/data-pipeline/matching/score.ts` | Confidence scoring algorithm |
+| `packages/data-pipeline/scrapers/overpass.ts` | Raw Overpass API client (legacy) |
 | `packages/data-pipeline/scrapers/types.ts` | `ScrapedVenue` interface |
-| `packages/data-pipeline/jobs/discover.ts` | Job entry point |
-| `.github/workflows/migrate.yml` | Migration deployment workflow (runs on push to `main`) |
+| `packages/data-pipeline/jobs/discover.ts` | Discovery job entry point |
+| `packages/data-pipeline/jobs/enrich.ts` | Enrichment job entry point |
 | `.github/workflows/discover-venues.yml` | GitHub Actions workflow |
 | `supabase/migrations/0008_venue_candidates.sql` | `venue_candidates` table |
+| `supabase/migrations/0009_enrichment_columns.sql` | Enrichment + scoring columns |
 
 ## Local development
 
@@ -128,6 +163,7 @@ In Supabase Dashboard → **SQL Editor**, run these files in order:
 - `supabase/migrations/0006_countries_optional_fields.sql`
 - `supabase/migrations/0007_description_fields.sql`
 - `supabase/migrations/0008_venue_candidates.sql`
+- `supabase/migrations/0009_enrichment_columns.sql`
 
 ### 4) Seed Copenhagen data (development)
 

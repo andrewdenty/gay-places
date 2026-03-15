@@ -13,6 +13,17 @@ on:
           Leave blank to scan all supported cities.
         required: false
         default: ''
+      sources:
+        description: >
+          Comma-separated discovery source IDs, e.g. "gaycities".
+          Leave blank to use all registered sources.
+        required: false
+        default: ''
+      run_enrichment:
+        description: >
+          Also run the enrichment job after discovery (true/false).
+        required: false
+        default: 'true'
 
 jobs:
   discover:
@@ -38,5 +49,12 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          # Pass manual city override (empty string = scan all cities).
           DISCOVER_CITIES: ${{ github.event.inputs.cities }}
+          DISCOVER_SOURCES: ${{ github.event.inputs.sources }}
+
+      - name: Run enrichment job
+        if: github.event.inputs.run_enrichment != 'false'
+        run: npx tsx packages/data-pipeline/jobs/enrich.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
