@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 
 const tabs = [
   { label: "Dashboard", href: "/admin" },
+  { label: "Venues", href: "/admin/venues" },
+  { label: "Cities", href: "/admin/cities" },
+  { label: "Countries", href: "/admin/countries" },
   { label: "Submissions", href: "/admin/submissions" },
   { label: "Candidates", href: "/admin/candidates" },
-  { label: "Countries", href: "/admin/countries" },
-  { label: "Cities", href: "/admin/cities" },
-  { label: "Venues", href: "/admin/venues" },
   { label: "Analytics", href: "/admin/analytics" },
 ];
 
@@ -24,7 +24,7 @@ export function AdminTabs() {
   return (
     <div className="border-b border-[var(--border)] bg-[var(--background)]">
       <nav
-        className="flex overflow-x-auto px-4 sm:px-6 scrollbar-none"
+        className="mx-auto flex w-full max-w-[720px] justify-center overflow-x-auto px-4 sm:px-6 scrollbar-none"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {tabs.map((tab) => {

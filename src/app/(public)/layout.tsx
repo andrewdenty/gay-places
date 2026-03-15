@@ -5,12 +5,14 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function PublicLayout({ children }: PropsWithChildren) {
   let isAdmin = false;
+  let userEmail: string | undefined;
   try {
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
+      userEmail = user.email;
       const { data } = await supabase.rpc("is_admin");
       isAdmin = data === true;
     }
@@ -20,7 +22,7 @@ export default async function PublicLayout({ children }: PropsWithChildren) {
 
   return (
     <div className="min-h-dvh flex flex-col bg-[var(--background)] text-[var(--foreground)]">
-      <SiteHeader isAdmin={isAdmin} />
+      <SiteHeader isAdmin={isAdmin} userEmail={userEmail} />
 
       {/* Main content */}
       <main className="flex-1">

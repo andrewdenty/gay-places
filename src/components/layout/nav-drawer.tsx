@@ -16,10 +16,12 @@ export function NavDrawer({
   isOpen,
   onClose,
   isAdmin = false,
+  userEmail,
 }: {
   isOpen: boolean;
   onClose: () => void;
   isAdmin?: boolean;
+  userEmail?: string;
 }) {
   const pathname = usePathname();
   const [cities, setCities] = useState<City[]>([]);
@@ -163,27 +165,43 @@ export function NavDrawer({
           <div className="px-5 pb-6">
             <p className="label-xs text-[var(--muted-foreground)] mb-3">ACCOUNT</p>
             <nav className="space-y-0">
-              <Link
-                href="/account"
-                className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
-                onClick={onClose}
-              >
-                My Account
-              </Link>
-              <Link
-                href="/sign-in"
-                className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
-                onClick={onClose}
-              >
-                Sign In
-              </Link>
-              {isAdmin && (
+              {userEmail ? (
+                <>
+                  <Link
+                    href="/account"
+                    className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
+                    onClick={onClose}
+                  >
+                    My Account
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
+                      onClick={onClose}
+                    >
+                      Admin
+                    </Link>
+                  )}
+                  <div className="pt-2">
+                    <p className="label-xs text-[var(--muted-foreground)] mb-1">{userEmail}</p>
+                    <form action="/auth/sign-out" method="post">
+                      <button
+                        type="submit"
+                        className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
+                      >
+                        Log Out
+                      </button>
+                    </form>
+                  </div>
+                </>
+              ) : (
                 <Link
-                  href="/admin"
+                  href="/sign-in"
                   className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
                   onClick={onClose}
                 >
-                  Admin
+                  Sign In
                 </Link>
               )}
             </nav>
