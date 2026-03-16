@@ -69,6 +69,25 @@ export async function getCities(): Promise<City[]> {
   return (data ?? []) as City[];
 }
 
+export type CityWithVenueCount = City & { venue_count: number };
+
+export async function getTopCitiesByVenueCount(limit = 5): Promise<CityWithVenueCount[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("cities")
+    .select("id,slug,name,country,center_lat,center_lng,venues(count)")
+    .eq("published", true)
+    .eq("venues.published", true);
+  if (error) throw error;
+
+  const cities = (data ?? []) as (City & { venues: [{ count: number }] | null })[];
+  return cities
+    .map((c) => ({ ...c, venue_count: c.venues?.[0]?.count ?? 0 }))
+    .sort((a, b) => b.venue_count - a.venue_count)
+    .slice(0, limit)
+    .map(({ venues: _v, ...city }) => city as CityWithVenueCount);
+}
+
 export async function getCityBySlug(slug: string): Promise<City | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase

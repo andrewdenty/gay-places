@@ -1,20 +1,13 @@
 import Link from "next/link";
-import { getCities, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getCities, getTopCitiesByVenueCount, getPublishedCountrySlugs } from "@/lib/data/public";
 import { RegionBrowser } from "@/components/city/region-browser";
 import { env } from "@/lib/env";
-
-const featuredCities = [
-  { name: "Copenhagen", slug: "copenhagen", tagline: "The world's most liveable queer city" },
-  { name: "Berlin", slug: "berlin", tagline: "Europe's queer capital" },
-  { name: "New York", slug: "new-york", tagline: "The city that never sleeps" },
-  { name: "London", slug: "london", tagline: "Soho and beyond" },
-  { name: "Barcelona", slug: "barcelona", tagline: "Sun, sea, and nightlife" },
-];
 
 export default async function LandingPage() {
   const hasSupa = !!(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
   const cities = hasSupa ? await getCities().catch(() => []) : [];
   const publishedCountrySlugs = hasSupa ? await getPublishedCountrySlugs().catch(() => new Set<string>()) : new Set<string>();
+  const featuredCities = hasSupa ? await getTopCitiesByVenueCount(5).catch(() => []) : [];
 
   return (
     <div className="py-6 sm:py-8">
@@ -53,7 +46,7 @@ export default async function LandingPage() {
                     {city.name}
                   </span>
                   <span className="hidden sm:inline text-[14px] text-[var(--muted-foreground)] ml-3">
-                    {city.tagline}
+                    {city.venue_count} {city.venue_count === 1 ? "venue" : "venues"}
                   </span>
                 </div>
               </div>
