@@ -34,8 +34,10 @@ export function SiteHeader({ isAdmin = false, userEmail }: { isAdmin?: boolean; 
         style={{
           paddingTop: scrolled ? 8 : 12,
           paddingBottom: scrolled ? 8 : 12,
-          backgroundColor: "var(--background)",
-          transition: "padding 350ms ease-in-out",
+          backgroundColor: scrolled ? "rgba(252, 252, 251, 0.8)" : "var(--background)",
+          backdropFilter: scrolled ? "blur(24px)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(24px)" : "none",
+          transition: "padding 350ms ease-in-out, background-color 350ms ease-in-out, backdrop-filter 350ms ease-in-out",
         }}
       >
         <div className="mx-auto flex w-full max-w-[720px] items-center justify-between px-4 sm:px-6">
