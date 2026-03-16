@@ -22,6 +22,7 @@ export type City = {
   country: string;
   center_lat: number;
   center_lng: number;
+  description?: string | null;
 };
 
 export type Venue = {
@@ -62,7 +63,7 @@ export async function getCities(): Promise<City[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("cities")
-    .select("id,slug,name,country,center_lat,center_lng")
+    .select("id,slug,name,country,center_lat,center_lng,description")
     .eq("published", true)
     .order("name", { ascending: true });
   if (error) throw error;
@@ -73,7 +74,7 @@ export async function getCityBySlug(slug: string): Promise<City | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("cities")
-    .select("id,slug,name,country,center_lat,center_lng")
+    .select("id,slug,name,country,center_lat,center_lng,description")
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
@@ -151,7 +152,7 @@ export async function getCitiesByCountryName(countryName: string): Promise<City[
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("cities")
-    .select("id,slug,name,country,center_lat,center_lng")
+    .select("id,slug,name,country,center_lat,center_lng,description")
     .eq("country", countryName)
     .eq("published", true)
     .order("name", { ascending: true });

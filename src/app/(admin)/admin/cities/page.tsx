@@ -1,20 +1,16 @@
-import { Card } from "@/components/ui/card";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { updateCity } from "./actions";
 import { NewCityModal } from "@/components/admin/new-city-modal";
 
 export const dynamic = "force-dynamic";
-
-const INPUT = "h-11 w-full rounded-xl border border-border bg-background px-3 text-sm";
-const SELECT = "h-11 w-full rounded-xl border border-border bg-background px-3 text-sm";
 
 export default async function AdminCitiesPage() {
   const supabase = await createSupabaseServerClient();
   const [{ data: cities }, { data: countries }] = await Promise.all([
     supabase
       .from("cities")
-      .select("id,slug,name,country,center_lat,center_lng,published,created_at")
+      .select("id,slug,name,country,published")
       .order("name", { ascending: true }),
     supabase
       .from("countries")
@@ -36,60 +32,47 @@ export default async function AdminCitiesPage() {
         <NewCityModal countries={countryOptions} />
       </div>
 
-      <div className="mt-6 grid gap-3">
+      <div className="mt-6 grid gap-2">
         {(cities ?? []).map((c) => (
-          <Card key={c.id} className="p-6">
-            <div className="text-sm font-semibold">{c.name}</div>
-            <div className="mt-1 text-xs text-[var(--muted-foreground)]">{c.slug} · {c.country}</div>
-
-            <form action={updateCity} className="mt-4 grid gap-3 sm:grid-cols-2">
-              <input type="hidden" name="id" value={c.id} />
-              <input
-                name="name"
-                defaultValue={c.name}
-                className={INPUT}
-              />
-              <select
-                name="country"
-                defaultValue={c.country}
-                className={SELECT}
-              >
-                <option value="">Select country…</option>
-                {countryOptions.map((co) => (
-                  <option key={co.name} value={co.name}>
-                    {co.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="published"
-                defaultValue={c.published ? "true" : "false"}
-                className={SELECT}
-              >
-                <option value="true">Published</option>
-                <option value="false">Hidden</option>
-              </select>
-              <input
-                name="center_lat"
-                defaultValue={String(c.center_lat)}
-                className={INPUT}
-              />
-              <input
-                name="center_lng"
-                defaultValue={String(c.center_lng)}
-                className={INPUT}
-              />
-              <div className="sm:col-span-2">
-                <Button type="submit" variant="secondary">
-                  Save changes
-                </Button>
+          <div
+            key={c.id}
+            className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              {/* Info */}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    href={`/admin/cities/${c.slug}`}
+                    className="text-sm font-medium hover:underline"
+                  >
+                    {c.name}
+                  </Link>
+                  {!c.published && (
+                    <span className="rounded-full bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
+                      Hidden
+                    </span>
+                  )}
+                </div>
+                <div className="mt-0.5 text-xs text-[var(--muted-foreground)]">
+                  {c.slug} · {c.country}
+                </div>
               </div>
-            </form>
-          </Card>
+
+              {/* Actions */}
+              <div className="flex flex-wrap items-center gap-2">
+                <Link href={`/admin/cities/${c.slug}`}>
+                  <Button size="sm" variant="secondary">Edit</Button>
+                </Link>
+                <Link href={`/city/${c.slug}`} target="_blank">
+                  <Button size="sm" variant="secondary">View ↗</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </div>
   );
 }
-
 
