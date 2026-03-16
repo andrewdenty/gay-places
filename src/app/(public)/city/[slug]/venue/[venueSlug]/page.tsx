@@ -13,10 +13,7 @@ import { env } from "@/lib/env";
 import { isOpenNow } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
 import type { OpeningHoursRange } from "@/lib/types/opening-hours";
-
-function toCountrySlug(name: string) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-}
+import { toCountrySlug } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
 
