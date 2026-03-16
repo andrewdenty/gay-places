@@ -68,7 +68,7 @@ const CITY_FIELDS_BASE = "id,slug,name,country,center_lat,center_lng";
  * Used to detect when the `description` column hasn't been migrated yet and
  * allow a graceful fallback to the pre-migration query.
  */
-function isMissingColumnError(error: { code?: string }) {
+export function isMissingColumnError(error: { code?: string }) {
   return error.code === "42703";
 }
 

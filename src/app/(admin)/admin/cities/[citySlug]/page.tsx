@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isMissingColumnError } from "@/lib/data/public";
 import { updateCity } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,7 @@ export default async function EditCityPage({
   const { data: isAdmin } = await supabase.rpc("is_admin");
   if (!isAdmin) redirect("/");
 
-  const [{ data: city }, { data: countries }] = await Promise.all([
+  const [{ data: cityWithDesc, error: cityError }, { data: countries }] = await Promise.all([
     supabase
       .from("cities")
       .select("id,slug,name,country,center_lat,center_lng,published,description")
@@ -41,6 +42,21 @@ export default async function EditCityPage({
       .select("name")
       .order("name", { ascending: true }),
   ]);
+
+  // If the description column doesn't exist yet (migration pending), fall back to base fields.
+  let city: typeof cityWithDesc & { description?: string | null } | null = cityWithDesc;
+  if (cityError) {
+    if (isMissingColumnError(cityError)) {
+      const { data: fallback } = await supabase
+        .from("cities")
+        .select("id,slug,name,country,center_lat,center_lng,published")
+        .eq("slug", citySlug)
+        .maybeSingle();
+      city = fallback ? { ...fallback, description: null } : null;
+    } else {
+      throw cityError;
+    }
+  }
 
   if (!city) notFound();
 
