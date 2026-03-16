@@ -1,10 +1,6 @@
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
-html {
-  background: #171717;
-}
-
 :root {
   color-scheme: light;
   --background: #fcfcfb;
