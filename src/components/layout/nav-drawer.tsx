@@ -31,7 +31,7 @@ export function NavDrawer({
   useEffect(() => {
     if (isOpen && !fetched) {
       setFetched(true);
-      fetch("/api/cities")
+      fetch("/api/cities?sort=venues&limit=5")
         .then((r) => r.json())
         .then((data) => setCities(data))
         .catch(() => {});
