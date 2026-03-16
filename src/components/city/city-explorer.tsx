@@ -117,7 +117,7 @@ export function CityExplorer({ city, venues }: Props) {
             const isActive =
               pill.kind === "open"
                 ? openNow
-                : type === pill.value;
+                : type === pill.value && !query.trim();
             return (
               <button
                 key={pill.label}
