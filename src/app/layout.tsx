@@ -24,14 +24,26 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Gay Places",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co",
+  ),
+  title: {
+    default: "Gay Places",
+    template: "%s | Gay Places",
+  },
   description:
     "A minimal travel guide helping gay tourists discover LGBTQ+ venues in new cities.",
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: "/favicon.png",
   },
   openGraph: {
-    title: "Gay Places",
+    title: {
+      default: "Gay Places",
+      template: "%s | Gay Places",
+    },
     description:
       "A minimal travel guide helping gay tourists discover LGBTQ+ venues in new cities.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],

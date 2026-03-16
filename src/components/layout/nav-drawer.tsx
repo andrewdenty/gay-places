@@ -148,13 +148,6 @@ export function NavDrawer({
               >
                 Submit a Venue
               </Link>
-              <Link
-                href="/about"
-                className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
-                onClick={onClose}
-              >
-                About Gay Places
-              </Link>
             </nav>
           </div>
 

@@ -6,7 +6,7 @@ import {
 } from "@/lib/data/public";
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gayplaces.co";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Skip DB queries if Supabase is not configured (e.g. during CI builds)

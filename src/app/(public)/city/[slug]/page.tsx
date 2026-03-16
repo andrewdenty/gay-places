@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
 import { CityExplorer } from "@/components/city/city-explorer";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,29 @@ function toCountrySlug(name: string) {
 }
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return {};
+  }
+  const { slug } = await params;
+  const city = await getCityBySlug(slug);
+  if (!city) return {};
+  const title = `Gay ${city.name} Guide`;
+  const description =
+    city.description ??
+    `Discover the best LGBTQ+ bars, clubs and queer venues in ${city.name}.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/city/${slug}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function CityPage({
   params,
@@ -50,30 +74,72 @@ export default async function CityPage({
     getPublishedCountrySlugs(),
   ]);
 
+  const BASE_URL =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
+  const countrySlug = toCountrySlug(city.country);
+  const countryPublished = publishedCountrySlugs.has(countrySlug);
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
+      ...(countryPublished
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: city.country,
+              item: `${BASE_URL}/country/${countrySlug}`,
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: city.name,
+              item: `${BASE_URL}/city/${city.slug}`,
+            },
+          ]
+        : [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: city.name,
+              item: `${BASE_URL}/city/${city.slug}`,
+            },
+          ]),
+    ],
+  };
+
   return (
-    <div className="py-6 sm:py-8">
-      <div className="mb-6">
-        <div className="label-xs text-[var(--muted-foreground)] mb-2">
-          {publishedCountrySlugs.has(toCountrySlug(city.country)) ? (
-            <Link
-              href={`/country/${toCountrySlug(city.country)}`}
-              className="hover:text-[var(--foreground)] transition-colors"
-            >
-              {city.country.toUpperCase()}
-            </Link>
-          ) : (
-            <span>{city.country.toUpperCase()}</span>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <div className="py-6 sm:py-8">
+        <div className="mb-6">
+          <div className="label-xs text-[var(--muted-foreground)] mb-2">
+            {countryPublished ? (
+              <Link
+                href={`/country/${countrySlug}`}
+                className="hover:text-[var(--foreground)] transition-colors"
+              >
+                {city.country.toUpperCase()}
+              </Link>
+            ) : (
+              <span>{city.country.toUpperCase()}</span>
+            )}
+          </div>
+          <h1 className="h1-editorial">{city.name}</h1>
+          {city.description && (
+            <p className="mt-3 text-base text-[var(--muted-foreground)] leading-relaxed max-w-2xl">
+              {city.description}
+            </p>
           )}
         </div>
-        <h1 className="h1-editorial">{city.name}</h1>
-        {city.description && (
-          <p className="mt-3 text-base text-[var(--muted-foreground)] leading-relaxed max-w-2xl">
-            {city.description}
-          </p>
-        )}
-      </div>
 
-      <CityExplorer city={city} venues={venues} />
-    </div>
+        <CityExplorer city={city} venues={venues} />
+      </div>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   getCountryBySlug,
   getCitiesByCountryName,
@@ -112,6 +113,31 @@ const VENUE_TYPE_TONE: Record<string, VenueTypeTone> = {
   event_space: "neutral",
   other: "neutral",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return {};
+  }
+  const { slug } = await params;
+  const country = await getCountryBySlug(slug);
+  if (!country) return {};
+  const title =
+    country.seo_title ?? `Gay ${country.name} Guide`;
+  const description =
+    country.seo_description ??
+    country.intro ??
+    `Discover the best LGBTQ+ venues and gay bars across ${country.name}.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/country/${slug}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function CountryPage({
   params,
