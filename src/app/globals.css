@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
+html {
+  background: #171717;
+}
+
 :root {
   color-scheme: light;
   --background: #fcfcfb;
@@ -57,6 +61,7 @@ body {
     BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 1.6;
+  min-height: 100vh;
 }
 
 * {
