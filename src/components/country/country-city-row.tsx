@@ -24,7 +24,7 @@ export function CountryCityRow({
         )}
       </div>
       <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
-        EXPLORE ↗
+        EXPLORE →
       </span>
     </Link>
   );

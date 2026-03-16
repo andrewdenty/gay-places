@@ -10,6 +10,7 @@ type City = {
   slug: string;
   name: string;
   country: string;
+  venue_count?: number;
 };
 
 export function NavDrawer({
@@ -17,17 +18,19 @@ export function NavDrawer({
   onClose,
   isAdmin = false,
   userEmail,
+  initialCities,
 }: {
   isOpen: boolean;
   onClose: () => void;
   isAdmin?: boolean;
   userEmail?: string;
+  initialCities?: City[];
 }) {
   const pathname = usePathname();
-  const [cities, setCities] = useState<City[]>([]);
-  const [fetched, setFetched] = useState(false);
+  const [cities, setCities] = useState<City[]>(initialCities ?? []);
+  const [fetched, setFetched] = useState(!!initialCities?.length);
 
-  // Fetch cities once on first open
+  // Fetch cities once on first open (only if not pre-loaded)
   useEffect(() => {
     if (isOpen && !fetched) {
       setFetched(true);
@@ -127,7 +130,9 @@ export function NavDrawer({
                 >
                   <span>{city.name}</span>
                   <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--muted-foreground)]">
-                    {city.country}
+                    {city.venue_count != null
+                      ? `${city.venue_count} ${city.venue_count === 1 ? "venue" : "venues"}`
+                      : city.country}
                   </span>
                 </Link>
               ))}
@@ -137,9 +142,9 @@ export function NavDrawer({
           {/* Divider */}
           <div className="mx-5 border-t border-[var(--border)] my-4" />
 
-          {/* Discover */}
+          {/* Contribute */}
           <div className="px-5 pb-2">
-            <p className="label-xs text-[var(--muted-foreground)] mb-3">DISCOVER</p>
+            <p className="label-xs text-[var(--muted-foreground)] mb-3">CONTRIBUTE</p>
             <nav className="space-y-0">
               <Link
                 href="/submit"
@@ -156,7 +161,9 @@ export function NavDrawer({
 
           {/* Account */}
           <div className="px-5 pb-6">
-            <p className="label-xs text-[var(--muted-foreground)] mb-3">ACCOUNT</p>
+            <p className="label-xs text-[var(--muted-foreground)] mb-3">
+              {userEmail ? userEmail.toUpperCase() : "ACCOUNT"}
+            </p>
             <nav className="space-y-0">
               {userEmail ? (
                 <>
@@ -176,17 +183,14 @@ export function NavDrawer({
                       Admin
                     </Link>
                   )}
-                  <div className="pt-2">
-                    <p className="label-xs text-[var(--muted-foreground)] mb-1">{userEmail}</p>
-                    <form action="/auth/sign-out" method="post">
-                      <button
-                        type="submit"
-                        className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
-                      >
-                        Log Out
-                      </button>
-                    </form>
-                  </div>
+                  <form action="/auth/sign-out" method="post">
+                    <button
+                      type="submit"
+                      className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
+                    >
+                      Log Out
+                    </button>
+                  </form>
                 </>
               ) : (
                 <Link

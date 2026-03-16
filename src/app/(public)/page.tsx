@@ -19,8 +19,8 @@ export default async function LandingPage() {
         <h1 className="h1-editorial mb-4">
           Gay Places
         </h1>
-        <p className="text-[15px] text-[var(--muted-foreground)] max-w-[480px] leading-[1.6]">
-          A quietly curated guide to gay bars, clubs, and queer places worth seeking out. No crowdsourced clutter, no endless scrolling, just a sharp edit of places with something about them.
+        <p className="text-[15px] text-[var(--muted-foreground)] leading-[1.6]">
+          Gay Places is a quietly curated guide to gay bars, clubs, and other spaces around the world. Less directory, more edit, it brings together places with atmosphere, character, and a reason to go.
         </p>
       </header>
 
@@ -38,7 +38,7 @@ export default async function LandingPage() {
               className="group flex items-center justify-between border-b border-[var(--border)] py-4 hover:bg-[var(--muted)] -mx-4 px-4 sm:-mx-6 sm:px-6 transition-colors"
             >
               <div className="flex items-baseline gap-4">
-                <span className="label-xs text-[var(--muted-foreground)] w-6 text-right">
+                <span className="label-xs text-[var(--muted-foreground)] w-6">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div>
@@ -51,7 +51,7 @@ export default async function LandingPage() {
                 </div>
               </div>
               <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
-                EXPLORE ↗
+                EXPLORE →
               </span>
             </Link>
           ))}

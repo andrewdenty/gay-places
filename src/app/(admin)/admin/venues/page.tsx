@@ -14,7 +14,7 @@ export default async function AdminVenuesPage() {
     supabase
       .from("venues")
       .select(
-        "id,name,address,venue_type,published,closed,city_id,slug,cities(slug,name)",
+        "id,name,address,venue_type,published,closed,city_id,slug,updated_at,cities(slug,name)",
       )
       .order("name", { ascending: true })
       .limit(500),

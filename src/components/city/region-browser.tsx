@@ -218,7 +218,7 @@ function RegionRow({ group, publishedCountrySlugs }: RegionRowProps) {
                     {city.name}
                   </span>
                   <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
-                    EXPLORE ↗
+                    EXPLORE →
                   </span>
                 </Link>
               ))}
