@@ -175,6 +175,7 @@ interface CityFile {
 
 const CITY_FILES: CityFile[] = [
   { filename: "amsterdam.json", citySlug: "amsterdam", centerLat: 52.3676, centerLng: 4.9041 },
+  { filename: "berlin.json", citySlug: "berlin", centerLat: 52.5200, centerLng: 13.4050 },
   { filename: "Copenhagen.json", citySlug: "copenhagen", centerLat: 55.6761, centerLng: 12.5683 },
   { filename: "London.json", citySlug: "london", centerLat: 51.5074, centerLng: -0.1278 },
   { filename: "lyon.json", citySlug: "lyon", centerLat: 45.7640, centerLng: 4.8357 },
