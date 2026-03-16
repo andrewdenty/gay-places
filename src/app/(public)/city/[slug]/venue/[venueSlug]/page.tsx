@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { OpeningHoursView } from "@/components/venue/opening-hours-view";
 import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
 import { VenueSectionRow } from "@/components/venue/venue-section-row";
@@ -13,6 +14,40 @@ import { isOpenNow } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
 
 export const dynamic = "force-dynamic";
+
+const VENUE_TYPE_SCHEMA: Record<string, string> = {
+  bar: "BarOrPub",
+  club: "NightClub",
+  restaurant: "Restaurant",
+  cafe: "CafeOrCoffeeShop",
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; venueSlug: string }>;
+}): Promise<Metadata> {
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return {};
+  }
+  const { slug, venueSlug } = await params;
+  const [city, venue] = await Promise.all([
+    getCityBySlug(slug),
+    getVenueBySlug(slug, venueSlug),
+  ]);
+  if (!city || !venue) return {};
+  const title = `${venue.name} – ${city.name}`;
+  const description =
+    venue.description_editorial ??
+    venue.description_base ??
+    `${venue.name} is a gay ${venue.venue_type} in ${city.name}.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/city/${slug}/venue/${venueSlug}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function VenuePage({
   params,
@@ -70,9 +105,66 @@ export default async function VenuePage({
   const crowdTags = (venueTags.crowd ?? []).map((t) => t.toLowerCase());
   const isLeatherBar = venue.venue_type === "bar" && crowdTags.includes("leather");
 
+  const BASE_URL =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
+  const venueUrl = `${BASE_URL}/city/${city.slug}/venue/${venue.slug}`;
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: city.name,
+        item: `${BASE_URL}/city/${city.slug}`,
+      },
+      { "@type": "ListItem", position: 3, name: venue.name, item: venueUrl },
+    ],
+  };
+
+  const schemaType = VENUE_TYPE_SCHEMA[venue.venue_type] ?? "LocalBusiness";
+  const sameAs: string[] = [];
+  if (venue.instagram_url) sameAs.push(venue.instagram_url);
+  if (venue.facebook_url) sameAs.push(venue.facebook_url);
+
+  const localBusinessJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    name: venue.name,
+    url: venueUrl,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: venue.address,
+      addressLocality: city.name,
+    },
+    ...(venue.lat && venue.lng
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: venue.lat,
+            longitude: venue.lng,
+          },
+        }
+      : {}),
+    ...(sameAs.length > 0 ? { sameAs } : {}),
+  };
+
   return (
-    <div className="py-6 sm:py-8">
-      <VenueViewTracker venueId={venue.id} />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(localBusinessJsonLd),
+        }}
+      />
+      <div className="py-6 sm:py-8">
+        <VenueViewTracker venueId={venue.id} />
 
       {/* Back link + breadcrumb */}
       <div className="mb-6 flex items-center justify-between gap-4">
@@ -272,5 +364,6 @@ export default async function VenuePage({
         </div>
       </VenueSectionRow>
     </div>
+    </>
   );
 }
