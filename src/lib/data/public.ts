@@ -22,6 +22,7 @@ export type City = {
   country: string;
   center_lat: number;
   center_lng: number;
+  description?: string | null;
 };
 
 export type Venue = {
@@ -58,14 +59,38 @@ export type Venue = {
 const VENUE_FIELDS =
   "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours";
 
+const CITY_FIELDS_WITH_DESC = "id,slug,name,country,center_lat,center_lng,description";
+const CITY_FIELDS_BASE = "id,slug,name,country,center_lat,center_lng";
+
+/**
+ * Returns true when a Supabase/PostgREST error is PostgreSQL code 42703
+ * ("undefined_column" — the column referenced in the query does not exist).
+ * Used to detect when the `description` column hasn't been migrated yet and
+ * allow a graceful fallback to the pre-migration query.
+ */
+export function isMissingColumnError(error: { code?: string }) {
+  return error.code === "42703";
+}
+
 export async function getCities(): Promise<City[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("cities")
-    .select("id,slug,name,country,center_lat,center_lng")
+    .select(CITY_FIELDS_WITH_DESC)
     .eq("published", true)
     .order("name", { ascending: true });
-  if (error) throw error;
+  if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("cities")
+        .select(CITY_FIELDS_BASE)
+        .eq("published", true)
+        .order("name", { ascending: true });
+      if (fallbackError) throw fallbackError;
+      return (fallback ?? []) as City[];
+    }
+    throw error;
+  }
   return (data ?? []) as City[];
 }
 
@@ -73,11 +98,23 @@ export async function getCityBySlug(slug: string): Promise<City | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("cities")
-    .select("id,slug,name,country,center_lat,center_lng")
+    .select(CITY_FIELDS_WITH_DESC)
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("cities")
+        .select(CITY_FIELDS_BASE)
+        .eq("slug", slug)
+        .eq("published", true)
+        .maybeSingle();
+      if (fallbackError) throw fallbackError;
+      return (fallback ?? null) as City | null;
+    }
+    throw error;
+  }
   return (data ?? null) as City | null;
 }
 
@@ -151,11 +188,23 @@ export async function getCitiesByCountryName(countryName: string): Promise<City[
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("cities")
-    .select("id,slug,name,country,center_lat,center_lng")
+    .select(CITY_FIELDS_WITH_DESC)
     .eq("country", countryName)
     .eq("published", true)
     .order("name", { ascending: true });
-  if (error) throw error;
+  if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("cities")
+        .select(CITY_FIELDS_BASE)
+        .eq("country", countryName)
+        .eq("published", true)
+        .order("name", { ascending: true });
+      if (fallbackError) throw fallbackError;
+      return (fallback ?? []) as City[];
+    }
+    throw error;
+  }
   return (data ?? []) as City[];
 }
 

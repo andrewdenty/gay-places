@@ -66,6 +66,11 @@ export default async function CityPage({
           )}
         </div>
         <h1 className="h1-editorial">{city.name}</h1>
+        {city.description && (
+          <p className="mt-3 text-base text-[var(--muted-foreground)] leading-relaxed max-w-2xl">
+            {city.description}
+          </p>
+        )}
       </div>
 
       <CityExplorer city={city} venues={venues} />
