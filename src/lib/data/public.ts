@@ -280,6 +280,27 @@ export async function getNearbyVenues(
     .map((x) => x.venue);
 }
 
+type VenueSitemapRow = { slug: string; cities: { slug: string }[] };
+
+/**
+ * Returns the slug and city slug for every published venue, used to generate
+ * the sitemap. Fetches all rows in a single query by joining venues → cities.
+ */
+export async function getAllPublishedVenuesForSitemap(): Promise<
+  { slug: string; city_slug: string }[]
+> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("venues")
+    .select("slug,cities!inner(slug)")
+    .eq("published", true);
+  if (error) throw error;
+  return ((data as unknown) as VenueSitemapRow[] ?? []).map((row) => ({
+    slug: row.slug,
+    city_slug: row.cities[0]?.slug ?? "",
+  }));
+}
+
 /** @deprecated Use getVenueBySlug for public pages. Kept for internal/admin use. */
 export async function getVenueById(id: string): Promise<Venue | null> {
   const supabase = await createSupabaseServerClient();
