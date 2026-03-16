@@ -67,6 +67,17 @@ export function CityMap({ venues, center, citySlug }: Props) {
   const popupsRef = useRef<maplibregl.Popup[]>([]);
   const citySlugRef = useRef<string>(citySlug);
 
+  // Filter out venues whose coordinates are implausibly far from the city
+  // centre (> ~1.5° in either axis ≈ 165 km).  This removes null-island
+  // (0, 0) values and other bad geocodes that would break fitBounds.
+  const MAX_COORD_DELTA = 1.5; // degrees
+  const [centerLng, centerLat] = center;
+  const mappableVenues = venues.filter(
+    (v) =>
+      Math.abs(v.lat - centerLat) <= MAX_COORD_DELTA &&
+      Math.abs(v.lng - centerLng) <= MAX_COORD_DELTA
+  );
+
   const clearMarkers = useCallback(() => {
     for (const m of markersRef.current) m.remove();
     for (const p of popupsRef.current) p.remove();
@@ -77,19 +88,19 @@ export function CityMap({ venues, center, citySlug }: Props) {
   const handleReady = useCallback(
     (map: maplibregl.Map) => {
       // Fit bounds to all venues
-      if (venues.length > 1) {
+      if (mappableVenues.length > 1) {
         const bounds = new maplibregl.LngLatBounds();
-        for (const v of venues) bounds.extend([v.lng, v.lat]);
+        for (const v of mappableVenues) bounds.extend([v.lng, v.lat]);
         map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: 0 });
       }
 
-      if (venues.length === 0) return;
+      if (mappableVenues.length === 0) return;
 
-      const useClustering = venues.length > CLUSTER_THRESHOLD;
+      const useClustering = mappableVenues.length > CLUSTER_THRESHOLD;
 
       if (!useClustering) {
         // Simple individual markers
-        for (const v of venues) {
+        for (const v of mappableVenues) {
           const el = createDotMarker(v.name);
 
           const popup = new maplibregl.Popup({
@@ -116,7 +127,7 @@ export function CityMap({ venues, center, citySlug }: Props) {
         // Clustering with supercluster
         const sc = new Supercluster({ radius: 40, maxZoom: 16 });
         sc.load(
-          venues.map((v) => ({
+          mappableVenues.map((v) => ({
             type: "Feature" as const,
             geometry: { type: "Point" as const, coordinates: [v.lng, v.lat] },
             properties: { slug: v.slug, name: v.name },
@@ -161,7 +172,7 @@ export function CityMap({ venues, center, citySlug }: Props) {
               markersRef.current.push(marker);
             } else if (slug && name) {
               // Find original venue for popup
-              const v = venues.find((x) => x.slug === slug);
+              const v = mappableVenues.find((x) => x.slug === slug);
               if (!v) continue;
 
               const el = createDotMarker(name);
@@ -195,7 +206,7 @@ export function CityMap({ venues, center, citySlug }: Props) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [venues]
+    [mappableVenues]
   );
 
   return (

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { City, Venue } from "@/lib/data/public";
 import { isOpenNow } from "@/components/city/opening-hours";
 import { flattenVenueTags } from "@/lib/venue-tags";
@@ -23,7 +23,7 @@ type PillOption =
   | { label: string; kind: "type"; value: VenueType }
   | { label: string; kind: "open" };
 
-const pills: PillOption[] = [
+const allPills: PillOption[] = [
   { label: "Show all", kind: "type", value: "all" },
   { label: "Bars", kind: "type", value: "bar" },
   { label: "Clubs", kind: "type", value: "club" },
@@ -39,6 +39,29 @@ export function CityExplorer({ city, venues }: Props) {
   const [type, setType] = useState<VenueType>("all");
   const [openNow, setOpenNow] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Count venues per type to hide pills with no results
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const v of venues) {
+      counts[v.venue_type] = (counts[v.venue_type] ?? 0) + 1;
+    }
+    return counts;
+  }, [venues]);
+
+  // Only show type pills that have at least one venue; "Show all" and "Open now" always visible
+  const visiblePills = useMemo(
+    () =>
+      allPills.filter((pill) => {
+        if (pill.kind === "open") return true;
+        if (pill.value === "all") return true;
+        return (typeCounts[pill.value as string] ?? 0) > 0;
+      }),
+    [typeCounts]
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -51,46 +74,137 @@ export function CityExplorer({ city, venues }: Props) {
     });
   }, [venues, query, type, openNow]);
 
+  function openSearch() {
+    setSearchOpen(true);
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  }
+
+  function clearQuery() {
+    setQuery("");
+    searchInputRef.current?.focus();
+  }
+
+  function closeSearch() {
+    setSearchOpen(false);
+    setQuery("");
+    setType("all");
+  }
+
   return (
     <div className="space-y-0">
-      {/* Search */}
-      <div className="mb-0">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search venues…"
-          className="h-10 w-full border-b border-[var(--border)] bg-transparent text-[14px] outline-none placeholder:text-[var(--muted-foreground)]"
-        />
-      </div>
+      {/* Filters + Search section */}
+      <div className="border-b border-[var(--row-separator)]">
+        {/* Pill row */}
+        <div className="flex gap-[6px] overflow-x-auto py-[16px] scrollbar-none">
+          {/* Search icon pill */}
+          <button
+            type="button"
+            onClick={searchOpen ? closeSearch : openSearch}
+            aria-label="Search venues"
+            className={`h-[38px] w-[38px] shrink-0 rounded-full flex items-center justify-center transition-colors ${
+              searchOpen
+                ? "bg-[#171717] text-white"
+                : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717]"
+            }`}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
 
-      {/* Pill filters */}
-      <div className="flex gap-[6px] overflow-x-auto py-[16px] border-b border-[var(--row-separator)] scrollbar-none">
-        {pills.map((pill) => {
-          const isActive =
-            pill.kind === "open"
-              ? openNow
-              : type === pill.value;
-          return (
+          {visiblePills.map((pill) => {
+            const isActive =
+              pill.kind === "open"
+                ? openNow
+                : type === pill.value && !query.trim();
+            return (
+              <button
+                key={pill.label}
+                type="button"
+                onClick={() => {
+                  if (pill.kind === "open") {
+                    setOpenNow((p) => !p);
+                  } else {
+                    setType(pill.value);
+                  }
+                }}
+                className={`h-[38px] shrink-0 rounded-full px-[12px] text-[12px] font-medium transition-colors ${
+                  isActive
+                    ? "bg-[#171717] text-white"
+                    : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717]"
+                }`}
+              >
+                {pill.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search field — slides in below pills */}
+        <div
+          className="overflow-hidden"
+          style={{
+            maxHeight: searchOpen ? "76px" : "0",
+            opacity: searchOpen ? 1 : 0,
+            transition: "max-height 0.22s ease, opacity 0.18s ease",
+          }}
+        >
+          <div className="pb-[14px] relative flex items-center gap-3">
+            <div className="relative flex flex-1 items-center">
+              <svg
+                className="absolute left-5 text-[var(--muted-foreground)] pointer-events-none"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.3" />
+                <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder="Search venues…"
+                className="w-full rounded-full pl-12 pr-12 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
+                style={{
+                  height: "48px",
+                  backgroundColor: "#F7F7F5",
+                  border: searchFocused ? "1.5px solid #E4E4E1" : "1.5px solid transparent",
+                }}
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={clearQuery}
+                  className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                  aria-label="Clear search"
+                >
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                    <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
             <button
-              key={pill.label}
               type="button"
-              onClick={() => {
-                if (pill.kind === "open") {
-                  setOpenNow((p) => !p);
-                } else {
-                  setType(pill.value);
-                }
-              }}
-              className={`h-[38px] shrink-0 rounded-full px-[12px] text-[12px] font-medium transition-colors ${
-                isActive
-                  ? "bg-[#171717] text-white"
-                  : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717]"
-              }`}
+              onClick={closeSearch}
+              className="shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717] transition-colors"
+              aria-label="Close search"
             >
-              {pill.label}
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
             </button>
-          );
-        })}
+          </div>
+        </div>
       </div>
 
       {/* Venue count */}
