@@ -177,10 +177,14 @@ const CITY_FILES: CityFile[] = [
   { filename: "amsterdam.json", citySlug: "amsterdam", centerLat: 52.3676, centerLng: 4.9041 },
   { filename: "Copenhagen.json", citySlug: "copenhagen", centerLat: 55.6761, centerLng: 12.5683 },
   { filename: "London.json", citySlug: "london", centerLat: 51.5074, centerLng: -0.1278 },
+  { filename: "lyon.json", citySlug: "lyon", centerLat: 45.7640, centerLng: 4.8357 },
   { filename: "Madrid.json", citySlug: "madrid", centerLat: 40.4168, centerLng: -3.7038 },
   { filename: "manchester.json", citySlug: "manchester", centerLat: 53.4808, centerLng: -2.2426 },
+  { filename: "munich.json", citySlug: "munich", centerLat: 48.1351, centerLng: 11.5820 },
+  { filename: "oslo.json", citySlug: "oslo", centerLat: 59.9139, centerLng: 10.7522 },
   { filename: "Paris.json", citySlug: "paris", centerLat: 48.8566, centerLng: 2.3522 },
   { filename: "Sitges.json", citySlug: "sitges", centerLat: 41.2376, centerLng: 1.8114 },
+  { filename: "stockholm.json", citySlug: "stockholm", centerLat: 59.3293, centerLng: 18.0686 },
   { filename: "torremolinos.json", citySlug: "torremolinos", centerLat: 36.6224, centerLng: -4.4993 },
 ];
 
