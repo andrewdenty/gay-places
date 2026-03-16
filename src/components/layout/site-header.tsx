@@ -32,7 +32,7 @@ export function SiteHeader({ isAdmin = false, userEmail }: { isAdmin?: boolean; 
       <header
         className="sticky top-0 z-20 border-b border-[var(--border)]"
         style={{
-          paddingTop: scrolled ? 8 : 12,
+          paddingTop: `calc(env(safe-area-inset-top) + ${scrolled ? 8 : 12}px)`,
           paddingBottom: scrolled ? 8 : 12,
           backgroundColor: scrolled ? "rgba(252, 252, 251, 0.8)" : "var(--background)",
           backdropFilter: scrolled ? "blur(24px)" : "none",
