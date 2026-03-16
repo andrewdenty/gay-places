@@ -1,0 +1,1656 @@
+{
+  "city": "Madrid",
+  "country": "Spain",
+  "venues": [
+    {
+      "name": "LL Bar",
+      "slug": "ll-bar",
+      "venue_type": "bar",
+      "summary_short": "A long-running Chueca show bar known for nightly drag performances and a late-night crowd. It remains one of Madrid's classic gay nightlife addresses.",
+      "why_unique": [
+        "Daily drag queen shows",
+        "One of the oldest gay bars in Madrid",
+        "Central Chueca location on Calle de Pelayo"
+      ],
+      "address_line_1": "C. de Pelayo 11",
+      "address_line_2": null,
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=LL+Bar%2C+C.+de+Pelayo+11%2C+28004+Madrid",
+      "website_url": "https://www.llshowbar.com/",
+      "instagram_url": null,
+      "facebook_url": "https://www.facebook.com/LLshowbar/",
+      "phone": "+34 619 08 88 11",
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [
+          {
+            "start": "22:00",
+            "end": "03:00"
+          }
+        ],
+        "tue": [
+          {
+            "start": "22:00",
+            "end": "03:00"
+          }
+        ],
+        "wed": [
+          {
+            "start": "22:00",
+            "end": "03:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "22:00",
+            "end": "03:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "22:00",
+            "end": "03:30"
+          }
+        ],
+        "sat": [
+          {
+            "start": "22:00",
+            "end": "03:30"
+          }
+        ],
+        "sun": [
+          {
+            "start": "22:00",
+            "end": "03:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Touristy",
+          "Drag Crowd"
+        ],
+        "best_time": [
+          "Late Night",
+          "Weekend Peak"
+        ],
+        "whats_on": [
+          "Drag Shows"
+        ],
+        "atmosphere": [
+          "Iconic",
+          "Camp"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/destination/gay-spain/gay-madrid",
+        "https://www.patroc.com/gay/madrid/d/llbar.html",
+        "https://www.esmadrid.com/en/nightlife/ll-bar"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.patroc.com/gay/madrid/d/llbar.html"
+        ],
+        "hours": [
+          "https://www.patroc.com/gay/madrid/d/llbar.html",
+          "https://www.facebook.com/LLshowbar/"
+        ],
+        "website": [
+          "https://www.llshowbar.com/"
+        ],
+        "phone": [
+          "https://www.patroc.com/gay/madrid/d/llbar.html"
+        ]
+      },
+      "confidence": "high",
+      "notes": null
+    },
+    {
+      "name": "Bears Bar",
+      "slug": "bears-bar",
+      "venue_type": "bar",
+      "summary_short": "A small Chueca bar aimed at bears and mature men. It is one of the clearest niche bars in Madrid's gay scene.",
+      "why_unique": [
+        "Bear-focused bar in central Chueca",
+        "Regularly described as popular with mature men",
+        "Compact format rather than a large club"
+      ],
+      "address_line_1": "C. de Pelayo 4",
+      "address_line_2": null,
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Bears+Bar%2C+C.+de+Pelayo+4%2C+28004+Madrid",
+      "website_url": null,
+      "instagram_url": null,
+      "facebook_url": "https://www.facebook.com/people/Bearsbar-Madrid/",
+      "phone": null,
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [],
+        "tue": [
+          {
+            "start": "19:00",
+            "end": "02:00"
+          }
+        ],
+        "wed": [
+          {
+            "start": "19:00",
+            "end": "02:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "19:00",
+            "end": "02:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "19:00",
+            "end": "03:30"
+          }
+        ],
+        "sat": [
+          {
+            "start": "19:00",
+            "end": "03:30"
+          }
+        ],
+        "sun": [
+          {
+            "start": "19:00",
+            "end": "02:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Bears",
+          "Mature Crowd"
+        ],
+        "best_time": [
+          "Early Evening",
+          "Weekend Peak"
+        ],
+        "whats_on": [],
+        "atmosphere": [
+          "Small Bar",
+          "Unpretentious"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/destination/gay-spain/gay-madrid",
+        "https://www.patroc.com/gay/madrid/d/bearsbar.html"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.patroc.com/gay/madrid/d/bearsbar.html"
+        ],
+        "hours": [
+          "https://www.patroc.com/gay/madrid/d/bearsbar.html"
+        ],
+        "facebook": [
+          "https://www.patroc.com/gay/madrid/d/bearsbar.html"
+        ]
+      },
+      "confidence": "high",
+      "notes": "No clear official website found in current research."
+    },
+    {
+      "name": "HOT",
+      "slug": "hot",
+      "venue_type": "bar",
+      "summary_short": "A long-established Chueca bar with strong links to Madrid's bear scene. It is best known for its bear crowd and early-to-late opening hours.",
+      "why_unique": [
+        "Closely associated with Madrid's bear scene",
+        "Open daily from late afternoon",
+        "Long-established venue in Chueca"
+      ],
+      "address_line_1": "C. de las Infantas 9",
+      "address_line_2": null,
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=HOT+Bear%27s+Bar%2C+C.+de+las+Infantas+9%2C+28004+Madrid",
+      "website_url": "https://barhotchuecamadrid.com/",
+      "instagram_url": null,
+      "facebook_url": null,
+      "phone": "+34 617 635 372",
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [
+          {
+            "start": "16:00",
+            "end": "03:00"
+          }
+        ],
+        "tue": [
+          {
+            "start": "16:00",
+            "end": "03:00"
+          }
+        ],
+        "wed": [
+          {
+            "start": "16:00",
+            "end": "03:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "16:00",
+            "end": "03:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "16:00",
+            "end": "03:30"
+          }
+        ],
+        "sat": [
+          {
+            "start": "16:00",
+            "end": "03:30"
+          }
+        ],
+        "sun": [
+          {
+            "start": "16:00",
+            "end": "03:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Bears",
+          "Mature Crowd"
+        ],
+        "best_time": [
+          "Early Evening",
+          "Weekend Peak"
+        ],
+        "whats_on": [],
+        "atmosphere": [
+          "Unpretentious",
+          "Classic Institution"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/destination/gay-spain/gay-madrid",
+        "https://www.patroc.com/gay/madrid/d/hot.html"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://barhotchuecamadrid.com/",
+          "https://www.patroc.com/gay/madrid/d/hot.html"
+        ],
+        "hours": [
+          "https://barhotchuecamadrid.com/",
+          "https://www.patroc.com/gay/madrid/d/hot.html"
+        ],
+        "website": [
+          "https://barhotchuecamadrid.com/"
+        ],
+        "phone": [
+          "https://barhotchuecamadrid.com/",
+          "https://www.esmadrid.com/noche/hot"
+        ]
+      },
+      "confidence": "high",
+      "notes": null
+    },
+    {
+      "name": "Gris",
+      "slug": "gris",
+      "venue_type": "bar",
+      "summary_short": "An LGBTQ-oriented Chueca music bar with a more alternative profile than many nearby venues. It is commonly described as a spot for indie, new wave and rock rather than mainstream pop.",
+      "why_unique": [
+        "Known for indie, new wave, rock and electropop",
+        "Often described as off-mainstream",
+        "Regular Friday and Saturday late-night crowd"
+      ],
+      "address_line_1": "C. de San Marcos 29",
+      "address_line_2": null,
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Gris%2C+C.+de+San+Marcos+29%2C+28004+Madrid",
+      "website_url": null,
+      "instagram_url": null,
+      "facebook_url": "https://www.facebook.com/Gris.Bar.Oficial",
+      "phone": "+34 915 31 41 13",
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [],
+        "tue": [
+          {
+            "start": "22:00",
+            "end": "03:00"
+          }
+        ],
+        "wed": [
+          {
+            "start": "22:00",
+            "end": "03:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "22:00",
+            "end": "03:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "22:00",
+            "end": "03:30"
+          }
+        ],
+        "sat": [
+          {
+            "start": "22:00",
+            "end": "03:30"
+          }
+        ],
+        "sun": [
+          {
+            "start": "21:00",
+            "end": "03:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Alternative",
+          "Students"
+        ],
+        "best_time": [
+          "Late Night",
+          "Big Saturdays"
+        ],
+        "whats_on": [
+          "DJs"
+        ],
+        "atmosphere": [
+          "Dark",
+          "Alternative"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": [
+          "Alternative Pop",
+          "Rock"
+        ]
+      },
+      "discovery_sources": [
+        "https://www.patroc.com/gay/madrid/d/gris.html",
+        "https://www.gaycities.com/articles/96664/what-are-the-best-gay-bars-in-madrid/"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.patroc.com/gay/madrid/d/gris.html"
+        ],
+        "hours": [
+          "https://www.patroc.com/gay/madrid/d/gris.html"
+        ],
+        "phone": [
+          "https://www.patroc.com/gay/madrid/d/gris.html"
+        ],
+        "facebook": [
+          "https://www.patroc.com/gay/madrid/d/gris.html"
+        ]
+      },
+      "confidence": "high",
+      "notes": "No official website surfaced clearly in current research."
+    },
+    {
+      "name": "Marta, Cariño!",
+      "slug": "marta-carino",
+      "venue_type": "dance_club",
+      "summary_short": "A prominent LGTBIQ+ club night in central Madrid, staged in the Larios Café space. It combines dinner, cocktails and a late dancefloor, and is one of the city's best-known current queer parties.",
+      "why_unique": [
+        "Established LGTBIQ+ club brand in Madrid",
+        "Runs in the multi-room Larios Café venue",
+        "Friday and Saturday late-night sessions"
+      ],
+      "address_line_1": "C. de Silva 4",
+      "address_line_2": "Larios Café",
+      "postal_code": "28013",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Marta%2C+Cari%C3%B1o%21%2C+C.+de+Silva+4%2C+28013+Madrid",
+      "website_url": "https://martacarinomadrid.com/",
+      "instagram_url": "https://www.instagram.com/martacarinomadrid/",
+      "facebook_url": null,
+      "phone": "+34 644 74 77 76",
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [],
+        "tue": [],
+        "wed": [],
+        "thu": [],
+        "fri": [
+          {
+            "start": "23:00",
+            "end": "06:00"
+          }
+        ],
+        "sat": [
+          {
+            "start": "23:00",
+            "end": "06:00"
+          }
+        ],
+        "sun": []
+      },
+      "tags": {
+        "crowd": [
+          "Queer Mixed",
+          "Young Crowd"
+        ],
+        "best_time": [
+          "Late Night",
+          "Weekend Peak"
+        ],
+        "whats_on": [
+          "DJs",
+          "Club Nights"
+        ],
+        "atmosphere": [
+          "Dance Floor",
+          "High-Energy"
+        ],
+        "drinks_food": [
+          "Classic Cocktails",
+          "Dinner Spot"
+        ],
+        "music": [
+          "Pop",
+          "Chart Hits"
+        ]
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/destination/gay-spain/gay-madrid",
+        "https://www.esmadrid.com/en/nightlife/marta-carino-0",
+        "https://thegaypassport.com/venue/marta-carino/"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://thegaypassport.com/venue/marta-carino/",
+          "https://www.esmadrid.com/en/nightlife/marta-carino-0"
+        ],
+        "hours": [
+          "https://web.fourvenues.com/en/marta-carino-1",
+          "https://www.instagram.com/martacarinomadrid/"
+        ],
+        "website": [
+          "https://martacarinomadrid.com/"
+        ],
+        "phone": [
+          "https://thegaypassport.com/venue/marta-carino/"
+        ]
+      },
+      "confidence": "high",
+      "notes": "Tourism Madrid describes the underlying venue as Larios Café, where Marta, Cariño! operates."
+    },
+    {
+      "name": "Long Play",
+      "slug": "long-play",
+      "venue_type": "dance_club",
+      "summary_short": "A longstanding Chueca club near Plaza de Pedro Zerolo with two floors, DJs and late weekend hours. It is part of Madrid's established gay nightlife circuit rather than a small neighborhood bar.",
+      "why_unique": [
+        "Two-floor venue in the heart of Chueca",
+        "Historic nightlife address near Plaza de Pedro Zerolo",
+        "Weekend sessions running until 06:00"
+      ],
+      "address_line_1": "Plaza de Pedro Zerolo 2",
+      "address_line_2": null,
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Long+Play%2C+Plaza+de+Pedro+Zerolo+2%2C+28004+Madrid",
+      "website_url": "https://longplaymadrid.com/",
+      "instagram_url": "https://www.instagram.com/longplaymadrid/",
+      "facebook_url": null,
+      "phone": null,
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [],
+        "tue": [],
+        "wed": [],
+        "thu": [],
+        "fri": [
+          {
+            "start": "23:00",
+            "end": "06:00"
+          }
+        ],
+        "sat": [
+          {
+            "start": "23:00",
+            "end": "06:00"
+          }
+        ],
+        "sun": []
+      },
+      "tags": {
+        "crowd": [
+          "Party Crowd",
+          "International Crowd"
+        ],
+        "best_time": [
+          "Best After Midnight",
+          "Weekend Peak"
+        ],
+        "whats_on": [
+          "DJs",
+          "Club Nights"
+        ],
+        "atmosphere": [
+          "Multi-Room",
+          "Dance Floor"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": [
+          "House",
+          "Chart Hits"
+        ]
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/destination/gay-spain/gay-madrid",
+        "https://www.patroc.com/gay/madrid/gayguide.html"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://longplaymadrid.com/discoteca-cerca-de-gran-via-madrid/"
+        ],
+        "hours": [
+          "https://longplaymadrid.com/ambiente-nocturno-chueca/",
+          "https://www.instagram.com/longplaymadrid/"
+        ],
+        "website": [
+          "https://longplaymadrid.com/"
+        ],
+        "instagram": [
+          "https://www.instagram.com/longplaymadrid/"
+        ]
+      },
+      "confidence": "high",
+      "notes": "No phone number surfaced clearly in current research."
+    },
+    {
+      "name": "Strong",
+      "slug": "strong",
+      "venue_type": "dance_club",
+      "summary_short": "A large gay club with electronic music programming and a long history in Madrid nightlife. The venue also hosts fetish-oriented parties and is known for play spaces alongside the dancefloor.",
+      "why_unique": [
+        "Large gay club dating back to the 1990s",
+        "Hosts electronic and fetish-oriented parties",
+        "Late opening from Wednesday to Sunday"
+      ],
+      "address_line_1": "C. Trujillos 7",
+      "address_line_2": null,
+      "postal_code": "28013",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Strong%2C+C.+Trujillos+7%2C+28013+Madrid",
+      "website_url": "https://strong.madrid/",
+      "instagram_url": "https://www.instagram.com/strongtheclub/",
+      "facebook_url": "https://www.facebook.com/strongtheclub/",
+      "phone": "+34 910 64 78 96",
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [],
+        "tue": [],
+        "wed": [
+          {
+            "start": "23:00",
+            "end": "06:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "23:00",
+            "end": "06:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "23:00",
+            "end": "06:00"
+          }
+        ],
+        "sat": [
+          {
+            "start": "23:00",
+            "end": "06:00"
+          }
+        ],
+        "sun": [
+          {
+            "start": "23:00",
+            "end": "06:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Party Crowd",
+          "Fetish"
+        ],
+        "best_time": [
+          "Best After Midnight",
+          "Weekend Peak"
+        ],
+        "whats_on": [
+          "DJs",
+          "Fetish Nights"
+        ],
+        "atmosphere": [
+          "Dance Floor",
+          "High-Energy"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": [
+          "House",
+          "Techno"
+        ]
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/destination/gay-spain/gay-madrid",
+        "https://www.patroc.com/gay/madrid/d/strong-the-club.html"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.patroc.com/gay/madrid/d/strong-the-club.html"
+        ],
+        "hours": [
+          "https://www.patroc.com/gay/madrid/d/strong-the-club.html",
+          "https://www.facebook.com/strongtheclub/"
+        ],
+        "website": [
+          "https://strong.madrid/"
+        ],
+        "phone": [
+          "https://www.patroc.com/gay/madrid/d/strong-the-club.html"
+        ]
+      },
+      "confidence": "high",
+      "notes": "Strong sits between dance club and cruising/fetish venue, but is classified here as dance_club because club programming is central."
+    },
+    {
+      "name": "Studio 54 Madrid",
+      "slug": "studio-54-madrid",
+      "venue_type": "dance_club",
+      "summary_short": "A Chueca bar-club with a dancefloor and a more polished, mainstream party profile. It is commonly positioned as a stylish stop for drinks and dancing in the neighborhood.",
+      "why_unique": [
+        "Bar and nightclub format in one venue",
+        "Named after the legendary New York club",
+        "Regular drag and themed party programming appear on social channels"
+      ],
+      "address_line_1": "C. de Barbieri 7",
+      "address_line_2": null,
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Studio+54+Madrid%2C+C.+de+Barbieri+7%2C+28004+Madrid",
+      "website_url": null,
+      "instagram_url": "https://www.instagram.com/studio54_madrid/",
+      "facebook_url": "https://www.facebook.com/studio54mad/",
+      "phone": null,
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [],
+        "tue": [],
+        "wed": [
+          {
+            "start": "22:00",
+            "end": "03:30"
+          }
+        ],
+        "thu": [
+          {
+            "start": "22:00",
+            "end": "03:30"
+          }
+        ],
+        "fri": [
+          {
+            "start": "22:00",
+            "end": "03:30"
+          }
+        ],
+        "sat": [
+          {
+            "start": "22:00",
+            "end": "03:30"
+          }
+        ],
+        "sun": [
+          {
+            "start": "22:00",
+            "end": "03:30"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Mixed Crowd",
+          "Touristy"
+        ],
+        "best_time": [
+          "Late Night",
+          "Weekend Peak"
+        ],
+        "whats_on": [
+          "DJs",
+          "Drag Shows"
+        ],
+        "atmosphere": [
+          "Dance Floor",
+          "Polished"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": [
+          "Pop",
+          "Latin"
+        ]
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/venue/studio-54-madrid",
+        "https://www.travelgay.com/destination/gay-spain/gay-madrid"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.travelgay.com/venue/studio-54-madrid"
+        ],
+        "hours": [
+          "https://www.instagram.com/studio54_madrid/",
+          "https://www.travelgay.com/venue/studio-54-madrid"
+        ],
+        "instagram": [
+          "https://www.instagram.com/studio54_madrid/"
+        ],
+        "facebook": [
+          "https://www.facebook.com/studio54mad/"
+        ]
+      },
+      "confidence": "medium",
+      "notes": "TravelGay and Instagram both confirm the venue and address; I did not find a clear standalone official website."
+    },
+    {
+      "name": "Boyberry Madrid",
+      "slug": "boyberry-madrid",
+      "venue_type": "cruising_club",
+      "summary_short": "A central men-only cruising bar with cabins and an additional basement cruising area at night. It is one of Madrid's best-known hybrid bar-and-cruising venues.",
+      "why_unique": [
+        "Cruising area on the ground floor and another in the basement at night",
+        "Free entry with minimum drink consumption",
+        "Long daytime-to-night hours on several days"
+      ],
+      "address_line_1": "C. de Valverde 3",
+      "address_line_2": "corner of C. del Desengaño",
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Boyberry+Madrid%2C+C.+de+Valverde+3%2C+28004+Madrid",
+      "website_url": "https://boyberry.com/madrid",
+      "instagram_url": null,
+      "facebook_url": null,
+      "phone": null,
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [
+          {
+            "start": "12:00",
+            "end": "03:00"
+          }
+        ],
+        "tue": [
+          {
+            "start": "12:00",
+            "end": "03:00"
+          }
+        ],
+        "wed": [
+          {
+            "start": "12:00",
+            "end": "03:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "12:00",
+            "end": "03:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "12:00",
+            "end": "03:30"
+          }
+        ],
+        "sat": [
+          {
+            "start": "15:00",
+            "end": "03:30"
+          }
+        ],
+        "sun": [
+          {
+            "start": "15:00",
+            "end": "03:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Cruisy Crowd",
+          "Young Crowd"
+        ],
+        "best_time": [
+          "Late Night",
+          "Weekday Social"
+        ],
+        "whats_on": [
+          "Cruising Area",
+          "Private Cabins"
+        ],
+        "atmosphere": [
+          "Dark",
+          "Sexy"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.patroc.com/gay/madrid/d/boyberry.html",
+        "https://www.gaycities.com/articles/96664/what-are-the-best-gay-bars-in-madrid/"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.patroc.com/gay/madrid/d/boyberry.html"
+        ],
+        "hours": [
+          "https://www.patroc.com/gay/madrid/d/boyberry.html"
+        ],
+        "website": [
+          "https://boyberry.com/madrid"
+        ]
+      },
+      "confidence": "high",
+      "notes": null
+    },
+    {
+      "name": "S & B (Shower & Bar)",
+      "slug": "s-b-shower-bar",
+      "venue_type": "cruising_club",
+      "summary_short": "A small cruising club in Chueca operating in a former sauna space. Its identity is built around men-only cruising nights and naked or underwear dress code.",
+      "why_unique": [
+        "Located in a former sauna",
+        "Dress code centered on naked or underwear entry",
+        "Overnight Friday and Saturday opening"
+      ],
+      "address_line_1": "C. de Pelayo 25",
+      "address_line_2": null,
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Shower+%26+Bar%2C+C.+de+Pelayo+25%2C+28004+Madrid",
+      "website_url": "https://madridgayclub.com/",
+      "instagram_url": null,
+      "facebook_url": null,
+      "phone": null,
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [],
+        "tue": [],
+        "wed": [],
+        "thu": [],
+        "fri": [
+          {
+            "start": "23:00",
+            "end": "10:30"
+          }
+        ],
+        "sat": [
+          {
+            "start": "23:00",
+            "end": "10:30"
+          }
+        ],
+        "sun": [
+          {
+            "start": "22:00",
+            "end": "03:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Mostly Men",
+          "Cruisy Crowd"
+        ],
+        "best_time": [
+          "After Hours",
+          "Weekend Peak"
+        ],
+        "whats_on": [
+          "Cruising Area",
+          "Underwear Nights"
+        ],
+        "atmosphere": [
+          "Dark",
+          "Sexy"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.patroc.com/gay/madrid/d/showerandbar.html",
+        "https://www.travelgay.com/venue/shower-bar"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.patroc.com/gay/madrid/d/showerandbar.html",
+          "https://madridgayclub.com/"
+        ],
+        "hours": [
+          "https://www.patroc.com/gay/madrid/d/showerandbar.html"
+        ],
+        "website": [
+          "https://madridgayclub.com/"
+        ]
+      },
+      "confidence": "high",
+      "notes": "The venue may operate additional special sessions beyond the core schedule above; only clearly verified hours are included."
+    },
+    {
+      "name": "Firewood",
+      "slug": "firewood",
+      "venue_type": "cruising_club",
+      "summary_short": "A La Latina fetish and cruising club centered on naked, underwear and fetish dress codes. It is more specialized than Chueca's general gay bars and aimed squarely at cruising nightlife.",
+      "why_unique": [
+        "Dress codes include naked, underwear and fetish",
+        "Located in La Latina rather than Chueca",
+        "Specialist cruising focus rather than general bar trade"
+      ],
+      "address_line_1": "C. de Caños Viejos 2",
+      "address_line_2": null,
+      "postal_code": "28005",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Firewood%2C+C.+de+Ca%C3%B1os+Viejos+2%2C+28005+Madrid",
+      "website_url": "https://firewoodbarmadrid.com/",
+      "instagram_url": "https://linktr.ee/firewoodbarmadrid.com",
+      "facebook_url": null,
+      "phone": null,
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [],
+        "tue": [],
+        "wed": [],
+        "thu": [],
+        "fri": [
+          {
+            "start": "20:00",
+            "end": "03:30"
+          }
+        ],
+        "sat": [
+          {
+            "start": "20:00",
+            "end": "03:30"
+          }
+        ],
+        "sun": [
+          {
+            "start": "15:00",
+            "end": "23:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Fetish",
+          "Cruisy Crowd"
+        ],
+        "best_time": [
+          "Late Night",
+          "Sunday Session"
+        ],
+        "whats_on": [
+          "Fetish Nights",
+          "Underwear Nights"
+        ],
+        "atmosphere": [
+          "Dark",
+          "Sexy"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.patroc.com/gay/madrid/d/firewood-bar.html",
+        "https://www.gomadridpride.com/en/listings/firewood-bar-gay-madrid/"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.patroc.com/gay/madrid/d/firewood-bar.html",
+          "https://firewoodbarmadrid.com/"
+        ],
+        "hours": [
+          "https://www.patroc.com/gay/madrid/d/firewood-bar.html"
+        ],
+        "website": [
+          "https://firewoodbarmadrid.com/"
+        ]
+      },
+      "confidence": "high",
+      "notes": "I found a Linktree/Telegram presence rather than a clearly surfaced Instagram profile."
+    },
+    {
+      "name": "Attack",
+      "slug": "attack",
+      "venue_type": "cruising_club",
+      "summary_short": "A central Madrid cruising club with themed dress-code nights and long opening hours into the early morning. It is one of the city's better-known specialist cruising venues outside Chueca proper.",
+      "why_unique": [
+        "Weekly dress-code and naked nights",
+        "Large focus on organized themed cruising sessions",
+        "Directly by Tirso de Molina metro"
+      ],
+      "address_line_1": "Plaza de Tirso de Molina 20",
+      "address_line_2": null,
+      "postal_code": "28012",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Attack%2C+Plaza+de+Tirso+de+Molina+20%2C+28012+Madrid",
+      "website_url": "https://www.attack-club.com/madrid",
+      "instagram_url": null,
+      "facebook_url": null,
+      "phone": null,
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [],
+        "tue": [],
+        "wed": [
+          {
+            "start": "19:00",
+            "end": "05:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "19:00",
+            "end": "05:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "21:00",
+            "end": "05:00"
+          }
+        ],
+        "sat": [
+          {
+            "start": "21:00",
+            "end": "05:00"
+          }
+        ],
+        "sun": [
+          {
+            "start": "19:00",
+            "end": "05:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Cruisy Crowd",
+          "Fetish"
+        ],
+        "best_time": [
+          "Late Night",
+          "Weekday Social"
+        ],
+        "whats_on": [
+          "Dress Code Nights",
+          "Naked Nights"
+        ],
+        "atmosphere": [
+          "Dark",
+          "Sexy"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.patroc.com/gay/madrid/d/attack.html",
+        "https://www.attack-club.com/madrid"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.attack-club.com/madrid/donde_estamos_como_llegar",
+          "https://www.patroc.com/gay/madrid/d/attack.html"
+        ],
+        "hours": [
+          "https://www.attack-club.com/madrid",
+          "https://www.patroc.com/gay/madrid/d/attack.html"
+        ],
+        "website": [
+          "https://www.attack-club.com/madrid"
+        ]
+      },
+      "confidence": "high",
+      "notes": "No phone number surfaced clearly in current research."
+    },
+    {
+      "name": "Sauna Beach",
+      "slug": "sauna-beach",
+      "venue_type": "sauna",
+      "summary_short": "A large gay sauna in the historic center with spa facilities and play areas, formerly known as Center Beach. It is widely presented as one of Madrid's biggest sauna venues.",
+      "why_unique": [
+        "Thursday-to-Sunday nonstop opening",
+        "Formerly known as Center Beach",
+        "Over 1,000 square metres across two floors according to community listings"
+      ],
+      "address_line_1": "Cuesta de Santo Domingo 1",
+      "address_line_2": null,
+      "postal_code": "28013",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Sauna+Beach%2C+Cuesta+de+Santo+Domingo+1%2C+28013+Madrid",
+      "website_url": "https://saunabeach.com/",
+      "instagram_url": "https://www.instagram.com/sauna.beach/",
+      "facebook_url": null,
+      "phone": "+34 914 45 64 22",
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "tue": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "wed": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "10:00",
+            "end": "24:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ],
+        "sat": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ],
+        "sun": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Gay Men’s Crowd",
+          "Party Crowd"
+        ],
+        "best_time": [
+          "After Hours",
+          "Weekend Peak"
+        ],
+        "whats_on": [
+          "Steam Room",
+          "Play Area"
+        ],
+        "atmosphere": [
+          "Spacious",
+          "Sexy"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/madrid-gay-saunas",
+        "https://www.patroc.com/gay/madrid/d/sauna-centerbeach.html",
+        "https://www.gomadridpride.com/en/listings/saunabeach/"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.patroc.com/gay/madrid/d/sauna-centerbeach.html"
+        ],
+        "hours": [
+          "https://www.patroc.com/gay/madrid/d/sauna-centerbeach.html"
+        ],
+        "website": [
+          "https://saunabeach.com/"
+        ],
+        "phone": [
+          "https://www.patroc.com/gay/madrid/d/sauna-centerbeach.html"
+        ],
+        "instagram": [
+          "https://www.instagram.com/sauna.beach/"
+        ]
+      },
+      "confidence": "high",
+      "notes": "For the nonstop Thursday-Sunday period, hours are represented as daily blocks to fit the required structure."
+    },
+    {
+      "name": "Sauna Paraíso",
+      "slug": "sauna-paraiso",
+      "venue_type": "sauna",
+      "summary_short": "A large central sauna with pool, jacuzzi, steam room and extensive cruising areas. It is often singled out for its size and younger-leaning crowd.",
+      "why_unique": [
+        "Large venue with underground pool and jacuzzi",
+        "Commonly described as popular with younger men",
+        "Among Madrid's oldest and best-known gay saunas"
+      ],
+      "address_line_1": "C. del Norte 15",
+      "address_line_2": null,
+      "postal_code": "28015",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Sauna+Para%C3%ADso%2C+C.+del+Norte+15%2C+28015+Madrid",
+      "website_url": null,
+      "instagram_url": "https://www.instagram.com/sauna_paraiso/",
+      "facebook_url": "https://www.facebook.com/paraisosauna/",
+      "phone": "+34 915 22 58 99",
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "tue": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "wed": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "sat": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ],
+        "sun": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Young Crowd",
+          "Gay Men’s Crowd"
+        ],
+        "best_time": [
+          "After Hours",
+          "Weekend Peak"
+        ],
+        "whats_on": [
+          "Steam Room",
+          "Private Cabins"
+        ],
+        "atmosphere": [
+          "Spacious",
+          "Sexy"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/venue/sauna-paraiso",
+        "https://thegaypassport.com/explore/madrid-gay-saunas/",
+        "https://queereurope.com/lgbtq-guide-to-madrid/"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.travelgay.com/venue/sauna-paraiso",
+          "https://thegaypassport.com/venue/sauna-paraiso/"
+        ],
+        "hours": [
+          "https://thegaypassport.com/venue/sauna-paraiso/",
+          "https://www.travelgay.com/venue/sauna-paraiso"
+        ],
+        "phone": [
+          "https://thegaypassport.com/venue/sauna-paraiso/",
+          "https://rainbowindex.com/venue/sauna-paraiso"
+        ],
+        "instagram": [
+          "https://www.instagram.com/sauna_paraiso/"
+        ]
+      },
+      "confidence": "high",
+      "notes": "Sources vary slightly on whether Friday is daytime-to-midnight or part of the 24-hour weekend block. I used the more conservative weekday/weekend split from The Gay Passport and TravelGay."
+    },
+    {
+      "name": "Sauna Center",
+      "slug": "sauna-center",
+      "venue_type": "sauna",
+      "summary_short": "A 24-hour gay sauna in Malasaña near Gran Vía, known for its central location and nonstop schedule. It is one of Madrid's more practical drop-in sauna options.",
+      "why_unique": [
+        "Open 24 hours daily",
+        "Located in Malasaña rather than Chueca",
+        "Large number of cabins reported by directory sources"
+      ],
+      "address_line_1": "C. de Valverde 32",
+      "address_line_2": null,
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Sauna+Center%2C+C.+de+Valverde+32%2C+28004+Madrid",
+      "website_url": null,
+      "instagram_url": null,
+      "facebook_url": null,
+      "phone": "+34 919 40 54 96",
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ],
+        "tue": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ],
+        "wed": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ],
+        "sat": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ],
+        "sun": [
+          {
+            "start": "00:00",
+            "end": "24:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Gay Men’s Crowd",
+          "Solo Friendly"
+        ],
+        "best_time": [
+          "After Hours",
+          "Daytime"
+        ],
+        "whats_on": [
+          "Steam Room",
+          "Private Cabins"
+        ],
+        "atmosphere": [
+          "No-Frills",
+          "Spacious"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/venue/sauna-center",
+        "https://www.patroc.com/gay/madrid/d/sauna-center-calle-valverde.html"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.travelgay.com/venue/sauna-center",
+          "https://www.patroc.com/gay/madrid/d/sauna-center-calle-valverde.html"
+        ],
+        "hours": [
+          "https://www.travelgay.com/venue/sauna-center",
+          "https://www.patroc.com/gay/madrid/d/sauna-center-calle-valverde.html"
+        ],
+        "phone": [
+          "https://www.patroc.com/gay/madrid/d/sauna-center-calle-valverde.html"
+        ]
+      },
+      "confidence": "high",
+      "notes": "No clear official website surfaced in current research."
+    },
+    {
+      "name": "Sauna Octopus",
+      "slug": "sauna-octopus",
+      "venue_type": "sauna",
+      "summary_short": "A large sauna close to Chueca that is strongly associated with Madrid's bear scene. It combines standard sauna facilities with cabins, dark rooms and bear-focused positioning.",
+      "why_unique": [
+        "Marketed as Madrid's largest bear sauna",
+        "Around 1,000 m² according to official and directory sources",
+        "Strong connection to the bear community"
+      ],
+      "address_line_1": "C. de Churruca 10",
+      "address_line_2": null,
+      "postal_code": "28004",
+      "city": "Madrid",
+      "country": "Spain",
+      "latitude": null,
+      "longitude": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Sauna+Octopus%2C+C.+de+Churruca+10%2C+28004+Madrid",
+      "website_url": "https://saunaoctopus.com/",
+      "instagram_url": "https://www.instagram.com/saunaoctopus/",
+      "facebook_url": "https://www.facebook.com/SaunaOctopus/",
+      "phone": null,
+      "hours": {
+        "tz": "Europe/Madrid",
+        "mon": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "tue": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "wed": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "thu": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "fri": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "sat": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ],
+        "sun": [
+          {
+            "start": "10:00",
+            "end": "00:00"
+          }
+        ]
+      },
+      "tags": {
+        "crowd": [
+          "Bears",
+          "Cubs"
+        ],
+        "best_time": [
+          "Daytime",
+          "After Hours"
+        ],
+        "whats_on": [
+          "Steam Room",
+          "Private Cabins"
+        ],
+        "atmosphere": [
+          "Spacious",
+          "Sexy"
+        ],
+        "drinks_food": [
+          "Order at Bar"
+        ],
+        "music": []
+      },
+      "discovery_sources": [
+        "https://www.travelgay.com/venue/sauna-octopus",
+        "https://thegaypassport.com/explore/madrid-gay-saunas/"
+      ],
+      "fact_sources": {
+        "address": [
+          "https://www.travelgay.com/venue/sauna-octopus",
+          "https://saunaoctopus.com/"
+        ],
+        "hours": [
+          "https://www.travelgay.com/venue/sauna-octopus",
+          "https://thegaypassport.com/explore/madrid-gay-saunas/"
+        ],
+        "website": [
+          "https://saunaoctopus.com/"
+        ],
+        "instagram": [
+          "https://www.instagram.com/saunaoctopus/"
+        ],
+        "facebook": [
+          "https://www.facebook.com/SaunaOctopus/"
+        ]
+      },
+      "confidence": "high",
+      "notes": "Some earlier sources list a different street number; TravelGay and recent Instagram references point to Calle de Churruca 10, which I used."
+    }
+  ]
+}
