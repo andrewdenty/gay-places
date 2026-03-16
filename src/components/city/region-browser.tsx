@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { City } from "@/lib/data/public";
-
-function toCountrySlug(name: string) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-}
+import { toCountrySlug } from "@/lib/slugs";
 
 // Map country names to regions
 const COUNTRY_REGION: Record<string, string> = {
@@ -218,7 +215,7 @@ function RegionRow({ group, publishedCountrySlugs }: RegionRowProps) {
                     {city.name}
                   </span>
                   <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
-                    EXPLORE ↗
+                    EXPLORE →
                   </span>
                 </Link>
               ))}

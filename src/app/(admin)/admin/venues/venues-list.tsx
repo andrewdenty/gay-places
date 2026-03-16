@@ -16,8 +16,24 @@ export type VenueRow = {
   closed: boolean | null;
   city_id: string;
   slug: string;
+  updated_at?: string | null;
   cities: { name: string; slug: string } | null;
 };
+
+type SortOption = "alphabetical" | "newest" | "oldest";
+
+function timeAgo(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diff = now - then;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "updated just now";
+  if (mins < 60) return `updated ${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `updated ${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `updated ${days}d ago`;
+}
 
 export function VenuesList({
   venues: initialVenues,
@@ -29,11 +45,12 @@ export function VenuesList({
   const [venues, setVenues] = useState(initialVenues);
   const [search, setSearch] = useState("");
   const [cityFilter, setCityFilter] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
   const [isPending, startTransition] = useTransition();
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return venues.filter((v) => {
+    const result = venues.filter((v) => {
       if (cityFilter && v.city_id !== cityFilter) return false;
       if (!q) return true;
       return (
@@ -41,7 +58,25 @@ export function VenuesList({
         v.address.toLowerCase().includes(q)
       );
     });
-  }, [venues, search, cityFilter]);
+
+    if (sortBy === "newest") {
+      result.sort((a, b) => {
+        const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+        const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+        return bTime - aTime;
+      });
+    } else if (sortBy === "oldest") {
+      result.sort((a, b) => {
+        const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+        const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+        return aTime - bTime;
+      });
+    } else {
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return result;
+  }, [venues, search, cityFilter, sortBy]);
 
   function handleDelete(venue: VenueRow) {
     if (
@@ -58,7 +93,7 @@ export function VenuesList({
 
   return (
     <div className="mt-6">
-      {/* Search + City filter */}
+      {/* Search + City filter + Sort */}
       <div className="flex flex-col gap-3 sm:flex-row">
         <input
           value={search}
@@ -77,6 +112,15 @@ export function VenuesList({
               {c.name}
             </option>
           ))}
+        </select>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as SortOption)}
+          className="h-11 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm sm:w-48"
+        >
+          <option value="alphabetical">Alphabetical</option>
+          <option value="newest">Newest updates</option>
+          <option value="oldest">Oldest updates</option>
         </select>
       </div>
 
@@ -113,7 +157,7 @@ export function VenuesList({
                 </div>
                 <div className="mt-0.5 text-xs text-[var(--muted-foreground)]">
                   {v.cities?.name}
-                  {v.address ? ` · ${v.address}` : ""}
+                  {v.updated_at ? ` · ${timeAgo(v.updated_at)}` : ""}
                 </div>
               </div>
 
@@ -148,4 +192,3 @@ export function VenuesList({
     </div>
   );
 }
-

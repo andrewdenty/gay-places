@@ -12,6 +12,19 @@ export default async function AdminAnalyticsPage() {
     .order("date", { ascending: false })
     .limit(100);
 
+  // Resolve venue names for all unique venue IDs
+  const venueIds = [...new Set((views ?? []).map((v) => v.venue_id))];
+  const venueNameMap: Record<string, string> = {};
+  if (venueIds.length > 0) {
+    const { data: venues } = await supabase
+      .from("venues")
+      .select("id,name")
+      .in("id", venueIds);
+    for (const v of venues ?? []) {
+      venueNameMap[v.id] = v.name;
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl">
       <h1 className="text-xl font-semibold tracking-tight">Analytics</h1>
@@ -31,7 +44,7 @@ export default async function AdminAnalyticsPage() {
                 className="flex items-center justify-between gap-4"
               >
                 <div className="min-w-0 truncate text-muted-foreground">
-                  {v.date} · {v.venue_id}
+                  {v.date} · {venueNameMap[v.venue_id] ?? v.venue_id}
                 </div>
                 <div className="font-medium">{v.views}</div>
               </div>

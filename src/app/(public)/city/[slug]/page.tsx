@@ -5,10 +5,7 @@ import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/
 import { CityExplorer } from "@/components/city/city-explorer";
 import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
-
-function toCountrySlug(name: string) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-}
+import { toCountrySlug } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
 

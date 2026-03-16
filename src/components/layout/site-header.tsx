@@ -7,7 +7,7 @@ import { SearchModal } from "@/components/search/search-modal";
 import { NavDrawer } from "@/components/layout/nav-drawer";
 import { IconButton } from "@/components/ui/icon-button";
 
-export function SiteHeader({ isAdmin = false, userEmail }: { isAdmin?: boolean; userEmail?: string }) {
+export function SiteHeader({ isAdmin = false, userEmail, initialCities }: { isAdmin?: boolean; userEmail?: string; initialCities?: { id: string; slug: string; name: string; country: string; venue_count?: number }[] }) {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -124,7 +124,7 @@ export function SiteHeader({ isAdmin = false, userEmail }: { isAdmin?: boolean; 
       </header>
 
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-      <NavDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} isAdmin={isAdmin} userEmail={userEmail} />
+      <NavDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} isAdmin={isAdmin} userEmail={userEmail} initialCities={initialCities} />
     </>
   );
 }

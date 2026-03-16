@@ -95,7 +95,7 @@ export function CityExplorer({ city, venues }: Props) {
       {/* Filters + Search section */}
       <div className="border-b border-[var(--row-separator)]">
         {/* Pill row */}
-        <div className="flex gap-[6px] overflow-x-auto py-[16px] scrollbar-none">
+        <div className="flex gap-[6px] overflow-x-auto py-[16px] scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6">
           {/* Search icon pill */}
           <button
             type="button"
@@ -256,7 +256,7 @@ export function CityExplorer({ city, venues }: Props) {
 
                 {/* Row 2: Tags as dot-separated text */}
                 {flatTags.length > 0 && (
-                  <div className="mt-[4px] label-xs text-[var(--muted-foreground)]">
+                  <div className="mt-[8px] label-xs text-[var(--muted-foreground)]">
                     {flatTags.map((t, i) => (
                       <span key={t}>
                         {i > 0 && <span className="mx-[6px]">·</span>}
@@ -274,8 +274,8 @@ export function CityExplorer({ city, venues }: Props) {
                 )}
 
                 {/* Row 4: Address + MAP link */}
-                <div className="mt-[6px] flex items-center justify-between gap-3">
-                  <p className="text-[14px] text-[var(--muted-foreground)]">
+                <div className="mt-[8px] flex items-center justify-between gap-3">
+                  <p className="text-[13px] text-[var(--muted-foreground)]">
                     {v.address}
                   </p>
                   {v.google_maps_url && (

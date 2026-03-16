@@ -8,10 +8,12 @@ import { PhotoGallery } from "@/components/venue/photo-gallery";
 import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCityBySlug, getVenueBySlug, getNearbyVenues } from "@/lib/data/public";
+import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
 import { env } from "@/lib/env";
 import { isOpenNow } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
+import type { OpeningHoursRange } from "@/lib/types/opening-hours";
+import { toCountrySlug } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
 
@@ -88,13 +90,14 @@ export default async function VenuePage({
   if (!venue) notFound();
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: photos }, nearbyVenues] = await Promise.all([
+  const [{ data: photos }, nearbyVenues, publishedCountrySlugs] = await Promise.all([
     supabase
       .from("venue_photos")
       .select("id, storage_path")
       .eq("venue_id", venue.id)
       .limit(5),
     getNearbyVenues(venue.city_id, venue.id, venue.lat, venue.lng),
+    getPublishedCountrySlugs(),
   ]);
 
   const permanentlyClosed = venue.closed === true;
@@ -108,6 +111,8 @@ export default async function VenuePage({
   const BASE_URL =
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
   const venueUrl = `${BASE_URL}/city/${city.slug}/venue/${venue.slug}`;
+  const countrySlug = toCountrySlug(city.country);
+  const countryPublished = publishedCountrySlugs.has(countrySlug);
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -168,12 +173,25 @@ export default async function VenuePage({
 
       {/* Back link + breadcrumb */}
       <div className="mb-6 flex items-center justify-between gap-4">
-        <Link
-          href={`/city/${city.slug}`}
-          className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-        >
-          {city.country.toUpperCase()} / {city.name.toUpperCase()}
-        </Link>
+        <div className="label-xs text-[var(--muted-foreground)]">
+          {countryPublished ? (
+            <Link
+              href={`/country/${countrySlug}`}
+              className="hover:text-[var(--foreground)] transition-colors"
+            >
+              {city.country.toUpperCase()}
+            </Link>
+          ) : (
+            <span>{city.country.toUpperCase()}</span>
+          )}
+          <span className="mx-1">/</span>
+          <Link
+            href={`/city/${city.slug}`}
+            className="hover:text-[var(--foreground)] transition-colors"
+          >
+            {city.name.toUpperCase()}
+          </Link>
+        </div>
         <span className="label-xs text-[var(--muted-foreground)]">VENUE</span>
       </div>
 
@@ -263,12 +281,24 @@ export default async function VenuePage({
       })}
 
       {/* Section 3 — Opening hours */}
-      <div className="border-b border-[var(--border)] py-[24px]">
-        <span className="h2-editorial">{`Opening hours`}</span>
-        <div className="mt-4">
-          <OpeningHoursView hours={venue.opening_hours} />
-        </div>
-      </div>
+      {(() => {
+        const hrs = venue.opening_hours;
+        if (!hrs) return null;
+        const dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+        const hasAnyOpen = dayKeys.some((d) => {
+          const ranges = hrs[d] as OpeningHoursRange[] | undefined;
+          return ranges && ranges.length > 0;
+        });
+        if (!hasAnyOpen) return null;
+        return (
+          <div className="border-b border-[var(--border)] py-[24px]">
+            <span className="h2-editorial">{`Opening hours`}</span>
+            <div className="mt-4">
+              <OpeningHoursView hours={venue.opening_hours} />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Section 4 — Map */}
       <VenueMapWrapper

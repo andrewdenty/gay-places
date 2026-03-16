@@ -28,11 +28,12 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co",
   ),
   title: {
-    default: "Gay Places",
+    default:
+      "Gay Places | A Curated Guide to Gay Bars, Clubs and Other Spaces",
     template: "%s | Gay Places",
   },
   description:
-    "A minimal travel guide helping gay tourists discover LGBTQ+ venues in new cities.",
+    "A quietly curated guide to gay bars, clubs and queer spaces around the world. Explore city guides and distinctive venues chosen for atmosphere, character and cultural relevance.",
   alternates: {
     canonical: "/",
   },
@@ -41,19 +42,21 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: {
-      default: "Gay Places",
+      default:
+        "Gay Places | A Curated Guide to Gay Bars, Clubs and Other Spaces",
       template: "%s | Gay Places",
     },
     description:
-      "A minimal travel guide helping gay tourists discover LGBTQ+ venues in new cities.",
+      "A quietly curated guide to gay bars, clubs and queer spaces around the world. Explore city guides and distinctive venues chosen for atmosphere, character and cultural relevance.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Gay Places",
+    title:
+      "Gay Places | A Curated Guide to Gay Bars, Clubs and Other Spaces",
     description:
-      "A minimal travel guide helping gay tourists discover LGBTQ+ venues in new cities.",
+      "A quietly curated guide to gay bars, clubs and queer spaces around the world. Explore city guides and distinctive venues chosen for atmosphere, character and cultural relevance.",
     images: ["/og-image.png"],
   },
 };
