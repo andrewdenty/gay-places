@@ -36,6 +36,9 @@ export const TAG_CATEGORIES: {
       "Fetish",
       "Artsy Crowd",
       "Mature Crowd",
+      "Cubs",
+      "Solo Friendly",
+      "Students",
     ],
   },
   {
@@ -86,6 +89,8 @@ export const TAG_CATEGORIES: {
       "Dark Room",
       "Play Area",
       "Piano Bar",
+      "Big Saturdays",
+      "Naked Nights",
     ],
   },
   {
@@ -142,7 +147,7 @@ export const TAG_CATEGORIES: {
   {
     key: "music",
     label: "Music",
-    tags: ["Pop", "Disco", "House", "Techno", "Electronic", "R&B", "Afrobeats", "Eurovision"],
+    tags: ["Pop", "Disco", "House", "Techno", "Electronic", "R&B", "Afrobeats", "Eurovision", "Alternative", "Alternative Pop", "Chart Hits", "Latin", "Rock"],
   },
 ];
 
