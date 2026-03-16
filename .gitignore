@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# data ingestion files (used by scripts, not committed)
+/Copenhagen.json
+/London.json
+/Madrid.json
+/Manchester.json
+/manchester.json
+/Paris.json
+/Sitges.json
