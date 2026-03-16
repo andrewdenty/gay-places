@@ -48,3 +48,4 @@ next-env.d.ts
 /manchester.json
 /Paris.json
 /Sitges.json
+.claude/worktrees/

@@ -217,6 +217,7 @@ function loadJsonFile(filename: string): JsonCity | null {
 
 async function ingestCity(cityFile: CityFile): Promise<number> {
   const { filename, citySlug, centerLat, centerLng } = cityFile;
+  const normalizedSlug = citySlug.toLowerCase();
   console.log(`\n→ Ingesting ${citySlug.charAt(0).toUpperCase() + citySlug.slice(1)}...`);
 
   const jsonData = loadJsonFile(filename);
@@ -233,7 +234,7 @@ async function ingestCity(cityFile: CityFile): Promise<number> {
     .from("cities")
     .upsert(
       {
-        slug: citySlug,
+        slug: normalizedSlug,
         name: cityName,
         country: cityCountry,
         center_lat: centerLat,

@@ -118,7 +118,7 @@ export async function getCityBySlug(slug: string): Promise<City | null> {
   const { data, error } = await supabase
     .from("cities")
     .select(CITY_FIELDS_WITH_DESC)
-    .eq("slug", slug)
+    .eq("slug", slug.toLowerCase())
     .eq("published", true)
     .maybeSingle();
   if (error) {
@@ -142,7 +142,7 @@ export async function getVenuesByCitySlug(slug: string): Promise<Venue[]> {
   const { data: city, error: cityError } = await supabase
     .from("cities")
     .select("id")
-    .eq("slug", slug)
+    .eq("slug", slug.toLowerCase())
     .eq("published", true)
     .maybeSingle();
   if (cityError) throw cityError;
@@ -166,7 +166,7 @@ export async function getVenueBySlug(
   const { data: city, error: cityError } = await supabase
     .from("cities")
     .select("id")
-    .eq("slug", citySlug)
+    .eq("slug", citySlug.toLowerCase())
     .eq("published", true)
     .maybeSingle();
   if (cityError) throw cityError;
@@ -176,7 +176,7 @@ export async function getVenueBySlug(
     .from("venues")
     .select(VENUE_FIELDS)
     .eq("city_id", city.id)
-    .eq("slug", venueSlug)
+    .eq("slug", venueSlug.toLowerCase())
     .eq("published", true)
     .maybeSingle();
   if (error) throw error;
@@ -197,7 +197,7 @@ export async function getCountryBySlug(slug: string): Promise<Country | null> {
   const { data, error } = await supabase
     .from("countries")
     .select("id,slug,name,intro,editorial,featured_city_ids,featured_venue_ids,seo_title,seo_description,published")
-    .eq("slug", slug)
+    .eq("slug", slug.toLowerCase())
     .maybeSingle();
   if (error) throw error;
   return (data ?? null) as Country | null;
