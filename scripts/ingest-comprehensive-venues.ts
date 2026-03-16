@@ -180,6 +180,7 @@ const CITY_FILES: CityFile[] = [
   { filename: "manchester.json", citySlug: "manchester", centerLat: 53.4808, centerLng: -2.2426 },
   { filename: "Paris.json", citySlug: "paris", centerLat: 48.8566, centerLng: 2.3522 },
   { filename: "Sitges.json", citySlug: "sitges", centerLat: 41.2376, centerLng: 1.8114 },
+  { filename: "torremolinos.json", citySlug: "torremolinos", centerLat: 36.6224, centerLng: -4.4993 },
 ];
 
 function loadJsonFile(filename: string): JsonCity | null {
