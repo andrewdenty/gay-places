@@ -98,7 +98,7 @@ export default async function VenuePage({
   }
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: photos }, nearbyVenues, publishedCountrySlugs] = await Promise.all([
+  const [{ data: photos }, nearbyVenues, publishedCountrySlugs, { data: isAdminData }] = await Promise.all([
     supabase
       .from("venue_photos")
       .select("id, storage_path")
@@ -106,7 +106,9 @@ export default async function VenuePage({
       .limit(5),
     getNearbyVenues(venue.city_id, venue.id, venue.lat, venue.lng),
     getPublishedCountrySlugs(),
+    supabase.rpc("is_admin"),
   ]);
+  const isAdmin = isAdminData === true;
 
   const permanentlyClosed = venue.closed === true;
   const open = !permanentlyClosed && isOpenNow(venue.opening_hours);
@@ -399,6 +401,17 @@ export default async function VenuePage({
           >
             Upload a Photo
           </Link>
+          {isAdmin && (
+            <>
+              <span className="mx-[8px] text-[var(--border)]">·</span>
+              <Link
+                href={`/admin/venues/${venue.slug}`}
+                className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
+              >
+                Admin
+              </Link>
+            </>
+          )}
         </div>
       </VenueSectionRow>
     </div>
