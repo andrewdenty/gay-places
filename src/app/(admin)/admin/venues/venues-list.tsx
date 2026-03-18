@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { deleteVenue } from "./actions";
+import { venueUrlPath } from "@/lib/slugs";
 
 type City = { id: string; name: string; slug: string };
 
@@ -83,7 +84,7 @@ export function VenuesList({
   function handleDelete(venue: VenueRow) {
     if (
       !window.confirm(
-        `Delete "${venue.name}"? This will permanently remove the venue and cannot be undone.`,
+        `Delete "${venue.name}"? This will permanently remove the place and cannot be undone.`,
       )
     )
       return;
@@ -101,7 +102,7 @@ export function VenuesList({
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search venues…"
+          placeholder="Search places…"
           className="h-11 flex-1 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-1 focus:ring-[var(--accent)]"
         />
         <select
@@ -128,7 +129,7 @@ export function VenuesList({
       </div>
 
       <div className="mt-2 text-xs text-[var(--muted-foreground)]">
-        {filtered.length} venue{filtered.length !== 1 ? "s" : ""}
+        {filtered.length} place{filtered.length !== 1 ? "s" : ""}
       </div>
 
       <div className="mt-3 grid gap-2">
@@ -179,7 +180,7 @@ export function VenuesList({
                 </Link>
                 {v.cities?.slug && v.slug && (
                   <Link
-                    href={`/city/${v.cities.slug}/venue/${v.slug}`}
+                    href={venueUrlPath(v.cities.slug, v.venue_type, v.slug)}
                     target="_blank"
                   >
                     <Button size="sm" variant="secondary">

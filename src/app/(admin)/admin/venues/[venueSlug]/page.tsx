@@ -8,6 +8,7 @@ import type { VenueTags } from "@/lib/venue-tags";
 import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto, generateBaseDescription } from "./actions";
 import { DeleteVenueButton } from "./delete-venue-button";
 import { AdminPhotoUpload } from "./admin-photo-upload";
+import { venueUrlPath } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,7 @@ export default async function EditVenuePage({
             href="/admin/venues"
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            ← Venues
+            ← Places
           </Link>
           <h1 className="mt-1 text-xl font-semibold tracking-tight">
             {venue.name}
@@ -82,7 +83,7 @@ export default async function EditVenuePage({
         </div>
         {city && venue.slug && (
           <Link
-            href={`/city/${city.slug}/venue/${venue.slug}`}
+            href={venueUrlPath(city.slug, venue.venue_type, venue.slug)}
             target="_blank"
             className="mt-1 shrink-0 text-sm text-muted-foreground hover:text-foreground"
           >
@@ -93,7 +94,7 @@ export default async function EditVenuePage({
 
       {/* Venue details form */}
       <Card className="mt-6 p-6">
-        <div className="text-sm font-semibold">Venue details</div>
+        <div className="text-sm font-semibold">Place details</div>
         <form
           action={updateVenueDetails}
           className="mt-4 grid gap-3 sm:grid-cols-2"
@@ -192,7 +193,7 @@ export default async function EditVenuePage({
             <textarea
               name="description_editorial"
               defaultValue={venue.description_editorial ?? ""}
-              placeholder="Write a short editorial description of this venue…"
+              placeholder="Write a short editorial description of this place…"
               rows={3}
               className={TEXTAREA}
             />
@@ -278,7 +279,7 @@ export default async function EditVenuePage({
           <input type="hidden" name="slug" value={venue.slug} />
           <div className="flex items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">
-              Auto-generate a base description from the venue name, city, type, and tags.
+              Auto-generate a base description from the place name, city, type, and tags.
               {venue.description_base
                 ? " This will overwrite the existing base description."
                 : ""}
@@ -338,7 +339,7 @@ export default async function EditVenuePage({
       <Card className="mt-6 border-red-100 p-6">
         <div className="text-sm font-semibold text-red-600">Danger zone</div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Permanently deletes this venue and all its photos. This cannot be
+          Permanently deletes this place and all its photos. This cannot be
           undone.
         </p>
         <div className="mt-4">

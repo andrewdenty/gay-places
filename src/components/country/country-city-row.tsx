@@ -19,7 +19,7 @@ export function CountryCityRow({
         </span>
         {venueCount > 0 && (
           <span className="text-[13px] text-[var(--muted-foreground)]">
-            {venueCount} {venueCount === 1 ? "venue" : "venues"}
+            {venueCount} {venueCount === 1 ? "place" : "places"}
           </span>
         )}
       </div>

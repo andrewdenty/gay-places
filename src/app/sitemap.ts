@@ -4,6 +4,7 @@ import {
   getPublishedCountrySlugs,
   getAllPublishedVenuesForSitemap,
 } from "@/lib/data/public";
+import { venueUrlPath } from "@/lib/slugs";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
@@ -42,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const venueRoutes: MetadataRoute.Sitemap = venues.map((venue) => ({
-    url: `${BASE_URL}/city/${venue.city_slug}/venue/${venue.slug}`,
+    url: `${BASE_URL}${venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)}`,
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconButton } from "@/components/ui/icon-button";
+import { venueUrlPath } from "@/lib/slugs";
 
 type CityResult = {
   id: string;
@@ -27,7 +28,7 @@ const venueTypeLabel: Record<string, string> = {
   cafe: "Café",
   sauna: "Sauna",
   event_space: "Event Space",
-  other: "Venue",
+  other: "Place",
 };
 
 export function SearchModal({
@@ -81,7 +82,7 @@ export function SearchModal({
     if (!isOpen) return;
     const allResults = [
       ...cities.map((city) => `/city/${city.slug}`),
-      ...venues.map((venue) => `/city/${venue.city_slug}/venue/${venue.slug}`),
+      ...venues.map((venue) => venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)),
     ];
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -183,7 +184,7 @@ export function SearchModal({
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
-                placeholder="Search venues and cities…"
+                placeholder="Search places and cities…"
                 className="w-full rounded-full pl-12 pr-10 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
                 style={{
                   height: "56px",
@@ -264,7 +265,7 @@ export function SearchModal({
               {venues.length > 0 && (
                 <div className={cities.length > 0 ? "mt-4" : ""}>
                   <div className="px-4 pb-3 label-xs text-[var(--muted-foreground)]">
-                    VENUES
+                    PLACES
                   </div>
                   {venues.map((venue, i) => {
                     const venueIndex = cities.length + i;
@@ -272,7 +273,7 @@ export function SearchModal({
                     <button
                       key={venue.id}
                       type="button"
-                      onClick={() => navigate(`/city/${venue.city_slug}/venue/${venue.slug}`)}
+                      onClick={() => navigate(venueUrlPath(venue.city_slug, venue.venue_type, venue.slug))}
                       aria-current={selectedIndex === venueIndex ? true : undefined}
                       className={`flex w-full items-center justify-between px-4 py-4 text-left transition-colors border-b border-[#F0F0ED] ${selectedIndex === venueIndex ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]"}`}
                     >
@@ -281,7 +282,7 @@ export function SearchModal({
                           {venue.name}
                         </div>
                         <div className="mt-0.5 text-[13px] text-[var(--muted-foreground)]">
-                          {venueTypeLabel[venue.venue_type] ?? "Venue"}
+                          {venueTypeLabel[venue.venue_type] ?? "Place"}
                           <span className="mx-1.5">·</span>
                           {venue.city_name}
                         </div>

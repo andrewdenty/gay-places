@@ -23,7 +23,7 @@ export default async function AdminHomePage() {
 
   const stats = [
     {
-      label: "Venues",
+      label: "Places",
       value: venueCount ?? 0,
       href: "/admin/venues",
     },

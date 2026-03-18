@@ -46,7 +46,7 @@ export default async function LandingPage() {
                     {city.name}
                   </span>
                   <span className="hidden sm:inline text-[14px] text-[var(--muted-foreground)] ml-3">
-                    {city.venue_count} {city.venue_count === 1 ? "venue" : "venues"}
+                    {city.venue_count} {city.venue_count === 1 ? "place" : "places"}
                   </span>
                 </div>
               </div>

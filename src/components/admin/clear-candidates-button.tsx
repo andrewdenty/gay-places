@@ -10,7 +10,7 @@ export function ClearCandidatesButton() {
   async function handleClear() {
     const confirmed = window.confirm(
       "Are you sure you want to clear ALL pending candidates?\n\n" +
-        "This will permanently delete all pending venue candidates. " +
+        "This will permanently delete all pending place candidates. " +
         "Approved and rejected candidates will be preserved.\n\n" +
         "This action cannot be undone.",
     );
