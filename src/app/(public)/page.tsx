@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { getCities, getTopCitiesByVenueCount, getPublishedCountrySlugs } from "@/lib/data/public";
 import { RegionBrowser } from "@/components/city/region-browser";
 import { env } from "@/lib/env";
@@ -50,8 +51,9 @@ export default async function LandingPage() {
                   </span>
                 </div>
               </div>
-              <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
-                EXPLORE →
+              <span className="label-xs flex items-center gap-1 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
+                EXPLORE
+                <ArrowRight size={12} strokeWidth={1.5} />
               </span>
             </Link>
           ))}

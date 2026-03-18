@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -69,9 +70,10 @@ export default async function EditCityPage({
         <div>
           <Link
             href="/admin/cities"
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
-            ← Cities
+            <ArrowLeft size={14} strokeWidth={1.5} />
+            Cities
           </Link>
           <h1 className="mt-1 text-xl font-semibold tracking-tight">
             {city.name}
@@ -81,9 +83,10 @@ export default async function EditCityPage({
         <Link
           href={`/city/${city.slug}`}
           target="_blank"
-          className="mt-1 shrink-0 text-sm text-muted-foreground hover:text-foreground"
+          className="mt-1 shrink-0 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          View on site ↗
+          View on site
+          <ExternalLink size={14} strokeWidth={1.5} />
         </Link>
       </div>
 

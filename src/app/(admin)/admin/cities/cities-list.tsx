@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type CityRow = {
@@ -71,7 +72,9 @@ export function CitiesList({ cities }: { cities: CityRow[] }) {
                   <Button size="sm" variant="secondary">Edit</Button>
                 </Link>
                 <Link href={`/city/${c.slug}`} target="_blank">
-                  <Button size="sm" variant="secondary">View ↗</Button>
+                  <Button size="sm" variant="secondary" className="flex items-center gap-1">
+                    View <ExternalLink size={12} strokeWidth={1.5} />
+                  </Button>
                 </Link>
               </div>
             </div>

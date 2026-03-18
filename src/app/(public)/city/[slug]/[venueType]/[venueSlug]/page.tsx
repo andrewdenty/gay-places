@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { ExternalLink } from "lucide-react";
 import { OpeningHoursView } from "@/components/venue/opening-hours-view";
 import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
 import { VenueSectionRow } from "@/components/venue/venue-section-row";
@@ -98,7 +99,7 @@ export default async function VenuePage({
   }
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: photos }, nearbyVenues, publishedCountrySlugs] = await Promise.all([
+  const [{ data: photos }, nearbyVenues, publishedCountrySlugs, { data: isAdmin }] = await Promise.all([
     supabase
       .from("venue_photos")
       .select("id, storage_path")
@@ -106,6 +107,7 @@ export default async function VenuePage({
       .limit(5),
     getNearbyVenues(venue.city_id, venue.id, venue.lat, venue.lng),
     getPublishedCountrySlugs(),
+    supabase.rpc("is_admin"),
   ]);
 
   const permanentlyClosed = venue.closed === true;
@@ -255,9 +257,10 @@ export default async function VenuePage({
               href={venue.google_maps_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="label-xs shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              className="label-xs shrink-0 flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
-              GOOGLE MAPS ↗
+              OPEN IN MAPS
+              <ExternalLink size={12} strokeWidth={1.5} />
             </a>
           )}
         </div>
@@ -313,6 +316,7 @@ export default async function VenuePage({
         lat={venue.lat}
         lng={venue.lng}
         name={venue.name}
+        address={venue.address}
         googleMapsUrl={venue.google_maps_url}
       />
 
@@ -323,13 +327,13 @@ export default async function VenuePage({
             href={venue.website_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            className="label-xs flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           >
             {venue.website_url
               .replace(/^https?:\/\/(www\.)?/, "")
               .replace(/\/$/, "")
               .toUpperCase()}{" "}
-            ↗
+            <ExternalLink size={12} strokeWidth={1.5} />
           </a>
         </VenueSectionRow>
       )}
@@ -399,6 +403,17 @@ export default async function VenuePage({
           >
             Upload a Photo
           </Link>
+          {isAdmin && (
+            <>
+              <span className="mx-[8px] text-[var(--border)]">·</span>
+              <Link
+                href={`/admin/venues/${venue.slug}`}
+                className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
+              >
+                Admin
+              </Link>
+            </>
+          )}
         </div>
       </VenueSectionRow>
     </div>

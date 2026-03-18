@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ChevronDown, ArrowRight } from "lucide-react";
 import type { City } from "@/lib/data/public";
 import { toCountrySlug } from "@/lib/slugs";
 
@@ -146,26 +147,6 @@ function groupCities(cities: City[]): GroupedData[] {
   return result;
 }
 
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-    >
-      <path
-        d="M2 4.5L6 8.5L10 4.5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function RegionRow({ group, publishedCountrySlugs }: RegionRowProps) {
   const [open, setOpen] = useState(false);
 
@@ -183,7 +164,11 @@ function RegionRow({ group, publishedCountrySlugs }: RegionRowProps) {
           <span className="label-xs text-[var(--muted-foreground)]">
             {group.totalCities} {group.totalCities === 1 ? "CITY" : "CITIES"}
           </span>
-          <ChevronIcon open={open} />
+          <ChevronDown
+            size={12}
+            strokeWidth={1.5}
+            className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          />
         </div>
       </button>
 
@@ -214,8 +199,9 @@ function RegionRow({ group, publishedCountrySlugs }: RegionRowProps) {
                   <span className="text-[15px] text-[var(--foreground)]">
                     {city.name}
                   </span>
-                  <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
-                    EXPLORE →
+                  <span className="label-xs flex items-center gap-1 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
+                    EXPLORE
+                    <ArrowRight size={12} strokeWidth={1.5} />
                   </span>
                 </Link>
               ))}

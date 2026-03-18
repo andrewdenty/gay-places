@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { deleteVenue } from "./actions";
@@ -183,8 +184,8 @@ export function VenuesList({
                     href={venueUrlPath(v.cities.slug, v.venue_type, v.slug)}
                     target="_blank"
                   >
-                    <Button size="sm" variant="secondary">
-                      View ↗
+                    <Button size="sm" variant="secondary" className="flex items-center gap-1">
+                      View <ExternalLink size={12} strokeWidth={1.5} />
                     </Button>
                   </Link>
                 )}

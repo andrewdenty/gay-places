@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { ExternalLink } from "lucide-react";
 import {
   getCountryBySlug,
   getCitiesByCountryName,
@@ -277,8 +278,9 @@ export default async function CountryPage({
                   <Tag tone={VENUE_TYPE_TONE[venue.venue_type] ?? "neutral"}>
                     {VENUE_TYPE_LABEL[venue.venue_type] ?? venue.venue_type}
                   </Tag>
-                  <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors hidden sm:inline">
-                    VIEW ↗
+                  <span className="label-xs flex items-center gap-1 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors hidden sm:inline-flex">
+                    VIEW
+                    <ExternalLink size={12} strokeWidth={1.5} />
                   </span>
                 </div>
               </Link>

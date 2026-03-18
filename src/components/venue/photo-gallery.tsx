@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 type Photo = {
   id: string;
@@ -86,10 +87,7 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
             className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center text-white/70 hover:text-white transition-colors"
             aria-label="Close"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <line x1="1" y1="1" x2="17" y2="17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="17" y1="1" x2="1" y2="17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <X size={16} strokeWidth={1.5} />
           </button>
 
           {/* Counter */}
@@ -105,9 +103,7 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
               className="absolute left-4 flex h-10 w-10 items-center justify-center text-white/70 hover:text-white transition-colors"
               aria-label="Previous photo"
             >
-              <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
-                <path d="M9 1L1 9L9 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <ChevronLeft size={24} strokeWidth={1.5} />
             </button>
           )}
 
@@ -132,9 +128,7 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
               className="absolute right-4 flex h-10 w-10 items-center justify-center text-white/70 hover:text-white transition-colors"
               aria-label="Next photo"
             >
-              <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
-                <path d="M1 1L9 9L1 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <ChevronRight size={24} strokeWidth={1.5} />
             </button>
           )}
         </div>

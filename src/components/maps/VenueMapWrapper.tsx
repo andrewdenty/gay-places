@@ -11,6 +11,7 @@ type Props = {
   lat: number;
   lng: number;
   name: string;
+  address?: string | null;
   googleMapsUrl?: string | null;
 };
 

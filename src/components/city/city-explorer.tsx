@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
+import { ExternalLink, Search, X } from "lucide-react";
 import type { City, Venue } from "@/lib/data/public";
 import { isOpenNow } from "@/components/city/opening-hours";
 import { flattenVenueTags } from "@/lib/venue-tags";
@@ -108,10 +109,7 @@ export function CityExplorer({ city, venues }: Props) {
                 : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717]"
             }`}
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
-              <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Search size={16} strokeWidth={1.5} aria-hidden="true" />
           </button>
 
           {visiblePills.map((pill) => {
@@ -153,17 +151,12 @@ export function CityExplorer({ city, venues }: Props) {
         >
           <div className="pb-[14px] relative flex items-center gap-3">
             <div className="relative flex flex-1 items-center">
-              <svg
+              <Search
                 className="absolute left-5 text-[var(--muted-foreground)] pointer-events-none"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
+                size={16}
+                strokeWidth={1.5}
                 aria-hidden="true"
-              >
-                <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.3" />
-                <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-              </svg>
+              />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -285,9 +278,10 @@ export function CityExplorer({ city, venues }: Props) {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="label-xs shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                      className="label-xs shrink-0 flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                     >
-                      MAP ↗
+                      OPEN IN MAPS
+                      <ExternalLink size={12} strokeWidth={1.5} />
                     </a>
                   )}
                 </div>

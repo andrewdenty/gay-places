@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import type { City } from "@/lib/data/public";
 
 export function CountryCityRow({
@@ -23,8 +24,9 @@ export function CountryCityRow({
           </span>
         )}
       </div>
-      <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
-        EXPLORE →
+      <span className="label-xs flex items-center gap-1 text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
+        EXPLORE
+        <ArrowRight size={12} strokeWidth={1.5} />
       </span>
     </Link>
   );

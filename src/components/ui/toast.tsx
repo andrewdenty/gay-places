@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { X } from "lucide-react";
 
 type ToastType = "success" | "error";
 
@@ -149,26 +150,7 @@ function ToastItem({
         aria-label="Dismiss"
         className="ml-1 shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
       >
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <line
-            x1="1"
-            y1="1"
-            x2="9"
-            y2="9"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-          />
-          <line
-            x1="9"
-            y1="1"
-            x2="1"
-            y2="9"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-          />
-        </svg>
+        <X size={14} strokeWidth={1.5} />
       </button>
     </div>
   );

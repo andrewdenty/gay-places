@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Search, X, ArrowRight } from "lucide-react";
 import { IconButton } from "@/components/ui/icon-button";
 import { venueUrlPath } from "@/lib/slugs";
 
@@ -167,16 +168,11 @@ export function SearchModal({
           <div className="flex items-center gap-3">
             {/* Pill input */}
             <div className="relative flex flex-1 items-center">
-              <svg
+              <Search
                 className="absolute left-5 text-[var(--muted-foreground)] pointer-events-none"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-              >
-                <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.3" />
-                <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-              </svg>
+                size={16}
+                strokeWidth={1.5}
+              />
               <input
                 ref={setInputRef}
                 type="text"
@@ -199,10 +195,7 @@ export function SearchModal({
                   className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
                   aria-label="Clear search"
                 >
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                    <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                  </svg>
+                  <X size={14} strokeWidth={1.5} />
                 </button>
               ) : loading && (
                 <div className="absolute right-5 h-3.5 w-3.5 animate-spin rounded-full border border-[var(--border)] border-t-[var(--muted-foreground)]" />
@@ -211,10 +204,7 @@ export function SearchModal({
 
             {/* Close button */}
             <IconButton label="Close search" onClick={onClose}>
-              <svg width="20" height="20" viewBox="0 0 12 12" fill="none">
-                <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
+              <X size={16} strokeWidth={1.5} />
             </IconButton>
           </div>
 
@@ -248,15 +238,11 @@ export function SearchModal({
                           {city.country}
                         </div>
                       </div>
-                      <svg
+                      <ArrowRight
                         className="shrink-0 text-[var(--muted-foreground)]"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                      >
-                        <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                        size={12}
+                        strokeWidth={1.5}
+                      />
                     </button>
                   ))}
                 </div>
@@ -287,15 +273,11 @@ export function SearchModal({
                           {venue.city_name}
                         </div>
                       </div>
-                      <svg
+                      <ArrowRight
                         className="shrink-0 text-[var(--muted-foreground)]"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                      >
-                        <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                        size={12}
+                        strokeWidth={1.5}
+                      />
                     </button>
                     );
                   })}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { VenueTagPicker } from "@/components/venue/venue-tag-picker";
@@ -70,9 +71,10 @@ export default async function EditVenuePage({
         <div>
           <Link
             href="/admin/venues"
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
-            ← Places
+            <ArrowLeft size={14} strokeWidth={1.5} />
+            Places
           </Link>
           <h1 className="mt-1 text-xl font-semibold tracking-tight">
             {venue.name}
@@ -85,9 +87,10 @@ export default async function EditVenuePage({
           <Link
             href={venueUrlPath(city.slug, venue.venue_type, venue.slug)}
             target="_blank"
-            className="mt-1 shrink-0 text-sm text-muted-foreground hover:text-foreground"
+            className="mt-1 shrink-0 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
-            View on site ↗
+            View on site
+            <ExternalLink size={14} strokeWidth={1.5} />
           </Link>
         )}
       </div>
