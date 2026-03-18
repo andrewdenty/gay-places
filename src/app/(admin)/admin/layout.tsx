@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from "react";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminTabs } from "@/components/admin/admin-tabs";
+import { ToastProvider } from "@/components/ui/toast";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -14,20 +15,22 @@ export default async function AdminLayout({ children }: PropsWithChildren) {
   if (!user) redirect("/sign-in?next=/admin");
 
   return (
-    <div className="min-h-dvh flex flex-col bg-[var(--background)]">
-      {/* Admin header */}
-      <div className="sticky top-0 z-20 bg-[var(--background)]">
-        <AdminHeader userEmail={user.email!} />
-        <div className="pt-4">
-          <AdminTabs />
+    <ToastProvider>
+      <div className="min-h-dvh flex flex-col bg-[var(--background)]">
+        {/* Admin header */}
+        <div className="sticky top-0 z-20 bg-[var(--background)]">
+          <AdminHeader userEmail={user.email!} />
+          <div className="pt-4">
+            <AdminTabs />
+          </div>
         </div>
-      </div>
 
-      {/* Page content */}
-      <main className="flex-1 py-8">
-        <div className="mx-auto w-full max-w-[720px] px-4 sm:px-6">{children}</div>
-      </main>
-    </div>
+        {/* Page content */}
+        <main className="flex-1 py-8">
+          <div className="mx-auto w-full max-w-[720px] px-4 sm:px-6">{children}</div>
+        </main>
+      </div>
+    </ToastProvider>
   );
 }
 

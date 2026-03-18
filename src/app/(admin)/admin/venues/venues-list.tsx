@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { deleteVenue } from "./actions";
 
 type City = { id: string; name: string; slug: string };
@@ -47,6 +48,7 @@ export function VenuesList({
   const [cityFilter, setCityFilter] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
   const [isPending, startTransition] = useTransition();
+  const { showToast } = useToast();
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -88,6 +90,7 @@ export function VenuesList({
     startTransition(async () => {
       await deleteVenue(venue.id);
       setVenues((prev) => prev.filter((v) => v.id !== venue.id));
+      showToast(`"${venue.name}" deleted`);
     });
   }
 

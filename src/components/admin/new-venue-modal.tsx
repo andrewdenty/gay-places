@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AdminModal } from "@/components/admin/admin-modal";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { createVenue } from "@/app/(admin)/admin/venues/actions";
 
 type City = { id: string; name: string; slug: string };
@@ -14,6 +15,7 @@ const SELECT =
 
 export function NewVenueModal({ cities }: { cities: City[] }) {
   const [open, setOpen] = useState(false);
+  const { showToast } = useToast();
 
   return (
     <>
@@ -30,6 +32,7 @@ export function NewVenueModal({ cities }: { cities: City[] }) {
           action={async (formData) => {
             await createVenue(formData);
             setOpen(false);
+            showToast("Venue created successfully");
           }}
           className="grid gap-3 p-6 sm:grid-cols-2"
         >
