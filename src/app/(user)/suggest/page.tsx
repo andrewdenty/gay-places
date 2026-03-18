@@ -8,7 +8,7 @@ export default function SuggestPage() {
     <Container className="py-10 sm:py-14">
       <div className="mx-auto max-w-xl">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Suggest a new venue
+          Suggest a new place
         </h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Your suggestion will go to a moderation queue before it appears

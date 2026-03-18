@@ -97,9 +97,9 @@ export function RunDiscoveryModal({ availableSources, availableCities }: Props) 
           }}
         >
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl">
-            <h2 className="text-base font-semibold">Run venue discovery</h2>
+            <h2 className="text-base font-semibold">Run place discovery</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Scans LGBTQ+ travel sites for new venues. For a single city this
+              Scans LGBTQ+ travel sites for new places. For a single city this
               takes ~30 seconds; for all cities, use the nightly GitHub Actions
               workflow instead.
             </p>

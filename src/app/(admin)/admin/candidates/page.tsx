@@ -108,7 +108,7 @@ function LastRunBanner({ run }: { run: JobRun | null }) {
       <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
         <span>
           <span className="font-medium text-foreground">{run.total_new}</span>{" "}
-          new venues found
+          new places found
         </span>
         <span>
           <span className="font-medium text-foreground">
@@ -193,7 +193,7 @@ export default async function AdminCandidatesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">
-            Venue candidates
+          Place candidates
             {count > 0 && (
               <span className="ml-2 inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                 {count}
@@ -201,8 +201,8 @@ export default async function AdminCandidatesPage() {
             )}
           </h1>
           <div className="mt-2 text-sm text-muted-foreground">
-            Venues discovered by LGBTQ+ travel sites. Approve to create an
-            unpublished venue for further review, or reject to dismiss.
+            Places discovered by LGBTQ+ travel sites. Approve to create an
+            unpublished place for further review, or reject to dismiss.
           </div>
         </div>
         <div className="flex items-center gap-2">

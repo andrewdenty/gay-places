@@ -5,6 +5,7 @@ import Supercluster from "supercluster";
 import { useCallback, useRef } from "react";
 import { MapView } from "./MapView";
 import type { Venue } from "@/lib/data/public";
+import { venueUrlPath } from "@/lib/slugs";
 
 type Props = {
   venues: Venue[];
@@ -49,7 +50,7 @@ function createClusterMarker(count: number): HTMLButtonElement {
   el.style.fontFamily = "inherit";
   el.style.letterSpacing = "0";
   el.textContent = String(count);
-  el.setAttribute("aria-label", `${count} venues`);
+  el.setAttribute("aria-label", `${count} places`);
   return el;
 }
 
@@ -57,7 +58,7 @@ function buildPopupHtml(venue: Venue, citySlug: string): string {
   return `
     <div style="padding:10px 12px;font-family:inherit;min-width:140px">
       <div style="font-size:13px;font-weight:600;color:#171717;letter-spacing:-0.1px">${venue.name}</div>
-      <a href="/city/${citySlug}/venue/${venue.slug}" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#6e6e6d;text-decoration:none" onmouseover="this.style.color='#171717'" onmouseout="this.style.color='#6e6e6d'">View venue →</a>
+      <a href="${venueUrlPath(citySlug, venue.venue_type, venue.slug)}" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#6e6e6d;text-decoration:none" onmouseover="this.style.color='#171717'" onmouseout="this.style.color='#6e6e6d'">View place →</a>
     </div>
   `;
 }

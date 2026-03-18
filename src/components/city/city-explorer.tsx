@@ -6,6 +6,7 @@ import { useMemo, useRef, useState } from "react";
 import type { City, Venue } from "@/lib/data/public";
 import { isOpenNow } from "@/components/city/opening-hours";
 import { flattenVenueTags } from "@/lib/venue-tags";
+import { venueUrlPath } from "@/lib/slugs";
 
 const CityMap = dynamic(
   () => import("@/components/maps/CityMap").then((m) => m.CityMap),
@@ -100,7 +101,7 @@ export function CityExplorer({ city, venues }: Props) {
           <button
             type="button"
             onClick={searchOpen ? closeSearch : openSearch}
-            aria-label="Search venues"
+            aria-label="Search places"
             className={`h-[38px] w-[38px] shrink-0 rounded-full flex items-center justify-center transition-colors ${
               searchOpen
                 ? "bg-[#171717] text-white"
@@ -170,7 +171,7 @@ export function CityExplorer({ city, venues }: Props) {
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                placeholder="Search venues…"
+                placeholder="Search places…"
                 className="w-full rounded-full pl-12 pr-12 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
                 style={{
                   height: "48px",
@@ -209,7 +210,7 @@ export function CityExplorer({ city, venues }: Props) {
 
       {/* Venue count */}
       <div className="py-3 label-xs text-[var(--muted-foreground)]">
-        {filtered.length} venue{filtered.length === 1 ? "" : "s"}
+        {filtered.length} place{filtered.length === 1 ? "" : "s"}
       </div>
 
       {/* Venue list */}
@@ -223,8 +224,8 @@ export function CityExplorer({ city, venues }: Props) {
               key={v.slug}
               role="link"
               tabIndex={0}
-              onClick={() => router.push(`/city/${city.slug}/venue/${v.slug}`)}
-              onKeyDown={(e) => e.key === "Enter" && router.push(`/city/${city.slug}/venue/${v.slug}`)}
+              onClick={() => router.push(venueUrlPath(city.slug, v.venue_type, v.slug))}
+              onKeyDown={(e) => e.key === "Enter" && router.push(venueUrlPath(city.slug, v.venue_type, v.slug))}
               onMouseEnter={() => setSelectedSlug(v.slug)}
               onFocus={() => setSelectedSlug(v.slug)}
               className="block cursor-pointer"

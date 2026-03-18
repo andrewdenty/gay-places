@@ -131,7 +131,7 @@ export function NavDrawer({
                   <span>{city.name}</span>
                   <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--muted-foreground)]">
                     {city.venue_count != null
-                      ? `${city.venue_count} ${city.venue_count === 1 ? "venue" : "venues"}`
+                      ? `${city.venue_count} ${city.venue_count === 1 ? "place" : "places"}`
                       : city.country}
                   </span>
                 </Link>
@@ -151,7 +151,7 @@ export function NavDrawer({
                 className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
                 onClick={onClose}
               >
-                Submit a Venue
+                Submit a Place
               </Link>
             </nav>
           </div>

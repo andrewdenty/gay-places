@@ -11,6 +11,7 @@ import { CountryCityRow } from "@/components/country/country-city-row";
 import { Tag } from "@/components/ui/tag";
 import { env } from "@/lib/env";
 import type { Venue } from "@/lib/data/public";
+import { venueUrlPath } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
 
@@ -130,7 +131,7 @@ export async function generateMetadata({
   const description =
     country.seo_description ??
     country.intro ??
-    `Discover the best LGBTQ+ venues and gay bars across ${country.name}.`;
+    `Discover the best LGBTQ+ places and gay bars across ${country.name}.`;
   return {
     title,
     description,
@@ -259,7 +260,7 @@ export default async function CountryPage({
                 key={venue.id}
                 href={
                   venue.city_slug
-                    ? `/city/${venue.city_slug}/venue/${venue.slug}`
+                    ? venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)
                     : "#"
                 }
                 className="group flex items-start justify-between border-b border-[var(--border)] py-4 hover:bg-[var(--muted)] -mx-4 px-4 sm:-mx-6 sm:px-6 transition-colors gap-4"

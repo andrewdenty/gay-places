@@ -24,9 +24,9 @@ export default async function AdminVenuesPage() {
     <div>
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Venues</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Places</h1>
           <p className="mt-0.5 text-sm text-[var(--muted-foreground)]">
-            {(venues ?? []).length} venue{(venues ?? []).length !== 1 ? "s" : ""}
+            {(venues ?? []).length} place{(venues ?? []).length !== 1 ? "s" : ""}
           </p>
         </div>
         <NewVenueModal cities={cities ?? []} />

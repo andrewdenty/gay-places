@@ -20,19 +20,19 @@ export function NewVenueModal({ cities }: { cities: City[] }) {
   return (
     <>
       <Button type="button" onClick={() => setOpen(true)}>
-        New Venue
+        New Place
       </Button>
 
       <AdminModal
         isOpen={open}
         onClose={() => setOpen(false)}
-        title="New Venue"
+        title="New Place"
       >
         <form
           action={async (formData) => {
             await createVenue(formData);
             setOpen(false);
-            showToast("Venue created successfully");
+            showToast("Place created successfully");
           }}
           className="grid gap-3 p-6 sm:grid-cols-2"
         >
@@ -93,7 +93,7 @@ export function NewVenueModal({ cities }: { cities: City[] }) {
             className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--accent)] sm:col-span-2"
           />
           <div className="flex gap-3 sm:col-span-2">
-            <Button type="submit">Create venue</Button>
+            <Button type="submit">Create place</Button>
             <Button
               type="button"
               variant="secondary"
