@@ -1,7 +1,6 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { NewCityModal } from "@/components/admin/new-city-modal";
+import { CitiesList } from "./cities-list";
 
 export const dynamic = "force-dynamic";
 
@@ -32,47 +31,9 @@ export default async function AdminCitiesPage() {
         <NewCityModal countries={countryOptions} />
       </div>
 
-      <div className="mt-6 grid gap-2">
-        {(cities ?? []).map((c) => (
-          <div
-            key={c.id}
-            className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3"
-          >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {/* Info */}
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    href={`/admin/cities/${c.slug}`}
-                    className="text-sm font-medium hover:underline"
-                  >
-                    {c.name}
-                  </Link>
-                  {!c.published && (
-                    <span className="rounded-full bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
-                      Hidden
-                    </span>
-                  )}
-                </div>
-                <div className="mt-0.5 text-xs text-[var(--muted-foreground)]">
-                  {c.slug} · {c.country}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/admin/cities/${c.slug}`}>
-                  <Button size="sm" variant="secondary">Edit</Button>
-                </Link>
-                <Link href={`/city/${c.slug}`} target="_blank">
-                  <Button size="sm" variant="secondary">View ↗</Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <CitiesList cities={(cities ?? []) as { id: string; slug: string; name: string; country: string; published: boolean }[]} />
     </div>
   );
 }
+
 

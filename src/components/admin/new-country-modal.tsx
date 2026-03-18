@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AdminModal } from "@/components/admin/admin-modal";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { createCountry } from "@/app/(admin)/admin/countries/actions";
 
 const INPUT =
@@ -10,6 +11,7 @@ const INPUT =
 
 export function NewCountryModal() {
   const [open, setOpen] = useState(false);
+  const { showToast } = useToast();
 
   return (
     <>
@@ -26,6 +28,7 @@ export function NewCountryModal() {
           action={async (formData) => {
             await createCountry(formData);
             setOpen(false);
+            showToast("Country created successfully");
           }}
           className="grid gap-3 p-6 sm:grid-cols-2"
         >

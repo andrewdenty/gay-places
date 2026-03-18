@@ -147,7 +147,7 @@ export function NavDrawer({
             <p className="label-xs text-[var(--muted-foreground)] mb-3">CONTRIBUTE</p>
             <nav className="space-y-0">
               <Link
-                href="/submit"
+                href="/suggest"
                 className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
                 onClick={onClose}
               >

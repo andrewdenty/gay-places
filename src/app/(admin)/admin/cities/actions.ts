@@ -44,6 +44,7 @@ export async function createCity(formData: FormData) {
   const name = getText(formData, "name");
   const country = getText(formData, "country");
   const published = getText(formData, "published") === "true";
+  const description = getText(formData, "description") || null;
 
   const rawLat = getText(formData, "center_lat");
   const rawLng = getText(formData, "center_lng");
@@ -68,6 +69,7 @@ export async function createCity(formData: FormData) {
     center_lat,
     center_lng,
     published,
+    description,
   });
   if (error) throw error;
 }
