@@ -1,6 +1,6 @@
 /**
  * Comprehensive venue data ingestion script.
- * Reads JSON files for Copenhagen, London, Madrid, Manchester, Paris, and Sitges
+ * Reads JSON files for Amsterdam, Berlin, Cologne, Copenhagen, London, Lyon, Madrid, Manchester, Munich, Oslo, Paris, Sitges, Stockholm, and Torremolinos
  * from the repository root directory, replaces existing venues for each city,
  * and creates cities that don't already exist.
  *
@@ -187,6 +187,7 @@ const CITY_FILES: CityFile[] = [
   { filename: "Sitges.json", citySlug: "sitges", centerLat: 41.2376, centerLng: 1.8114 },
   { filename: "stockholm.json", citySlug: "stockholm", centerLat: 59.3293, centerLng: 18.0686 },
   { filename: "torremolinos.json", citySlug: "torremolinos", centerLat: 36.6224, centerLng: -4.4993 },
+  { filename: "cologne.json", citySlug: "cologne", centerLat: 50.9333, centerLng: 6.9500 },
 ];
 
 function loadJsonFile(filename: string): JsonCity | null {
