@@ -287,7 +287,7 @@ export function CityExplorer({ city, venues }: Props) {
                       onClick={(e) => e.stopPropagation()}
                       className="label-xs shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                     >
-                      MAP ↗
+                      OPEN IN MAPS ↗
                     </a>
                   )}
                 </div>
