@@ -144,7 +144,7 @@ Rules:
 
 ### Summary style
 
-Write `summary_short` as a 1–3 sentence editorial description. Be concrete and specific — explain what the venue is and what makes it distinctive. Avoid phrases like "vibrant atmosphere". Base statements on available evidence.
+Write `summary_short` as a 2–6 sentence editorial description. Be concrete and specific — explain what the venue is and what makes it distinctive. Avoid phrases like "vibrant atmosphere". Base statements on available evidence.
 
 Good example: *"A compact central bar known for its strong gin selection and lively karaoke nights. A regular stop for locals early in the evening before the city's clubs get busy."*
 
