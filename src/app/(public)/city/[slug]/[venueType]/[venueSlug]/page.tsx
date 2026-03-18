@@ -257,7 +257,7 @@ export default async function VenuePage({
               rel="noopener noreferrer"
               className="label-xs shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
-              GOOGLE MAPS ↗
+              OPEN IN MAPS ↗
             </a>
           )}
         </div>
