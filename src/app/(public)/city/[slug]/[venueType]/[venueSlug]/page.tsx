@@ -405,7 +405,7 @@ export default async function VenuePage({
             <>
               <span className="mx-[8px] text-[var(--border)]">·</span>
               <Link
-                href={`/admin/venues/${venue.slug}`}
+                href={`/admin/venues/${venue.id}`}
                 className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
               >
                 Admin

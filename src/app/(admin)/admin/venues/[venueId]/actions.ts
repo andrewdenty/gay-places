@@ -24,7 +24,6 @@ function getText(formData: FormData, key: string) {
 export async function updateVenueDetails(formData: FormData) {
   const supabase = await requireAdmin();
   const id = getText(formData, "id");
-  const venueSlug = getText(formData, "slug");
   const city_id = getText(formData, "city_id");
   const name = getText(formData, "name");
   const address = getText(formData, "address");
@@ -90,7 +89,7 @@ export async function updateVenueDetails(formData: FormData) {
   if (error) throw error;
 
   revalidatePath("/admin/venues");
-  revalidatePath(`/admin/venues/${venueSlug}`);
+  revalidatePath(`/admin/venues/${id}`);
 }
 
 /**
@@ -102,7 +101,6 @@ export async function updateVenueDetails(formData: FormData) {
 export async function generateBaseDescription(formData: FormData) {
   const supabase = await requireAdmin();
   const id = getText(formData, "id");
-  const venueSlug = getText(formData, "slug");
 
   // Fetch the fields the generator needs, including the city name.
   const { data: venue, error: fetchError } = await supabase
@@ -141,7 +139,7 @@ export async function generateBaseDescription(formData: FormData) {
     .eq("id", id);
   if (updateError) throw updateError;
 
-  revalidatePath(`/admin/venues/${venueSlug}`);
+  revalidatePath(`/admin/venues/${id}`);
 }
 
 export async function deleteVenueById(formData: FormData) {
@@ -173,7 +171,6 @@ export async function uploadVenuePhoto(formData: FormData) {
   const supabase = await requireAdmin();
   const adminSupabase = createSupabaseAdminClient();
   const venueId = getText(formData, "venue_id");
-  const venueSlug = getText(formData, "venue_slug");
   const file = formData.get("photo") as File;
 
   if (!file?.size) return;
@@ -193,7 +190,7 @@ export async function uploadVenuePhoto(formData: FormData) {
   });
   if (error) throw error;
 
-  revalidatePath(`/admin/venues/${venueSlug}`);
+  revalidatePath(`/admin/venues/${venueId}`);
 }
 
 export async function deleteVenuePhoto(formData: FormData) {
@@ -201,7 +198,7 @@ export async function deleteVenuePhoto(formData: FormData) {
   const adminSupabase = createSupabaseAdminClient();
   const photoId = getText(formData, "photo_id");
   const storagePath = getText(formData, "storage_path");
-  const venueSlug = getText(formData, "venue_slug");
+  const venueId = getText(formData, "venue_id");
 
   await adminSupabase.storage.from("venue-photos").remove([storagePath]);
   const { error } = await supabase
@@ -210,5 +207,5 @@ export async function deleteVenuePhoto(formData: FormData) {
     .eq("id", photoId);
   if (error) throw error;
 
-  revalidatePath(`/admin/venues/${venueSlug}`);
+  revalidatePath(`/admin/venues/${venueId}`);
 }

@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 
 interface AdminPhotoUploadProps {
   venueId: string;
-  venueSlug: string;
   uploadAction: (formData: FormData) => Promise<void>;
 }
 
 export function AdminPhotoUpload({
   venueId,
-  venueSlug,
   uploadAction,
 }: AdminPhotoUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -20,7 +18,6 @@ export function AdminPhotoUpload({
   return (
     <form action={uploadAction} className="mt-4">
       <input type="hidden" name="venue_id" value={venueId} />
-      <input type="hidden" name="venue_slug" value={venueSlug} />
       <input
         ref={fileInputRef}
         type="file"
