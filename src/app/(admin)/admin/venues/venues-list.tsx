@@ -58,7 +58,7 @@ export function VenuesList({
       if (!q) return true;
       return (
         v.name.toLowerCase().includes(q) ||
-        v.address.toLowerCase().includes(q)
+        (v.address ?? '').toLowerCase().includes(q)
       );
     });
 
