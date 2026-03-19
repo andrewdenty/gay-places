@@ -7,6 +7,7 @@ import type { City, Venue } from "@/lib/data/public";
 import { isOpenNow } from "@/components/city/opening-hours";
 import { flattenVenueTags } from "@/lib/venue-tags";
 import { venueUrlPath } from "@/lib/slugs";
+import { normalizeSearch } from "@/lib/normalize-search";
 
 const CityMap = dynamic(
   () => import("@/components/maps/CityMap").then((m) => m.CityMap),
@@ -65,12 +66,12 @@ export function CityExplorer({ city, venues }: Props) {
   );
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = normalizeSearch(query.trim());
     return venues.filter((v) => {
       if (type !== "all" && v.venue_type !== type) return false;
       if (openNow && !isOpenNow(v.opening_hours)) return false;
       if (!q) return true;
-      const hay = `${v.name} ${flattenVenueTags(v.venue_tags ?? {}).join(" ")}`.toLowerCase();
+      const hay = normalizeSearch(`${v.name} ${flattenVenueTags(v.venue_tags ?? {}).join(" ")}`);
       return hay.includes(q);
     });
   }, [venues, query, type, openNow]);

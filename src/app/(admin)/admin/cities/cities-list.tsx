@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { normalizeSearch } from "@/lib/normalize-search";
 
 type CityRow = {
   id: string;
@@ -16,13 +17,13 @@ export function CitiesList({ cities }: { cities: CityRow[] }) {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = normalizeSearch(search.trim());
     if (!q) return cities;
     return cities.filter(
       (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.country.toLowerCase().includes(q) ||
-        c.slug.toLowerCase().includes(q),
+        normalizeSearch(c.name).includes(q) ||
+        normalizeSearch(c.country).includes(q) ||
+        normalizeSearch(c.slug).includes(q),
     );
   }, [cities, search]);
 
