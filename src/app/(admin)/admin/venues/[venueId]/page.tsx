@@ -25,9 +25,9 @@ const TEXTAREA =
 export default async function EditVenuePage({
   params,
 }: {
-  params: Promise<{ venueSlug: string }>;
+  params: Promise<{ venueId: string }>;
 }) {
-  const { venueSlug } = await params;
+  const { venueId } = await params;
   const supabase = await createSupabaseServerClient();
 
   // Auth check
@@ -44,7 +44,7 @@ export default async function EditVenuePage({
     .select(
       "id,name,address,lat,lng,venue_type,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,description,description_base,description_editorial,description_generation_status,description_last_generated_at,published,closed,city_id,slug,opening_hours",
     )
-    .eq("slug", venueSlug)
+    .eq("id", venueId)
     .maybeSingle();
 
   if (!venue) notFound();
@@ -100,7 +100,6 @@ export default async function EditVenuePage({
           className="mt-4 grid gap-3 sm:grid-cols-2"
         >
           <input type="hidden" name="id" value={venue.id} />
-          <input type="hidden" name="slug" value={venue.slug} />
 
           <select name="city_id" defaultValue={venue.city_id} className={SELECT}>
             {(cities ?? []).map((c) => (
@@ -276,7 +275,6 @@ export default async function EditVenuePage({
         {/* Generate base description — separate form so it doesn't interfere with the main save */}
         <form action={generateBaseDescription} className="mt-3 border-t border-border pt-4">
           <input type="hidden" name="id" value={venue.id} />
-          <input type="hidden" name="slug" value={venue.slug} />
           <div className="flex items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">
               Auto-generate a base description from the place name, city, type, and tags.
@@ -312,7 +310,7 @@ export default async function EditVenuePage({
                     name="storage_path"
                     value={photo.storage_path}
                   />
-                  <input type="hidden" name="venue_slug" value={venue.slug} />
+                  <input type="hidden" name="venue_id" value={venue.id} />
                   <button
                     type="submit"
                     className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
@@ -330,7 +328,6 @@ export default async function EditVenuePage({
 
         <AdminPhotoUpload
             venueId={venue.id}
-            venueSlug={venue.slug}
             uploadAction={uploadVenuePhoto}
           />
       </Card>
