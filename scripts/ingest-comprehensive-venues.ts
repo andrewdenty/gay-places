@@ -287,7 +287,8 @@ async function ingestCity(cityFile: CityFile): Promise<number> {
   const cityName = jsonData.city;
   const cityCountry = jsonData.country;
 
-  // Upsert city record
+  // Upsert city record — conflict is detected via the cities_slug_lower_idx
+  // functional index (lower(slug)), so we must pass the expression form.
   const { data: cityData, error: cityError } = await supabase
     .from("cities")
     .upsert(
@@ -299,7 +300,7 @@ async function ingestCity(cityFile: CityFile): Promise<number> {
         center_lng: centerLng,
         published: true,
       },
-      { onConflict: "slug" }
+      { onConflict: "lower(slug)" }
     )
     .select("id")
     .single();

@@ -40,7 +40,7 @@ async function geocodeCity(
 
 export async function createCity(formData: FormData) {
   const supabase = await requireAdmin();
-  const slug = getText(formData, "slug");
+  const slug = getText(formData, "slug").toLowerCase();
   const name = getText(formData, "name");
   const country = getText(formData, "country");
   const published = getText(formData, "published") === "true";
