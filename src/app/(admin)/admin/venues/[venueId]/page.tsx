@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { VenueTagPicker } from "@/components/venue/venue-tag-picker";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { VenueTags } from "@/lib/venue-tags";
+import { TAG_CATEGORIES, type VenueTagCategory, type VenueTags } from "@/lib/venue-tags";
 import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto, generateBaseDescription } from "./actions";
 import { DeleteVenueButton } from "./delete-venue-button";
 import { AdminPhotoUpload } from "./admin-photo-upload";
@@ -21,6 +21,15 @@ const SELECT =
   "h-11 w-full rounded-xl border border-border bg-background px-3 text-sm";
 const TEXTAREA =
   "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-accent sm:col-span-2";
+
+/** Sub-section label used to break the long edit form into scannable groups. */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="col-span-full border-t border-border pt-4 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+      {children}
+    </div>
+  );
+}
 
 export default async function EditVenuePage({
   params,
@@ -49,7 +58,7 @@ export default async function EditVenuePage({
 
   if (!venue) notFound();
 
-  const [{ data: cities }, { data: photos }] = await Promise.all([
+  const [{ data: cities }, { data: photos }, { data: allVenueTags }] = await Promise.all([
     supabase
       .from("cities")
       .select("id,name,slug")
@@ -59,9 +68,28 @@ export default async function EditVenuePage({
       .select("id,storage_path")
       .eq("venue_id", venue.id)
       .order("created_at", { ascending: true }),
+    // Collect custom tags added to any venue so they appear globally in the picker.
+    supabase.from("venues").select("venue_tags").not("venue_tags", "is", null),
   ]);
 
   const city = (cities ?? []).find((c) => c.id === venue.city_id);
+
+  // Build per-category lists of custom tags (tags not in static TAG_CATEGORIES).
+  const customTagOptions: Partial<Record<VenueTagCategory, string[]>> = {};
+  for (const row of allVenueTags ?? []) {
+    const tags = row.venue_tags as VenueTags | null;
+    if (!tags) continue;
+    for (const { key, tags: staticTags } of TAG_CATEGORIES) {
+      for (const tag of tags[key] ?? []) {
+        if (!staticTags.includes(tag)) {
+          if (!customTagOptions[key]) customTagOptions[key] = [];
+          if (!customTagOptions[key]!.includes(tag)) {
+            customTagOptions[key]!.push(tag);
+          }
+        }
+      }
+    }
+  }
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -97,10 +125,11 @@ export default async function EditVenuePage({
         <div className="text-sm font-semibold">Place details</div>
         <form
           action={updateVenueDetails}
-          className="mt-4 grid gap-3 sm:grid-cols-2"
+          className="mt-5 grid gap-3 sm:grid-cols-2"
         >
           <input type="hidden" name="id" value={venue.id} />
 
+          {/* ── Basics ─────────────────────────────────────────────────── */}
           <select name="city_id" defaultValue={venue.city_id} className={SELECT}>
             {(cities ?? []).map((c) => (
               <option key={c.id} value={c.id}>
@@ -136,6 +165,9 @@ export default async function EditVenuePage({
             placeholder="Address"
             className={INPUT}
           />
+
+          {/* ── Location ───────────────────────────────────────────────── */}
+          <SectionLabel>Location</SectionLabel>
           <input
             name="lat"
             defaultValue={String(venue.lat ?? "")}
@@ -148,6 +180,9 @@ export default async function EditVenuePage({
             placeholder="Longitude"
             className={INPUT}
           />
+
+          {/* ── Links ──────────────────────────────────────────────────── */}
+          <SectionLabel>Links</SectionLabel>
           <input
             name="website_url"
             defaultValue={venue.website_url ?? ""}
@@ -172,20 +207,24 @@ export default async function EditVenuePage({
             placeholder="Facebook URL"
             className={INPUT}
           />
-          {/* Tags */}
+
+          {/* ── Tags ───────────────────────────────────────────────────── */}
+          <SectionLabel>Tags</SectionLabel>
           <div className="sm:col-span-2">
-            <div className="mb-2 text-xs font-medium text-muted-foreground">Tags</div>
             <VenueTagPicker
               initialTags={(venue.venue_tags as VenueTags) ?? {}}
+              customTagOptions={customTagOptions}
             />
           </div>
 
-          {/* ── Description ──────────────────────────────────────────── */}
+          {/* ── Description ────────────────────────────────────────────── */}
+          <SectionLabel>Description</SectionLabel>
+
           {/* Editorial description (human-curated, takes priority) */}
           <div className="sm:col-span-2">
             <div className="mb-1 text-xs text-muted-foreground">
-              Editorial description{" "}
-              <span className="text-[10px] opacity-60">
+              Editorial{" "}
+              <span className="text-muted-foreground/60">
                 — shown on the public page; overrides auto-generated text
               </span>
             </div>
@@ -202,13 +241,11 @@ export default async function EditVenuePage({
           <div className="sm:col-span-2">
             <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
               <span>
-                Base description{" "}
-                <span className="text-[10px] opacity-60">
-                  — auto-generated fallback; shown when editorial is empty
-                </span>
+                Auto-generated fallback{" "}
+                <span className="text-muted-foreground/60">— shown when editorial is empty</span>
               </span>
               {venue.description_generation_status && (
-                <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase">
+                <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
                   {venue.description_generation_status}
                 </span>
               )}
@@ -220,7 +257,6 @@ export default async function EditVenuePage({
               rows={2}
               className={`${TEXTAREA} cursor-default opacity-70`}
             />
-            {/* Hidden field so the save action can determine the correct status when editorial is cleared. */}
             <input type="hidden" name="description_base_exists" value={venue.description_base ? "1" : ""} />
             {venue.description_last_generated_at && (
               <p className="mt-0.5 text-[11px] text-muted-foreground">
@@ -232,10 +268,11 @@ export default async function EditVenuePage({
               </p>
             )}
           </div>
+
+          {/* ── Hours ──────────────────────────────────────────────────── */}
+          <SectionLabel>Opening hours</SectionLabel>
           <div className="sm:col-span-2">
-            <div className="mb-1 text-xs text-muted-foreground">
-              Opening hours (JSON)
-            </div>
+            <div className="mb-1 text-xs text-muted-foreground">JSON</div>
             <textarea
               name="opening_hours"
               defaultValue={JSON.stringify(venue.opening_hours ?? {}, null, 2)}
@@ -245,7 +282,8 @@ export default async function EditVenuePage({
             />
           </div>
 
-          {/* Status checkboxes */}
+          {/* ── Status ─────────────────────────────────────────────────── */}
+          <SectionLabel>Status</SectionLabel>
           <div className="flex items-center gap-6 sm:col-span-2">
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
