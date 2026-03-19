@@ -143,7 +143,7 @@ export function VenuesList({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
-                    href={`/admin/venues/${v.slug}`}
+                    href={`/admin/venues/${v.cities?.slug}/${v.slug}`}
                     className="text-sm font-medium hover:underline"
                   >
                     {v.name}
@@ -175,7 +175,7 @@ export function VenuesList({
                 >
                   Delete
                 </button>
-                <Link href={`/admin/venues/${v.slug}`}>
+                <Link href={`/admin/venues/${v.cities?.slug}/${v.slug}`}>
                   <Button size="sm" variant="secondary">Edit</Button>
                 </Link>
                 {v.cities?.slug && v.slug && (
