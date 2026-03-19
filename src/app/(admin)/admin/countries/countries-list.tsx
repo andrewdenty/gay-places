@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { updateCountry } from "./actions";
+import { normalizeSearch } from "@/lib/normalize-search";
 
 type CountryRow = {
   id: string;
@@ -196,12 +197,12 @@ export function CountriesList({ countries }: { countries: CountryRow[] }) {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = normalizeSearch(search.trim());
     if (!q) return countries;
     return countries.filter(
       (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.slug.toLowerCase().includes(q),
+        normalizeSearch(c.name).includes(q) ||
+        normalizeSearch(c.slug).includes(q),
     );
   }, [countries, search]);
 

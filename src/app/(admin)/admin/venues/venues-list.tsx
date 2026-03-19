@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { deleteVenue } from "./actions";
 import { venueUrlPath } from "@/lib/slugs";
+import { normalizeSearch } from "@/lib/normalize-search";
 
 type City = { id: string; name: string; slug: string };
 
@@ -52,13 +53,13 @@ export function VenuesList({
   const { showToast } = useToast();
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = normalizeSearch(search.trim());
     const result = venues.filter((v) => {
       if (cityFilter && v.city_id !== cityFilter) return false;
       if (!q) return true;
       return (
-        v.name.toLowerCase().includes(q) ||
-        (v.address ?? '').toLowerCase().includes(q)
+        normalizeSearch(v.name).includes(q) ||
+        normalizeSearch(v.address ?? '').includes(q)
       );
     });
 
