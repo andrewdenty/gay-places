@@ -1,7 +1,8 @@
 /**
  * Comprehensive venue data ingestion script.
- * Reads JSON files for Amsterdam, Berlin, Cologne, Copenhagen, London, Lyon, Madrid, Manchester, Munich, Oslo, Paris, Sitges, Stockholm, and Torremolinos
- * from the repository root directory, replaces existing venues for each city,
+ * Reads JSON files for Amsterdam, Berlin, Bologna, Cologne, Copenhagen, Florence, London, Lyon,
+ * Madrid, Manchester, Milan, Munich, Naples, Oslo, Palermo, Paris, Rome, Sitges, Stockholm,
+ * Torremolinos, and Turin from the repository root directory, replaces existing venues for each city,
  * and creates cities that don't already exist.
  *
  * Run with: npx tsx scripts/ingest-comprehensive-venues.ts
@@ -9,6 +10,7 @@
 import { createClient } from "@supabase/supabase-js";
 import * as fs from "fs";
 import * as path from "path";
+import https from "https";
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL ?? "https://oxdlypfblekvcsfarghv.supabase.co";
@@ -163,6 +165,47 @@ function mapTags(tags?: JsonTags): Record<string, string[]> {
 }
 
 // ---------------------------------------------------------------------------
+// Geocoding via Nominatim (OpenStreetMap)
+// ---------------------------------------------------------------------------
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function nominatimGet(url: string): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, { headers: { "User-Agent": "GayPlaces/1.0" } }, (res) => {
+      let data = "";
+      res.on("data", (chunk: Buffer) => (data += chunk.toString()));
+      res.on("end", () => {
+        try { resolve(JSON.parse(data)); }
+        catch (e) { reject(e); }
+      });
+    });
+    req.on("error", reject);
+    req.setTimeout(10000, () => { req.destroy(); reject(new Error("Nominatim timeout")); });
+  });
+}
+
+async function geocodeAddress(
+  address: string,
+  city: string,
+  country: string
+): Promise<{ lat: number; lng: number } | null> {
+  const query = encodeURIComponent(`${address}, ${city}, ${country}`);
+  const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
+  try {
+    const results = await nominatimGet(url) as Array<{ lat: string; lon: string }>;
+    if (Array.isArray(results) && results.length > 0) {
+      return { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
+    }
+  } catch (err) {
+    console.warn(`    ⚠ Geocode failed for "${address}": ${(err as Error).message}`);
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // JSON file loading
 // ---------------------------------------------------------------------------
 
@@ -189,6 +232,14 @@ const CITY_FILES: CityFile[] = [
   { filename: "torremolinos.json", citySlug: "torremolinos", centerLat: 36.6224, centerLng: -4.4993 },
   { filename: "cologne.json", citySlug: "cologne", centerLat: 50.9333, centerLng: 6.9500 },
   { filename: "leipzig.json", citySlug: "leipzig", centerLat: 51.3397, centerLng: 12.3731 },
+  // Italy
+  { filename: "bologna.json", citySlug: "bologna", centerLat: 44.4949, centerLng: 11.3426 },
+  { filename: "florence.json", citySlug: "florence", centerLat: 43.7696, centerLng: 11.2558 },
+  { filename: "milan.json", citySlug: "milan", centerLat: 45.4654, centerLng: 9.1859 },
+  { filename: "naples.json", citySlug: "naples", centerLat: 40.8518, centerLng: 14.2681 },
+  { filename: "palermo.json", citySlug: "palermo", centerLat: 38.1157, centerLng: 13.3615 },
+  { filename: "rome.json", citySlug: "rome", centerLat: 41.9028, centerLng: 12.4964 },
+  { filename: "turin.json", citySlug: "turin", centerLat: 45.0703, centerLng: 7.6869 },
 ];
 
 function loadJsonFile(filename: string): JsonCity | null {
@@ -281,8 +332,30 @@ async function ingestCity(cityFile: CityFile): Promise<number> {
     return 0;
   }
 
+  // Geocode venues that are missing coordinates
+  const geocodedVenues: JsonVenue[] = [];
+  for (const v of venues) {
+    if (v.latitude == null || v.longitude == null) {
+      const addr = buildAddress(v);
+      const venueCity = v.city ?? cityName;
+      const venueCountry = v.country ?? cityCountry;
+      console.log(`  → Geocoding "${v.name}" (${addr})...`);
+      await sleep(1100); // Nominatim rate limit: 1 req/sec
+      const coords = await geocodeAddress(addr, venueCity, venueCountry);
+      if (coords) {
+        console.log(`    ✓ ${coords.lat}, ${coords.lng}`);
+        geocodedVenues.push({ ...v, latitude: coords.lat, longitude: coords.lng });
+      } else {
+        console.warn(`    ⚠ Could not geocode "${v.name}", defaulting to city centre`);
+        geocodedVenues.push({ ...v, latitude: centerLat, longitude: centerLng });
+      }
+    } else {
+      geocodedVenues.push(v);
+    }
+  }
+
   const usedSlugs = new Set<string>();
-  const venueInserts = venues.map((v) => {
+  const venueInserts = geocodedVenues.map((v) => {
     let slug = generateSlug(v.name);
     // Ensure slug uniqueness within this city batch
     if (usedSlugs.has(slug)) {
@@ -294,17 +367,13 @@ async function ingestCity(cityFile: CityFile): Promise<number> {
     }
     usedSlugs.add(slug);
 
-    if (v.latitude == null || v.longitude == null) {
-      console.warn(`  ⚠ "${v.name}" is missing coordinates, defaulting to 0,0`);
-    }
-
     return {
       city_id: cityId,
       slug,
       name: v.name,
       address: buildAddress(v),
-      lat: v.latitude ?? 0,
-      lng: v.longitude ?? 0,
+      lat: v.latitude!,
+      lng: v.longitude!,
       venue_type: mapVenueType(v.venue_type),
       description: v.summary_short ?? "",
       description_base: v.summary_short ?? "",
