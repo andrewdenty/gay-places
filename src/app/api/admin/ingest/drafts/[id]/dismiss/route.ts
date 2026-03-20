@@ -24,37 +24,18 @@ export async function POST(
 
   const admin = createSupabaseAdminClient();
 
-  // Fetch the ingest candidate
-  const { data: candidate, error: fetchErr } = await admin
-    .from("ingest_candidates")
-    .select("id,status")
-    .eq("id", id)
-    .single();
-
-  if (fetchErr) {
-    return NextResponse.json({ error: fetchErr.message }, { status: 400 });
-  }
-
-  const c = candidate as { id: string; status: string };
-
-  if (c.status !== "pending") {
-    return NextResponse.json(
-      { error: "Candidate is not pending" },
-      { status: 400 },
-    );
-  }
-
-  const { error: updateErr } = await admin
-    .from("ingest_candidates")
+  const { error } = await admin
+    .from("ingest_drafts")
     .update({
-      status: "approved",
+      status: "dismissed",
       reviewed_by: user.id,
       reviewed_at: new Date().toISOString(),
     })
-    .eq("id", c.id);
+    .eq("id", id)
+    .not("status", "eq", "published");
 
-  if (updateErr) {
-    return NextResponse.json({ error: updateErr.message }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });
