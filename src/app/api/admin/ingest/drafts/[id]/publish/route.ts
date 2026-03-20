@@ -161,9 +161,8 @@ export async function POST(
       typeof draft.lng === "number" && isFinite(draft.lng) ? draft.lng : 0;
     const summaryShort =
       typeof draft.summary_short === "string" ? draft.summary_short.trim() : "";
-    const whyUnique = Array.isArray(draft.why_unique)
-      ? (draft.why_unique as string[]).join("\n")
-      : "";
+    const whyUnique =
+      typeof draft.why_unique === "string" ? draft.why_unique.trim() : "";
     const venueTags =
       typeof draft.venue_tags === "object" && draft.venue_tags !== null
         ? (draft.venue_tags as VenueTags)

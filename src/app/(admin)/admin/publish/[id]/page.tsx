@@ -20,7 +20,7 @@ type DraftData = {
   facebook_url: string | null;
   phone: string | null;
   summary_short: string;
-  why_unique: string[];
+  why_unique: string;
   venue_tags: VenueTags;
   opening_hours: unknown;
   discovery_sources: string[];

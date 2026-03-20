@@ -16,7 +16,7 @@ interface DraftData {
   facebook_url: string | null;
   phone: string | null;
   summary_short: string;
-  why_unique: string[];
+  why_unique: string;
   venue_tags: VenueTags;
   opening_hours: unknown;
   discovery_sources: string[];
@@ -44,9 +44,7 @@ export function EditDraftForm({ draftId, initialDraft, initialNotes }: Props) {
   const [summaryShort, setSummaryShort] = useState(
     initialDraft.summary_short ?? "",
   );
-  const [whyUnique, setWhyUnique] = useState(
-    (initialDraft.why_unique ?? []).join("\n"),
-  );
+  const [whyUnique, setWhyUnique] = useState(initialDraft.why_unique ?? "");
   const [venueTags, setVenueTags] = useState<VenueTags>(
     initialDraft.venue_tags ?? {},
   );
@@ -89,10 +87,7 @@ export function EditDraftForm({ draftId, initialDraft, initialNotes }: Props) {
       website_url: websiteUrl.trim() || null,
       instagram_url: instagramUrl.trim() || null,
       summary_short: summaryShort.trim(),
-      why_unique: whyUnique
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
+      why_unique: whyUnique.trim(),
       venue_tags: venueTags,
       opening_hours: parsedHours,
       notes,
@@ -199,7 +194,10 @@ export function EditDraftForm({ draftId, initialDraft, initialNotes }: Props) {
           className="block text-sm font-medium mb-1"
           htmlFor="edit-summary"
         >
-          Summary
+          Summary{" "}
+          <span className="text-muted-foreground font-normal text-xs">
+            — 1–3 sentences shown on city listings
+          </span>
         </label>
         <textarea
           id="edit-summary"
@@ -211,20 +209,20 @@ export function EditDraftForm({ draftId, initialDraft, initialNotes }: Props) {
         />
       </div>
 
-      {/* Why Unique */}
+      {/* Editorial description */}
       <div>
         <label
           className="block text-sm font-medium mb-1"
           htmlFor="edit-why-unique"
         >
-          Why unique{" "}
+          Editorial description{" "}
           <span className="text-muted-foreground font-normal text-xs">
-            (one bullet per line)
+            — in-depth paragraph shown on the venue page
           </span>
         </label>
         <textarea
           id="edit-why-unique"
-          rows={3}
+          rows={4}
           value={whyUnique}
           onChange={(e) => setWhyUnique(e.target.value)}
           disabled={busy}

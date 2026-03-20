@@ -86,12 +86,8 @@ export async function PATCH(
   if (typeof body.summary_short === "string") {
     updatedDraft.summary_short = body.summary_short.trim();
   }
-  if (typeof body.why_unique !== "undefined") {
-    updatedDraft.why_unique = Array.isArray(body.why_unique)
-      ? body.why_unique.filter(
-          (s): s is string => typeof s === "string" && s.trim() !== "",
-        )
-      : [];
+  if (typeof body.why_unique === "string") {
+    updatedDraft.why_unique = body.why_unique.trim();
   }
   if (typeof body.opening_hours === "object" && body.opening_hours !== null) {
     updatedDraft.opening_hours = body.opening_hours;

@@ -223,16 +223,16 @@ export default async function EditVenuePage({
           {/* Editorial description (human-curated, takes priority) */}
           <div className="sm:col-span-2">
             <div className="mb-1 text-xs text-muted-foreground">
-              Editorial{" "}
+              Editorial description{" "}
               <span className="text-muted-foreground/60">
-                — shown on the public page; overrides auto-generated text
+                — in-depth paragraph shown on the venue page; overrides auto-generated text
               </span>
             </div>
             <textarea
               name="description_editorial"
               defaultValue={venue.description_editorial ?? ""}
-              placeholder="Write a short editorial description of this place…"
-              rows={3}
+              placeholder="Write an editorial paragraph about this venue…"
+              rows={4}
               className={TEXTAREA}
             />
           </div>
@@ -241,8 +241,8 @@ export default async function EditVenuePage({
           <div className="sm:col-span-2">
             <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
               <span>
-                Auto-generated fallback{" "}
-                <span className="text-muted-foreground/60">— shown when editorial is empty</span>
+                Summary{" "}
+                <span className="text-muted-foreground/60">— 1–3 sentences shown on city listings; auto-generated</span>
               </span>
               {venue.description_generation_status && (
                 <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
