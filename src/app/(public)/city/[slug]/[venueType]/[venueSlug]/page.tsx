@@ -327,10 +327,12 @@ export default async function VenuePage({
             rel="noopener noreferrer"
             className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           >
-            {venue.website_url
-              .replace(/^https?:\/\/(www\.)?/, "")
-              .replace(/\/$/, "")
-              .toUpperCase()}{" "}
+            {(() => {
+              const clean = venue.website_url!
+                .replace(/^https?:\/\/(www\.)?/, "")
+                .replace(/\/$/, "");
+              return clean.includes("/") ? "Website" : clean.toUpperCase();
+            })()}{" "}
             ↗
           </a>
         </VenueSectionRow>
