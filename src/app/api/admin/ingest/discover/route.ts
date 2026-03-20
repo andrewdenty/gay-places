@@ -3,6 +3,8 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { discoverVenuesWithGemini } from "@/lib/ai/gemini";
 
+export const maxDuration = 60;
+
 function deriveSlug(cityName: string): string {
   return cityName
     .toLowerCase()
