@@ -9,6 +9,7 @@ const tabs = [
   { label: "Cities", href: "/admin/cities" },
   { label: "Countries", href: "/admin/countries" },
   { label: "Submissions", href: "/admin/submissions" },
+  { label: "Research", href: "/admin/research" },
   { label: "Ingest", href: "/admin/ingest" },
   { label: "Candidates", href: "/admin/candidates" },
   { label: "Publish", href: "/admin/publish" },

@@ -32,10 +32,17 @@ function ConfidenceBadge({ confidence }: { confidence: string }) {
   return <Badge className="bg-red-100 text-red-800 border-red-200">✗ low</Badge>;
 }
 
-export default async function AdminCandidatesPage() {
+export default async function AdminCandidatesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const filterCity = typeof sp.city === "string" ? sp.city.trim() : "";
+
   const supabase = await createSupabaseServerClient();
 
-  const { data: candidates } = await supabase
+  let query = supabase
     .from("ingest_candidates")
     .select(
       "id,name,venue_type,city_slug,city_name,country,address,website_url," +
@@ -47,6 +54,11 @@ export default async function AdminCandidatesPage() {
     .order("created_at", { ascending: true })
     .limit(100);
 
+  if (filterCity) {
+    query = query.eq("city_slug", filterCity);
+  }
+
+  const { data: candidates } = await query;
   const count = (candidates ?? []).length;
 
   return (
