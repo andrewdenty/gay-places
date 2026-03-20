@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function AdminIngestPage() {
+export default function ResearchPage() {
   redirect("/admin/research/plan");
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { discoverVenuesWithGemini } from "@/lib/ai/gemini";
+import { geocodeCity } from "@/lib/utils/geocode";
 
 export const maxDuration = 60;
 
@@ -87,6 +88,28 @@ export async function POST(request: Request) {
       : 20;
 
   const admin = createSupabaseAdminClient();
+
+  // Auto-create city if it doesn't exist yet
+  const { data: existingCity } = await admin
+    .from("cities")
+    .select("id")
+    .eq("slug", citySlug)
+    .maybeSingle();
+
+  if (!existingCity) {
+    const coords = await geocodeCity(cityName, country);
+    if (coords) {
+      await admin.from("cities").insert({
+        slug: citySlug,
+        name: cityName,
+        country,
+        center_lat: coords.lat,
+        center_lng: coords.lng,
+        published: false,
+      });
+    }
+    // If geocode fails, proceed — publish step will surface the missing city error
+  }
 
   // Create ingest_jobs row (running)
   const { data: job, error: jobInsertErr } = await admin

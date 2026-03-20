@@ -94,9 +94,9 @@ export function RunIngestDiscovery({ onComplete }: Props) {
         <div className="mt-4 flex gap-2">
           <Button
             type="button"
-            onClick={() => window.location.assign("/admin/candidates")}
+            onClick={() => window.location.assign("/admin/research/new-places")}
           >
-            View candidates
+            View new places
           </Button>
           <Button type="button" variant="secondary" onClick={handleReset}>
             Run another
