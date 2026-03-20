@@ -219,7 +219,7 @@ export async function POST(
 
     if (draftUpdateErr) throw draftUpdateErr;
 
-    return NextResponse.json({ ok: true, venue_id: newVenue.id });
+    return NextResponse.json({ ok: true, venue_id: newVenue.id, city_slug: candidate.city_slug });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Publish failed";
     return NextResponse.json({ error: message }, { status: 400 });
