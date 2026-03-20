@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { DraftActions } from "@/components/admin/draft-actions";
 import { RunEnrichment } from "@/components/admin/run-enrichment";
+import { PublishFilters } from "@/components/admin/publish-filters";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +70,7 @@ export default async function ResearchPublishPage({
 
   const supabase = await createSupabaseServerClient();
 
+  // Fetch drafts — hide published by default unless explicitly requested
   let query = supabase
     .from("ingest_drafts")
     .select(
@@ -75,13 +78,28 @@ export default async function ResearchPublishPage({
         "ingest_candidates(id,name,city_name,city_slug,country)",
     )
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(200);
 
   if (filterStatus) {
     query = query.eq("status", filterStatus);
+  } else {
+    query = query.neq("status", "published");
   }
 
-  const { data: drafts } = await query;
+  // Fetch enrichment waiting count + city list from approved candidates
+  const [{ data: drafts }, { count: waitingCount }, { data: enrichCandidates }] =
+    await Promise.all([
+      query,
+      supabase
+        .from("ingest_candidates")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "approved"),
+      supabase
+        .from("ingest_candidates")
+        .select("city_slug")
+        .eq("status", "approved"),
+    ]);
+
   const allDrafts = (drafts ?? []) as unknown as IngestDraft[];
 
   const filtered = allDrafts.filter((d) => {
@@ -109,12 +127,13 @@ export default async function ResearchPublishPage({
     ),
   ).sort();
 
-  const statusOptions = [
-    "draft",
-    "ready_to_publish",
-    "dismissed",
-    "published",
-  ];
+  const enrichCities = Array.from(
+    new Set(
+      (enrichCandidates ?? [])
+        .map((c) => c.city_slug as string)
+        .filter(Boolean),
+    ),
+  ).sort();
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -128,7 +147,7 @@ export default async function ResearchPublishPage({
 
       <Card className="p-6">
         <h2 className="text-base font-semibold mb-4">Run enrichment</h2>
-        <RunEnrichment />
+        <RunEnrichment cities={enrichCities} waitingCount={waitingCount ?? 0} />
       </Card>
 
       <div>
@@ -137,60 +156,21 @@ export default async function ResearchPublishPage({
           {filtered.length !== allDrafts.length
             ? `(${filtered.length} of ${allDrafts.length})`
             : `(${allDrafts.length})`}
-        </h2>
-        <form method="get" className="flex flex-wrap gap-3 mb-4">
-          <select
-            name="city"
-            defaultValue={filterCity}
-            className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">All cities</option>
-            {cities.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
-          <select
-            name="status"
-            defaultValue={filterStatus}
-            className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">All statuses</option>
-            {statusOptions.map((s) => (
-              <option key={s} value={s}>
-                {s.replace(/_/g, " ")}
-              </option>
-            ))}
-          </select>
-
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="checkbox"
-              name="errors"
-              value="1"
-              defaultChecked={filterErrors}
-              className="rounded border-input"
-            />
-            Has errors
-          </label>
-
-          <button
-            type="submit"
-            className="rounded-md bg-foreground text-background px-3 py-1.5 text-sm font-medium hover:opacity-90"
-          >
-            Filter
-          </button>
-          {(filterCity || filterStatus || filterErrors) && (
-            <Link
-              href="/admin/research/publish"
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted"
-            >
-              Clear
-            </Link>
+          {!filterStatus && (
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              — published hidden
+            </span>
           )}
-        </form>
+        </h2>
+
+        <Suspense>
+          <PublishFilters
+            cities={cities}
+            filterCity={filterCity}
+            filterStatus={filterStatus}
+            filterErrors={filterErrors}
+          />
+        </Suspense>
 
         {filtered.length === 0 ? (
           <Card className="p-6">
@@ -209,6 +189,7 @@ export default async function ResearchPublishPage({
                 "Unknown";
               const errorCount = draft.validation_errors?.length ?? 0;
               const googleMapsUrl = draft.draft?.google_maps_url;
+              const citySlug = draft.ingest_candidates?.city_slug;
 
               return (
                 <Card key={draft.id} className="p-4">
@@ -287,7 +268,11 @@ export default async function ResearchPublishPage({
                       </div>
                     </div>
 
-                    <DraftActions id={draft.id} status={draft.status} />
+                    <DraftActions
+                      id={draft.id}
+                      status={draft.status}
+                      citySlug={citySlug}
+                    />
                   </div>
                 </Card>
               );

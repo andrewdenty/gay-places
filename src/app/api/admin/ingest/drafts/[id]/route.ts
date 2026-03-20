@@ -8,6 +8,38 @@ const VALID_TAGS_BY_CATEGORY: Record<string, Set<string>> = Object.fromEntries(
   TAG_CATEGORIES.map((cat) => [cat.key, new Set(cat.tags)]),
 );
 
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+
+  const sessionClient = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await sessionClient.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const { data: isAdmin, error: adminErr } =
+    await sessionClient.rpc("is_admin");
+  if (adminErr || isAdmin !== true) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error: deleteErr } = await admin
+    .from("ingest_drafts")
+    .delete()
+    .eq("id", id);
+
+  if (deleteErr) {
+    return NextResponse.json({ error: deleteErr.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },

@@ -12,7 +12,12 @@ interface EnrichResult {
   errors?: string[];
 }
 
-export function RunEnrichment() {
+interface Props {
+  cities: string[];
+  waitingCount: number;
+}
+
+export function RunEnrichment({ cities, waitingCount }: Props) {
   const [citySlug, setCitySlug] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<EnrichResult | null>(null);
@@ -25,7 +30,7 @@ export function RunEnrichment() {
     setResult(null);
 
     const body: { city_slug?: string } = {};
-    if (citySlug.trim()) body.city_slug = citySlug.trim();
+    if (citySlug) body.city_slug = citySlug;
 
     try {
       const res = await fetch("/api/admin/ingest/enrich", {
@@ -92,7 +97,7 @@ export function RunEnrichment() {
         <div className="mt-4 flex gap-2">
           <Button
             type="button"
-            onClick={() => window.location.assign("/admin/publish")}
+            onClick={() => window.location.assign("/admin/research/publish")}
           >
             View drafts
           </Button>
@@ -111,20 +116,35 @@ export function RunEnrichment() {
           className="block text-sm font-medium mb-1"
           htmlFor="enrich-city-slug"
         >
-          City slug{" "}
+          City{" "}
           <span className="text-muted-foreground font-normal">
             (optional — leave blank to enrich all approved candidates)
           </span>
         </label>
-        <input
+        <select
           id="enrich-city-slug"
-          type="text"
-          placeholder="e.g. amsterdam"
           value={citySlug}
           onChange={(e) => setCitySlug(e.target.value)}
           disabled={busy}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        />
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <option value="">All cities</option>
+          {cities.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        {waitingCount > 0 && (
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            {waitingCount} venue{waitingCount !== 1 ? "s" : ""} waiting for enrichment
+          </p>
+        )}
+        {waitingCount === 0 && (
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            No venues waiting for enrichment
+          </p>
+        )}
       </div>
 
       {error && (
@@ -133,7 +153,7 @@ export function RunEnrichment() {
         </div>
       )}
 
-      <Button type="submit" disabled={busy}>
+      <Button type="submit" disabled={busy || waitingCount === 0}>
         {busy ? "Running enrichment…" : "Run enrichment"}
       </Button>
     </form>
