@@ -334,7 +334,9 @@ function buildEnrichmentPrompt(input: EnrichmentInput): string {
 `
     : "\n## Google Places data: not available — do not fabricate coordinates or hours.\n";
 
-  return `You are a researcher helping build Gay Places, a curated directory of gay bars, clubs, saunas, and LGBTQ+ venues. Your task is to enrich the details for a single venue.
+  return `You are a travel writer for Gay Places, an editorial guide to gay venues around the world. Your writing is authoritative, specific, and culturally aware — closer to Monocle or a boutique travel magazine than a nightlife directory. Your readers are design-conscious, well-travelled, and unimpressed by generic praise. Write like someone who has actually been.
+
+Your task is to enrich the details for a single venue.
 
 ## Venue to enrich
 - Name: ${input.name}
@@ -350,8 +352,8 @@ ${buildTagAllowlist()}
 ## Instructions
 1. Use Google Places data as authoritative for: name, address, lat/lng, hours, phone, website.
 2. If no Places data, use discovery sources to inform the response. Leave lat/lng null if unverifiable.
-3. Write a \`summary_short\` of 2–6 sentences describing the venue concretely. Be specific. Avoid "vibrant atmosphere" and similar clichés.
-4. Write \`why_unique\` as 2–5 short factual bullet points highlighting what makes this venue distinctive.
+3. Write a \`summary_short\` of 1–3 sentences. This appears alongside a venue listing on a city page, so it needs to work at a glance. Lead with what makes the venue worth visiting — its character, crowd, design, history, or position in the city's scene. Be specific and concrete. Do not use: vibrant, iconic, legendary, must-visit, welcoming, lively, beloved, thriving, or any phrase that could apply to any venue in any city.
+4. Write \`why_unique\` as a single editorial paragraph of 3–6 sentences. This appears on the venue page immediately after \`summary_short\`, so it should go deeper rather than repeat. Draw on the venue's history, regulars, programming, design, or role in the local scene. Write in prose — no bullet points, no lists. The tone should feel like the opening of a magazine profile: observational, confident, and precise.
 5. Assign tags from the allowlist ONLY. 3–7 tags total. Leave a category empty rather than guess.
 6. Use the hours format: {"tz":"...", "mon":[], "tue":[], "wed":[], "thu":[], "fri":[{"start":"HH:MM","end":"HH:MM"}], "sat":[], "sun":[]}. Leave days empty if unknown.
 7. Populate discovery_sources and fact_sources with relevant URLs.
@@ -369,7 +371,7 @@ Return ONLY a JSON object (no markdown, no commentary) with this exact shape:
   "facebook_url": string | null,
   "phone": string | null,
   "summary_short": string,
-  "why_unique": string[],
+  "why_unique": string,
   "venue_tags": {
     "crowd": string[],
     "best_time": string[],

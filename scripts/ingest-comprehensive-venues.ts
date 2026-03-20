@@ -52,7 +52,7 @@ interface JsonVenue {
   slug?: string;
   venue_type?: string;
   summary_short?: string;
-  why_unique?: string | string[];
+  why_unique?: string | string[]; // string[] kept for backwards-compat with older JSON files
   address_line_1?: string;
   address_line_2?: string;
   postal_code?: string;
