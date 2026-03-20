@@ -65,10 +65,31 @@ export async function POST(request: Request) {
   const address = typeof body.address === "string" ? body.address.trim() || null : null;
   const websiteUrl = typeof body.website_url === "string" ? body.website_url.trim() || null : null;
 
+  // Create a "manual" job to satisfy the not-null job_id constraint
+  const { data: job, error: jobErr } = await admin
+    .from("ingest_jobs")
+    .insert({
+      type: "manual",
+      status: "succeeded",
+      params: { city_name: city.name, country: city.country, city_slug: citySlug },
+      stats: { total_inserted: 1 },
+      created_by: user.id,
+      finished_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+
+  if (jobErr) {
+    return NextResponse.json(
+      { error: `Failed to create job: ${jobErr.message}` },
+      { status: 500 },
+    );
+  }
+
   const { data: candidate, error: insertErr } = await admin
     .from("ingest_candidates")
     .insert({
-      job_id: null,
+      job_id: job.id,
       status: "pending",
       city_slug: citySlug,
       city_name: city.name,
