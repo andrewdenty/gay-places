@@ -4,7 +4,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { IngestCandidateActions } from "@/components/admin/ingest-candidate-actions";
 import { ClearIngestCandidatesButton } from "@/components/admin/clear-ingest-candidates-button";
 import { AddCandidateModal } from "@/components/admin/add-candidate-modal";
-import Link from "next/link";
+import { NewPlacesCityFilter } from "@/components/admin/new-places-city-filter";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -117,34 +118,9 @@ export default async function ResearchNewPlacesPage({
       </div>
 
       {/* City filter */}
-      <form method="get" className="mt-4 flex items-center gap-3">
-        <select
-          name="city"
-          defaultValue={filterCity}
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="">All cities</option>
-          {cityOptions.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="rounded-md bg-foreground text-background px-3 py-1.5 text-sm font-medium hover:opacity-90"
-        >
-          Filter
-        </button>
-        {filterCity && (
-          <Link
-            href="/admin/research/new-places"
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted"
-          >
-            Clear
-          </Link>
-        )}
-      </form>
+      <Suspense>
+        <NewPlacesCityFilter cities={cityOptions} filterCity={filterCity} />
+      </Suspense>
 
       <div className="mt-6 grid gap-3">
         {count === 0 ? (
