@@ -48,7 +48,7 @@ export default async function LandingPage() {
       {featuredCities.length > 0 && (
         <section className="mb-16">
           {/* Section header */}
-          <div className="flex items-end justify-between pb-2 border-b-[1.5px] border-[var(--foreground)] mb-0">
+          <div className="flex items-end justify-between pb-2 border-b-[1.5px] border-[var(--foreground)] mb-4">
             <h2
               className="text-[var(--foreground)]"
               style={{
