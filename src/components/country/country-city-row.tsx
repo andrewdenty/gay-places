@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import type { City } from "@/lib/data/public";
 
 export function CountryCityRow({
@@ -11,21 +12,22 @@ export function CountryCityRow({
   return (
     <Link
       href={`/city/${city.slug}`}
-      className="group flex items-center justify-between border-b border-[var(--border)] py-4 hover:bg-[var(--muted)] -mx-4 px-4 sm:-mx-6 sm:px-6 transition-colors"
+      className="group flex items-center justify-between border-b border-[var(--border)] py-3 overflow-hidden"
     >
-      <div className="flex items-baseline gap-3">
-        <span className="text-[15px] font-medium text-[var(--foreground)]">
+      <div className="flex flex-col gap-1 pt-3 pb-2 flex-1 min-w-0 mr-4">
+        <span className="text-[17px] font-semibold text-[var(--foreground)] leading-[1.4]">
           {city.name}
         </span>
         {venueCount > 0 && (
-          <span className="text-[13px] text-[var(--muted-foreground)]">
+          <div className="font-mono text-[12px] text-[var(--muted-foreground)] leading-[1.4]">
             {venueCount} {venueCount === 1 ? "place" : "places"}
-          </span>
+          </div>
         )}
       </div>
-      <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
-        EXPLORE →
-      </span>
+      <ArrowRight
+        size={18}
+        className="text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors shrink-0"
+      />
     </Link>
   );
 }
