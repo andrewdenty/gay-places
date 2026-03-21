@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
 import { CityExplorer } from "@/components/city/city-explorer";
@@ -136,6 +137,24 @@ export default async function CityPage({
         </div>
 
         <CityExplorer city={city} venues={venues} />
+
+        {/* ── Editorial moment ── */}
+        <section className="py-10 mt-8 border-t border-[var(--border)]">
+          <div className="flex flex-col items-center gap-5 py-4">
+            <Image
+              src="/better-places.svg"
+              alt="Find Better Places"
+              width={350}
+              height={287}
+              className="w-full max-w-[350px]"
+            />
+            <p className="text-[15px] text-[var(--foreground)] text-center leading-[1.4] max-w-[500px]">
+              Gay Places is a quietly curated guide to gay bars, clubs, and other spaces around the
+              world. Less directory, more edit, it brings together places with atmosphere, character,
+              and a reason to go.
+            </p>
+          </div>
+        </section>
       </div>
     </>
   );

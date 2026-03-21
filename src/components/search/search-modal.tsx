@@ -185,12 +185,12 @@ export function SearchModal({
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
-                placeholder="Search places and cities…"
+                placeholder="Search bars, clubs, places and cities…"
                 className="w-full rounded-full pl-12 pr-10 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
                 style={{
                   height: "56px",
-                  backgroundColor: "#F7F7F5",
-                  border: focused ? "1.5px solid #E4E4E1" : "1.5px solid transparent",
+                  backgroundColor: focused ? "#F7F7F5" : "#F7F7F5",
+                  border: focused ? "1.5px solid #E4E4E1" : "1.5px solid #F0F0ED",
                 }}
               />
               {query ? (

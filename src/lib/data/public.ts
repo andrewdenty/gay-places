@@ -96,6 +96,65 @@ export async function getCities(): Promise<City[]> {
 
 export type CityWithVenueCount = City & { venue_count: number };
 
+export async function getCitiesWithVenueCounts(): Promise<CityWithVenueCount[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("cities")
+    .select("id,slug,name,country,center_lat,center_lng,venues(count)")
+    .eq("published", true)
+    .eq("venues.published", true);
+  if (error) throw error;
+
+  const cities = (data ?? []) as (City & { venues: [{ count: number }] | null })[];
+  return cities
+    .map((c) => ({ ...c, venue_count: c.venues?.[0]?.count ?? 0 }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(({ venues: _v, ...city }) => city as CityWithVenueCount);
+}
+
+export type CityWithImage = CityWithVenueCount & { cover_image_path: string };
+
+export async function getTopCitiesWithImages(limit = 8): Promise<CityWithImage[]> {
+  const supabase = await createSupabaseServerClient();
+
+  // Get all published cities with venue counts, sorted by venue count descending
+  const { data: cityData, error: cityError } = await supabase
+    .from("cities")
+    .select("id,slug,name,country,center_lat,center_lng,venues(count)")
+    .eq("published", true)
+    .eq("venues.published", true);
+  if (cityError) throw cityError;
+
+  const citiesWithCount = ((cityData ?? []) as (City & { venues: [{ count: number }] | null })[])
+    .map((c) => ({ ...c, venue_count: c.venues?.[0]?.count ?? 0 }))
+    .sort((a, b) => b.venue_count - a.venue_count);
+
+  if (citiesWithCount.length === 0) return [];
+
+  // Check top candidates for a city-level image in the city-images bucket
+  const topCandidates = citiesWithCount.slice(0, 20);
+  const cityImageMap = new Map<string, string>();
+
+  await Promise.all(
+    topCandidates.map(async (city) => {
+      const { data: files } = await supabase.storage
+        .from("city-images")
+        .list(city.id, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
+      if (files && files.length > 0) {
+        cityImageMap.set(city.id, `${city.id}/${files[0].name}`);
+      }
+    })
+  );
+
+  return citiesWithCount
+    .filter((c) => cityImageMap.has(c.id))
+    .slice(0, limit)
+    .map(({ venues: _v, ...city }) => ({
+      ...city,
+      cover_image_path: cityImageMap.get(city.id)!,
+    })) as CityWithImage[];
+}
+
 export async function getTopCitiesByVenueCount(limit = 5): Promise<CityWithVenueCount[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase

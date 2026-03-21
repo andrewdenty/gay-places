@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { City } from "@/lib/data/public";
+import { ChevronDown } from "lucide-react";
+import type { CityWithVenueCount } from "@/lib/data/public";
 import { toCountrySlug } from "@/lib/slugs";
 
 // Map country names to regions
@@ -46,20 +47,20 @@ const COUNTRY_REGION: Record<string, string> = {
   "Slovenia": "Europe",
   "Slovakia": "Europe",
   "Cyprus": "Europe",
-  // Latin America
-  "Brazil": "Latin America",
-  "Argentina": "Latin America",
-  "Colombia": "Latin America",
-  "Chile": "Latin America",
-  "Peru": "Latin America",
-  "Uruguay": "Latin America",
-  "Costa Rica": "Latin America",
-  "Cuba": "Latin America",
-  "Puerto Rico": "Latin America",
-  "Ecuador": "Latin America",
-  "Bolivia": "Latin America",
-  "Venezuela": "Latin America",
-  "Panama": "Latin America",
+  // Latin America / The Americas
+  "Brazil": "The Americas",
+  "Argentina": "The Americas",
+  "Colombia": "The Americas",
+  "Chile": "The Americas",
+  "Peru": "The Americas",
+  "Uruguay": "The Americas",
+  "Costa Rica": "The Americas",
+  "Cuba": "The Americas",
+  "Puerto Rico": "The Americas",
+  "Ecuador": "The Americas",
+  "Bolivia": "The Americas",
+  "Venezuela": "The Americas",
+  "Panama": "The Americas",
   // Asia
   "Japan": "Asia",
   "Thailand": "Asia",
@@ -74,9 +75,9 @@ const COUNTRY_REGION: Record<string, string> = {
   "Hong Kong": "Asia",
   "Malaysia": "Asia",
   "Cambodia": "Asia",
-  // Australia Pacific
-  "Australia": "Australia Pacific",
-  "New Zealand": "Australia Pacific",
+  // Oceania
+  "Australia": "Oceania",
+  "New Zealand": "Oceania",
   // Africa
   "South Africa": "Africa",
   "Morocco": "Africa",
@@ -91,40 +92,36 @@ const COUNTRY_REGION: Record<string, string> = {
 };
 
 const REGION_ORDER = [
-  "North America",
-  "Europe",
-  "Latin America",
   "Asia",
-  "Australia Pacific",
+  "Europe",
   "Africa",
+  "The Americas",
+  "Oceania",
   "Middle East",
+  "North America",
 ];
 
 type GroupedData = {
   region: string;
-  totalCities: number;
-  countries: { name: string; cities: City[] }[];
+  totalVenues: number;
+  countries: { name: string; venueCount: number }[];
 };
 
-type RegionRowProps = { group: GroupedData; publishedCountrySlugs: Set<string> };
-
-function groupCities(cities: City[]): GroupedData[] {
-  // Group by country
-  const byCountry: Record<string, City[]> = {};
+function groupCities(cities: CityWithVenueCount[]): GroupedData[] {
+  // Accumulate venue counts by country
+  const byCountry: Record<string, number> = {};
   for (const city of cities) {
-    if (!byCountry[city.country]) byCountry[city.country] = [];
-    byCountry[city.country].push(city);
+    byCountry[city.country] = (byCountry[city.country] ?? 0) + (city.venue_count ?? 0);
   }
 
   // Group countries by region
-  const byRegion: Record<string, Record<string, City[]>> = {};
-  for (const [country, countryCities] of Object.entries(byCountry)) {
+  const byRegion: Record<string, Record<string, number>> = {};
+  for (const [country, count] of Object.entries(byCountry)) {
     const region = COUNTRY_REGION[country] ?? "Other";
     if (!byRegion[region]) byRegion[region] = {};
-    byRegion[region][country] = countryCities;
+    byRegion[region][country] = count;
   }
 
-  // Build sorted output
   const result: GroupedData[] = [];
   const orderedRegions = [
     ...REGION_ORDER.filter((r) => byRegion[r]),
@@ -134,100 +131,83 @@ function groupCities(cities: City[]): GroupedData[] {
   for (const region of orderedRegions) {
     const countries = Object.entries(byRegion[region] ?? {})
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name, cs]) => ({
-        name,
-        cities: cs.sort((a, b) => a.name.localeCompare(b.name)),
-      }));
+      .map(([name, venueCount]) => ({ name, venueCount }));
 
-    const totalCities = countries.reduce((sum, c) => sum + c.cities.length, 0);
-    result.push({ region, totalCities, countries });
+    const totalVenues = countries.reduce((sum, c) => sum + c.venueCount, 0);
+    result.push({ region, totalVenues, countries });
   }
 
   return result;
 }
 
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-    >
-      <path
-        d="M2 4.5L6 8.5L10 4.5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function RegionRow({ group, publishedCountrySlugs }: RegionRowProps) {
+function RegionRow({
+  group,
+  publishedCountrySlugs,
+}: {
+  group: GroupedData;
+  publishedCountrySlugs: Set<string>;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="-mx-4 sm:-mx-6">
+    <div>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="group flex w-full items-center justify-between border-b border-[var(--border)] px-4 sm:px-6 py-4 text-left hover:bg-[var(--muted)] transition-colors"
+        className={`flex w-full items-center justify-between py-6 text-left transition-colors ${open ? "" : "border-b border-[var(--border)]"}`}
       >
-        <span className="text-[15px] font-medium text-[var(--foreground)]">
-          {group.region}
-        </span>
-        <div className="flex items-center gap-3">
-          <span className="label-xs text-[var(--muted-foreground)]">
-            {group.totalCities} {group.totalCities === 1 ? "CITY" : "CITIES"}
+        <div className="flex flex-col gap-1">
+          <span className="text-[15px] font-semibold text-[var(--foreground)] leading-[1.4]">
+            {group.region}
           </span>
-          <ChevronIcon open={open} />
+          <span className="font-mono text-[12px] text-[var(--muted-foreground)] leading-[1.4]">
+            {group.totalVenues} {group.totalVenues === 1 ? "place" : "places"}
+          </span>
         </div>
+        <ChevronDown
+          size={24}
+          strokeWidth={1.5}
+          className={`shrink-0 text-[var(--muted-foreground)] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open && (
-        <div>
-          {group.countries.map((country) => (
-            <div key={country.name}>
-              <div className="border-b border-[var(--border)] px-4 sm:px-6 py-3">
-                {publishedCountrySlugs.has(toCountrySlug(country.name)) ? (
-                  <Link
-                    href={`/country/${toCountrySlug(country.name)}`}
-                    className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-                  >
-                    {country.name.toUpperCase()}
-                  </Link>
-                ) : (
-                  <span className="label-xs text-[var(--muted-foreground)]">
-                    {country.name.toUpperCase()}
-                  </span>
-                )}
-              </div>
-              {country.cities.map((city) => (
+        <div className="border-b border-[var(--border)] py-6">
+          <div className="grid grid-cols-3 gap-x-4 gap-y-1.5">
+            {group.countries.map((country) => {
+              const slug = toCountrySlug(country.name);
+              const hasPage = publishedCountrySlugs.has(slug);
+              return hasPage ? (
                 <Link
-                  key={city.id}
-                  href={`/city/${city.slug}`}
-                  className="group flex items-center justify-between border-b border-[var(--border)] px-4 sm:px-6 pl-8 sm:pl-10 py-4 hover:bg-[var(--muted)] transition-colors"
+                  key={country.name}
+                  href={`/country/${slug}`}
+                  className="text-[13px] text-[var(--foreground)] leading-[1.4] capitalize hover:underline underline-offset-2 truncate"
                 >
-                  <span className="text-[15px] text-[var(--foreground)]">
-                    {city.name}
-                  </span>
-                  <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
-                    EXPLORE →
-                  </span>
+                  {country.name}
                 </Link>
-              ))}
-            </div>
-          ))}
+              ) : (
+                <span
+                  key={country.name}
+                  className="text-[13px] text-[var(--foreground)] leading-[1.4] capitalize truncate"
+                >
+                  {country.name}
+                </span>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-export function RegionBrowser({ cities, publishedCountrySlugs }: { cities: City[]; publishedCountrySlugs: Set<string> }) {
+export function RegionBrowser({
+  cities,
+  publishedCountrySlugs,
+}: {
+  cities: CityWithVenueCount[];
+  publishedCountrySlugs: Set<string>;
+}) {
   const groups = groupCities(cities);
 
   if (groups.length === 0) {
