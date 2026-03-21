@@ -21,9 +21,21 @@ const jsWeekdayToKey: Record<number, keyof OpeningHours> = {
   6: "sat",
 };
 
+/** Convert "HH:MM" (24h) to a friendly label like "2am", "11:30pm", "midnight", "noon" */
+function formatHour(hhmm: string): string {
+  const parts = hhmm.split(":");
+  const h = parseInt(parts[0] ?? "0", 10);
+  const m = parseInt(parts[1] ?? "0", 10);
+  if (h === 0 && m === 0) return "midnight";
+  if (h === 12 && m === 0) return "noon";
+  const ampm = h < 12 ? "am" : "pm";
+  const hour = h % 12 || 12;
+  return m === 0 ? `${hour}${ampm}` : `${hour}:${m.toString().padStart(2, "0")}${ampm}`;
+}
+
 function fmtRanges(ranges: OpeningHoursRange[] | undefined) {
   if (!ranges || ranges.length === 0) return "Closed";
-  return ranges.map((r) => `${r.start}–${r.end}`).join(", ");
+  return ranges.map((r) => `${formatHour(r.start)} – ${formatHour(r.end)}`).join(", ");
 }
 
 export function OpeningHoursView({ hours }: { hours: OpeningHours | null }) {
@@ -32,32 +44,25 @@ export function OpeningHoursView({ hours }: { hours: OpeningHours | null }) {
   const todayKey = jsWeekdayToKey[new Date().getDay()];
 
   return (
-    <div className="w-full">
+    <div className="flex w-full flex-col gap-[8px]">
       {days.map((d, i) => {
         const isToday = d.key === todayKey;
+        const isLast = i === days.length - 1;
         return (
           <div
             key={d.key}
-            className={`flex items-center justify-between py-[8px] text-[13px] ${
-              i < days.length - 1 ? "border-b border-[var(--row-separator)]" : ""
-            }`}
+            className={`flex flex-col items-start pl-[4px]${isLast ? "" : " border-b border-[var(--row-separator)]"}`}
           >
-            <span
-              className={
-                isToday
-                  ? "font-semibold text-[var(--foreground)]"
-                  : "text-[var(--muted-foreground)]"
-              }
+            <div
+              className={`flex w-full items-center gap-[14px] pb-[8px] tag-mono${
+                isToday ? " font-semibold" : ""
+              }`}
             >
-              {d.label}
-            </span>
-            <span
-              className={
-                isToday ? "font-semibold text-[var(--foreground)]" : "text-[var(--foreground)]"
-              }
-            >
-              {fmtRanges(hours[d.key] as OpeningHoursRange[] | undefined)}
-            </span>
+              <span className="flex-1">{d.label}</span>
+              <span className="shrink-0">
+                {fmtRanges(hours[d.key] as OpeningHoursRange[] | undefined)}
+              </span>
+            </div>
           </div>
         );
       })}

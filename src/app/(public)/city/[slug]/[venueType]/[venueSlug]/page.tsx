@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { ArrowUpRight } from "lucide-react";
 import { OpeningHoursView } from "@/components/venue/opening-hours-view";
 import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
 import { VenueSectionRow } from "@/components/venue/venue-section-row";
@@ -10,7 +11,7 @@ import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
 import { env } from "@/lib/env";
-import { isOpenNow } from "@/components/city/opening-hours";
+import { isOpenNow, getOpenUntilLabel } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
 import type { OpeningHoursRange } from "@/lib/types/opening-hours";
 import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs";
@@ -112,6 +113,7 @@ export default async function VenuePage({
 
   const permanentlyClosed = venue.closed === true;
   const open = !permanentlyClosed && isOpenNow(venue.opening_hours);
+  const openUntilLabel = open ? getOpenUntilLabel(venue.opening_hours) : null;
   const venueTags = venue.venue_tags ?? {};
 
   // Detect "Leather" tag for place subtitle (crowd category)
@@ -166,6 +168,28 @@ export default async function VenuePage({
     ...(sameAs.length > 0 ? { sameAs } : {}),
   };
 
+  // Venue type display label
+  const venueTypeLabel =
+    venue.venue_type === "club"
+      ? "Dance Club"
+      : venue.venue_type === "cafe"
+        ? "Café"
+        : isLeatherBar
+          ? "Leather Bar"
+          : venue.venue_type === "bar"
+            ? "Bar"
+            : venue.venue_type.charAt(0).toUpperCase() +
+              venue.venue_type.slice(1).replace("_", " ");
+
+  // Website display label
+  const websiteLabel = (() => {
+    if (!venue.website_url) return null;
+    const clean = venue.website_url
+      .replace(/^https?:\/\/(www\.)?/, "")
+      .replace(/\/$/, "");
+    return clean.includes("/") ? "Website" : clean;
+  })();
+
   return (
     <>
       <script
@@ -178,245 +202,238 @@ export default async function VenuePage({
           __html: JSON.stringify(localBusinessJsonLd),
         }}
       />
-      <div className="py-6 sm:py-8">
+      <div className="pt-6 sm:pt-8 pb-[56px]">
         <VenueViewTracker venueId={venue.id} />
 
-      {/* Back link + breadcrumb */}
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div className="label-xs text-[var(--muted-foreground)]">
-          {countryPublished ? (
+        {/* Breadcrumb — venue type replaces "PLACE" on the right */}
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="breadcrumb text-[var(--muted-foreground)]">
+            {countryPublished ? (
+              <Link
+                href={`/country/${countrySlug}`}
+                className="hover:text-[var(--foreground)] transition-colors"
+              >
+                {city.country.toUpperCase()}
+              </Link>
+            ) : (
+              <span>{city.country.toUpperCase()}</span>
+            )}
+            <span className="mx-1">/</span>
             <Link
-              href={`/country/${countrySlug}`}
+              href={`/city/${city.slug}`}
               className="hover:text-[var(--foreground)] transition-colors"
             >
-              {city.country.toUpperCase()}
+              {city.name.toUpperCase()}
             </Link>
-          ) : (
-            <span>{city.country.toUpperCase()}</span>
-          )}
-          <span className="mx-1">/</span>
-          <Link
-            href={`/city/${city.slug}`}
-            className="hover:text-[var(--foreground)] transition-colors"
-          >
-            {city.name.toUpperCase()}
-          </Link>
-        </div>
-        <span className="label-xs text-[var(--muted-foreground)]">PLACE</span>
-      </div>
-
-      {/* Section 1 — Place identity */}
-      <section className="border-b border-[var(--border)] pb-6">
-        {/* Name + open status */}
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="h1-editorial">{venue.name}</h1>
-          {permanentlyClosed ? (
-            <div className="flex shrink-0 items-center gap-[6px] pt-2">
-              <span className="label-xs rounded-full border border-[#E63946]/30 bg-red-50 px-[8px] py-[3px] text-red-600">
-                PERMANENTLY CLOSED
-              </span>
-            </div>
-          ) : (
-            <div className="flex shrink-0 items-center gap-[6px] pt-2">
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
-              />
-              <span className="label-xs text-[var(--muted-foreground)]">
-                {open ? "OPEN NOW" : "CLOSED"}
-              </span>
-            </div>
-          )}
+          </div>
+          <span className="breadcrumb text-[var(--muted-foreground)]">
+            {venueTypeLabel.toUpperCase()}
+          </span>
         </div>
 
-        <p className="mt-1 text-[14px] text-[var(--muted-foreground)]">
-          {venue.venue_type === "club"
-            ? "Dance Club"
-            : venue.venue_type === "cafe"
-              ? "Café"
-              : isLeatherBar
-                ? "Leather Bar"
-                : venue.venue_type === "bar"
-                  ? "Bar"
-                  : venue.venue_type
-                      .charAt(0)
-                      .toUpperCase() + venue.venue_type.slice(1).replace("_", " ")}{" "}
-          · {city.name}
-        </p>
-
-        {/* Photo gallery */}
-        {photos && photos.length > 0 && (
-          <PhotoGallery photos={photos} />
-        )}
-
-        {/* Address */}
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <p className="text-[13px] text-[var(--foreground)]">{venue.address}</p>
-          {venue.google_maps_url && (
-            <a
-              href={venue.google_maps_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="label-xs shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+        {/* Section 1 — Place identity */}
+        <section className="border-b border-[var(--border)] pb-10">
+          {/* Name + open status */}
+          <div className="flex items-start justify-between gap-4">
+            <h1
+              className="h1-editorial"
+              style={{ fontSize: "48px", letterSpacing: "-0.96px" }}
             >
-              OPEN IN MAPS ↗
-            </a>
-          )}
-        </div>
+              {venue.name}
+            </h1>
 
-        {/* Description — priority: editorial → base → legacy */}
-        {(venue.description_editorial || venue.description_base || venue.description) && (
-          <p className="mt-4 text-[15px] leading-[1.4] text-[var(--foreground)]">
-            {venue.description_editorial ?? venue.description_base ?? venue.description}
-          </p>
-        )}
-      </section>
-
-      {/* Section 2 — Tag categories */}
-      {TAG_CATEGORIES.map(({ key, label }) => {
-        const categoryTags = venueTags[key];
-        if (!categoryTags || categoryTags.length === 0) return null;
-        return (
-          <VenueSectionRow key={key} label={label}>
-            <p className="text-[13px] text-[var(--foreground)]">
-              {categoryTags.map((t, i) => (
-                <span key={t}>
-                  {i > 0 && <span className="mx-[5px] text-[var(--muted-foreground)]">·</span>}
-                  {t}
+            {/* Open status indicator */}
+            {permanentlyClosed ? (
+              <div className="flex shrink-0 items-center gap-[6px] pt-2">
+                <span className="label-xs rounded-full border border-[#E63946]/30 bg-red-50 px-[8px] py-[3px] text-red-600">
+                  PERMANENTLY CLOSED
                 </span>
-              ))}
-            </p>
-          </VenueSectionRow>
-        );
-      })}
+              </div>
+            ) : (
+              <div className="flex shrink-0 items-center gap-[6px] pt-3">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+                />
+                <span className="open-status-text text-[var(--foreground)]">
+                  {open ? "Open now" : "Closed"}
+                </span>
+              </div>
+            )}
+          </div>
 
-      {/* Section 3 — Opening hours */}
-      {(() => {
-        const hrs = venue.opening_hours;
-        if (!hrs) return null;
-        const dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-        const hasAnyOpen = dayKeys.some((d) => {
-          const ranges = hrs[d] as OpeningHoursRange[] | undefined;
-          return ranges && ranges.length > 0;
-        });
-        if (!hasAnyOpen) return null;
-        return (
-          <div className="border-b border-[var(--border)] py-[24px]">
-            <span className="h2-editorial">{`Opening hours`}</span>
+          {/* Photo gallery */}
+          {photos && photos.length > 0 && (
             <div className="mt-4">
+              <PhotoGallery photos={photos} />
+            </div>
+          )}
+
+          {/* Description — priority: editorial → base → legacy */}
+          {(venue.description_editorial || venue.description_base || venue.description) && (
+            <p className="mt-6 text-[15px] leading-[1.4] text-[var(--foreground)]">
+              {venue.description_editorial ?? venue.description_base ?? venue.description}
+            </p>
+          )}
+
+          {/* Address + Map button — below description */}
+          <div className="mt-6 flex items-center justify-between gap-3">
+            <p className="text-[13px] text-[var(--foreground)]">{venue.address}</p>
+            {venue.google_maps_url && (
+              <a
+                href={venue.google_maps_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-sm btn-sm-secondary shrink-0"
+              >
+                Map
+                <ArrowUpRight size={16} strokeWidth={1.5} />
+              </a>
+            )}
+          </div>
+        </section>
+
+        {/* Section 2 — Tag categories */}
+        {TAG_CATEGORIES.map(({ key, label }) => {
+          const categoryTags = venueTags[key];
+          if (!categoryTags || categoryTags.length === 0) return null;
+          return (
+            <VenueSectionRow key={key} label={label}>
+              <div className="flex flex-wrap items-center justify-end gap-x-[6px]">
+                {categoryTags.map((t, i) => (
+                  <span key={t} className="flex items-center gap-[6px]">
+                    {i > 0 && (
+                      <span className="text-[var(--foreground)] text-[10px] font-semibold tracking-[1.2px]">
+                        •
+                      </span>
+                    )}
+                    <span className="tag-mono text-[var(--foreground)]">{t}</span>
+                  </span>
+                ))}
+              </div>
+            </VenueSectionRow>
+          );
+        })}
+
+        {/* Section 3 — Opening hours */}
+        {(() => {
+          const hrs = venue.opening_hours;
+          if (!hrs) return null;
+          const dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+          const hasAnyOpen = dayKeys.some((d) => {
+            const ranges = hrs[d] as OpeningHoursRange[] | undefined;
+            return ranges && ranges.length > 0;
+          });
+          if (!hasAnyOpen) return null;
+          return (
+            <div className="border-b border-[var(--border)] py-[24px]">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <span className="h2-editorial-sm">Opening hours</span>
+                {openUntilLabel && (
+                  <div className="flex items-center gap-[6px]">
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-[#22C55E]" />
+                    <span className="open-status-text text-[var(--foreground)]">
+                      {openUntilLabel}
+                    </span>
+                  </div>
+                )}
+              </div>
               <OpeningHoursView hours={venue.opening_hours} />
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
 
-      {/* Section 4 — Map */}
-      <VenueMapWrapper
-        lat={venue.lat}
-        lng={venue.lng}
-        name={venue.name}
-        googleMapsUrl={venue.google_maps_url}
-      />
+        {/* Section 4 — Map */}
+        <VenueMapWrapper
+          lat={venue.lat}
+          lng={venue.lng}
+          name={venue.name}
+          googleMapsUrl={venue.google_maps_url}
+        />
 
-      {/* Section 4b — Website */}
-      {venue.website_url && (
-        <VenueSectionRow label="Website">
-          <a
-            href={venue.website_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-          >
-            {(() => {
-              const clean = venue.website_url!
-                .replace(/^https?:\/\/(www\.)?/, "")
-                .replace(/\/$/, "");
-              return clean.includes("/") ? "Website" : clean.toUpperCase();
-            })()}{" "}
-            ↗
-          </a>
-        </VenueSectionRow>
-      )}
+        {/* Section 5 — Website */}
+        {venue.website_url && websiteLabel && (
+          <VenueSectionRow label="Website">
+            <a
+              href={venue.website_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-sm btn-sm-secondary"
+            >
+              {websiteLabel}
+              <ArrowUpRight size={16} strokeWidth={1.5} />
+            </a>
+          </VenueSectionRow>
+        )}
 
-      {/* Section 4c — Social */}
-      {(venue.instagram_url || venue.facebook_url) && (
-        <VenueSectionRow label="Social">
-          <div className="flex items-center" style={{ gap: "12px" }}>
-            {venue.instagram_url && (
-              <a
-                href={venue.instagram_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${venue.name} on Instagram`}
-                className="text-black hover:opacity-70 transition-opacity"
-              >
-                <InstagramIcon size={24} />
-              </a>
-            )}
-            {venue.facebook_url && (
-              <a
-                href={venue.facebook_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${venue.name} on Facebook`}
-                className="text-black hover:opacity-70 transition-opacity"
-              >
-                <FacebookIcon size={24} />
-              </a>
-            )}
-          </div>
-        </VenueSectionRow>
-      )}
-
-      {/* Section 5 — Nearby places */}
-      {nearbyVenues.length > 0 && (
-        <VenueSectionRow label="Nearby">
-          <div className="flex items-center gap-0 text-[13px]">
-            {nearbyVenues.map((v, i) => (
-              <span key={v.id} className="flex items-center">
-                {i > 0 && <span className="mx-[8px] text-[var(--border)]">·</span>}
-                <Link
-                  href={venueUrlPath(city.slug, v.venue_type, v.slug)}
-                  className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
+        {/* Section 6 — Social */}
+        {(venue.instagram_url || venue.facebook_url) && (
+          <VenueSectionRow label="Social">
+            <div className="flex items-center gap-[8px]">
+              {venue.facebook_url && (
+                <a
+                  href={venue.facebook_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${venue.name} on Facebook`}
+                  className="text-[var(--foreground)] transition-opacity hover:opacity-60"
                 >
-                  {v.name}
-                </Link>
-              </span>
-            ))}
-          </div>
-        </VenueSectionRow>
-      )}
+                  <FacebookIcon size={32} />
+                </a>
+              )}
+              {venue.instagram_url && (
+                <a
+                  href={venue.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${venue.name} on Instagram`}
+                  className="text-[var(--foreground)] transition-opacity hover:opacity-60"
+                >
+                  <InstagramIcon size={32} />
+                </a>
+              )}
+            </div>
+          </VenueSectionRow>
+        )}
 
-      {/* Section 6 — Contribute */}
-      <VenueSectionRow label="Contribute" bordered={false}>
-        <div className="flex items-center gap-0 text-[13px]">
-          <Link
-            href={`/venues/${venue.id}/suggest-edit`}
-            className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
-          >
-            Suggest an Edit
-          </Link>
-          <span className="mx-[8px] text-[var(--border)]">·</span>
-          <Link
-            href={`/venues/${venue.id}/upload-photo`}
-            className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
-          >
-            Upload a Photo
-          </Link>
-          {isAdmin && (
-            <>
-              <span className="mx-[8px] text-[var(--border)]">·</span>
-              <Link
-                href={`/admin/venues/${venue.id}`}
-                className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
-              >
+        {/* Section 7 — Nearby places */}
+        {nearbyVenues.length > 0 && (
+          <VenueSectionRow label="Nearby">
+            <div className="flex flex-wrap items-center justify-end gap-x-[6px] text-[13px]">
+              {nearbyVenues.map((v, i) => (
+                <span key={v.id} className="flex items-center gap-[6px]">
+                  {i > 0 && (
+                    <span className="text-[var(--border)] text-[10px] font-semibold">·</span>
+                  )}
+                  <Link
+                    href={venueUrlPath(city.slug, v.venue_type, v.slug)}
+                    className="text-[var(--foreground)] underline underline-offset-2 hover:opacity-70"
+                  >
+                    {v.name}
+                  </Link>
+                </span>
+              ))}
+            </div>
+          </VenueSectionRow>
+        )}
+
+        {/* Section 8 — Contribute */}
+        <VenueSectionRow label="Contribute" bordered={false}>
+          <div className="flex items-center gap-[8px]">
+            <Link href={`/venues/${venue.id}/suggest-edit`} className="btn-sm btn-sm-secondary">
+              Suggest an edit
+            </Link>
+            <Link href={`/venues/${venue.id}/upload-photo`} className="btn-sm btn-sm-secondary">
+              Add a photo
+            </Link>
+            {isAdmin && (
+              <Link href={`/admin/venues/${venue.id}`} className="btn-sm btn-sm-secondary">
                 Admin
               </Link>
-            </>
-          )}
-        </div>
-      </VenueSectionRow>
-    </div>
+            )}
+          </div>
+        </VenueSectionRow>
+      </div>
     </>
   );
 }
