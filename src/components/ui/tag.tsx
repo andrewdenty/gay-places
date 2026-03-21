@@ -20,7 +20,7 @@ export function Tag({
   return (
     <span className="inline-flex items-center gap-2 rounded-full bg-[#efefeb] px-3 py-1">
       <span
-        className="h-1.5 w-1.5 shrink-0 rounded-full"
+        className="block h-1.5 w-1.5 shrink-0 rounded-full"
         style={{ backgroundColor: dot }}
       />
       <span className="label-small text-[11px] uppercase tracking-[0.16em] leading-none text-[#333333]">

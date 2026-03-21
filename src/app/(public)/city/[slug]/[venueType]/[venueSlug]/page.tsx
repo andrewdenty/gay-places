@@ -252,7 +252,7 @@ export default async function VenuePage({
             ) : (
               <div className="flex shrink-0 items-center gap-[6px] pt-3">
                 <span
-                  className="h-2 w-2 shrink-0 rounded-full"
+                  className="block h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
                 />
                 <span className="open-status-text text-[var(--foreground)]">
@@ -331,7 +331,7 @@ export default async function VenuePage({
                 <span className="h2-editorial-sm">Opening hours</span>
                 {openUntilLabel && (
                   <div className="flex items-center gap-[6px]">
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-[#22C55E]" />
+                    <span className="block h-2 w-2 shrink-0 rounded-full bg-[#22C55E]" />
                     <span className="open-status-text text-[var(--foreground)]">
                       {openUntilLabel}
                     </span>
