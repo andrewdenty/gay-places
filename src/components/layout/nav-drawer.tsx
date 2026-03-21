@@ -136,8 +136,7 @@ export function NavDrawer({
             </nav>
           </div>
 
-          {/* Divider */}
-          <div className="mx-5 border-t border-[var(--border)] my-4" />
+          <div className="my-4" />
 
           {/* Contribute */}
           <div className="px-5 pb-2">
@@ -153,8 +152,7 @@ export function NavDrawer({
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="mx-5 border-t border-[var(--border)] my-4" />
+          <div className="my-4" />
 
           {/* Account */}
           <div className="px-5 pb-6">

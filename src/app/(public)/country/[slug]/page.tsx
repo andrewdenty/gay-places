@@ -192,7 +192,7 @@ export default async function CountryPage({
   const hasFeaturedVenues = orderedVenues.length > 0;
 
   return (
-    <div className="py-6 sm:py-8">
+    <div className="pt-8 pb-6 sm:pt-10 sm:pb-8">
       {/* Hero */}
       <header className="border-b border-[var(--border)] pb-8 mb-8">
         {region && (
