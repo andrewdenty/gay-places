@@ -4,9 +4,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isMissingColumnError } from "@/lib/data/public";
-import { updateCity } from "../actions";
+import { updateCity, uploadCityImage, removeCityImage } from "../actions";
+import { AdminCityImageUpload } from "./admin-city-image-upload";
 
 export const dynamic = "force-dynamic";
+
+const CITY_IMAGES_BASE =
+  "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
 const INPUT =
   "h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-accent";
@@ -34,7 +38,7 @@ export default async function EditCityPage({
   const [{ data: cityWithDesc, error: cityError }, { data: countries }] = await Promise.all([
     supabase
       .from("cities")
-      .select("id,slug,name,country,center_lat,center_lng,published,description")
+      .select("id,slug,name,country,center_lat,center_lng,published,description,image_path")
       .eq("slug", citySlug)
       .maybeSingle(),
     supabase
@@ -44,7 +48,7 @@ export default async function EditCityPage({
   ]);
 
   // If the description column doesn't exist yet (migration pending), fall back to base fields.
-  let city: typeof cityWithDesc & { description?: string | null } | null = cityWithDesc;
+  let city: typeof cityWithDesc & { description?: string | null; image_path?: string | null } | null = cityWithDesc;
   if (cityError) {
     if (isMissingColumnError(cityError)) {
       const { data: fallback } = await supabase
@@ -52,7 +56,7 @@ export default async function EditCityPage({
         .select("id,slug,name,country,center_lat,center_lng,published")
         .eq("slug", citySlug)
         .maybeSingle();
-      city = fallback ? { ...fallback, description: null } : null;
+      city = fallback ? { ...fallback, description: null, image_path: null } : null;
     } else {
       throw cityError;
     }
@@ -157,6 +161,43 @@ export default async function EditCityPage({
             <Button type="submit">Save changes</Button>
           </div>
         </form>
+      </Card>
+
+      {/* City image */}
+      <Card className="mt-6 p-6">
+        <div className="text-sm font-semibold">City image</div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          A single cover image for this city, used on city pages and the homepage.
+        </p>
+
+        {city.image_path ? (
+          <div className="mt-4">
+            <div className="relative inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`${CITY_IMAGES_BASE}/${city.image_path}`}
+                alt={`${city.name} city image`}
+                className="h-40 w-auto rounded-lg object-cover"
+              />
+            </div>
+            <form action={removeCityImage} className="mt-3">
+              <input type="hidden" name="city_id" value={city.id} />
+              <input type="hidden" name="city_slug" value={city.slug} />
+              <input type="hidden" name="image_path" value={city.image_path} />
+              <Button type="submit" variant="secondary" size="sm">
+                Remove image
+              </Button>
+            </form>
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted-foreground">No image yet.</p>
+        )}
+
+        <AdminCityImageUpload
+          cityId={city.id}
+          citySlug={city.slug}
+          uploadAction={uploadCityImage}
+        />
       </Card>
     </div>
   );

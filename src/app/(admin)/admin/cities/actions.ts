@@ -1,7 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { geocodeCity } from "@/lib/utils/geocode";
 
 async function requireAdmin() {
@@ -70,5 +72,62 @@ export async function updateCity(formData: FormData) {
     .update({ name, country, center_lat, center_lng, published, description })
     .eq("id", id);
   if (error) throw error;
+}
+
+export async function uploadCityImage(formData: FormData) {
+  const supabase = await requireAdmin();
+  const adminSupabase = createSupabaseAdminClient();
+  const cityId = getText(formData, "city_id");
+  const citySlug = getText(formData, "city_slug");
+  const file = formData.get("image") as File;
+
+  if (!file?.size) return;
+
+  // Remove the existing image from storage before uploading the new one.
+  const { data: existing } = await supabase
+    .from("cities")
+    .select("image_path")
+    .eq("id", cityId)
+    .maybeSingle();
+  if (existing?.image_path) {
+    await adminSupabase.storage.from("city-images").remove([existing.image_path]);
+  }
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const storagePath = `${cityId}/${Date.now()}.${ext}`;
+  const bytes = await file.arrayBuffer();
+
+  const { error: storageError } = await adminSupabase.storage
+    .from("city-images")
+    .upload(storagePath, bytes, { contentType: file.type, upsert: false });
+  if (storageError) throw storageError;
+
+  const { error } = await supabase
+    .from("cities")
+    .update({ image_path: storagePath })
+    .eq("id", cityId);
+  if (error) throw error;
+
+  revalidatePath(`/admin/cities/${citySlug}`);
+}
+
+export async function removeCityImage(formData: FormData) {
+  const supabase = await requireAdmin();
+  const adminSupabase = createSupabaseAdminClient();
+  const cityId = getText(formData, "city_id");
+  const citySlug = getText(formData, "city_slug");
+  const imagePath = getText(formData, "image_path");
+
+  if (imagePath) {
+    await adminSupabase.storage.from("city-images").remove([imagePath]);
+  }
+
+  const { error } = await supabase
+    .from("cities")
+    .update({ image_path: null })
+    .eq("id", cityId);
+  if (error) throw error;
+
+  revalidatePath(`/admin/cities/${citySlug}`);
 }
 
