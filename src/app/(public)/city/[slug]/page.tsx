@@ -121,7 +121,7 @@ export default async function CityPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <div className="py-6 sm:py-8">
+      <div className="pt-8 pb-6 sm:pt-10 sm:pb-8">
         {/* ── City header ── */}
         {cityImageUrl ? (
           /* With image: mobile = image → text, desktop = text → image */

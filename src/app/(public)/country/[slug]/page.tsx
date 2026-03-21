@@ -206,7 +206,7 @@ export default async function CountryPage({
     : [0, 20];
 
   return (
-    <div className="py-6 sm:py-8">
+    <div className="pt-8 pb-6 sm:pt-10 sm:pb-8">
       {/* Hero */}
       <header className="mb-10 sm:mb-14">
         {region && (

@@ -202,7 +202,7 @@ export default async function VenuePage({
           __html: JSON.stringify(localBusinessJsonLd),
         }}
       />
-      <div className="pt-6 sm:pt-8 pb-[56px]">
+      <div className="pt-8 sm:pt-10 pb-[56px]">
         <VenueViewTracker venueId={venue.id} />
 
         {/* Breadcrumb — venue type replaces "PLACE" on the right */}
@@ -271,13 +271,13 @@ export default async function VenuePage({
 
           {/* Description — priority: editorial → base → legacy */}
           {(venue.description_editorial || venue.description_base || venue.description) && (
-            <p className="mt-6 text-[15px] leading-[1.4] text-[var(--foreground)]">
+            <p className="mt-4 text-[15px] leading-[1.4] text-[var(--foreground)]">
               {venue.description_editorial ?? venue.description_base ?? venue.description}
             </p>
           )}
 
           {/* Address + Map button — below description */}
-          <div className="mt-6 flex items-center justify-between gap-3">
+          <div className="mt-4 flex items-center justify-between gap-3">
             <p className="text-[13px] text-[var(--foreground)]">{venue.address}</p>
             {venue.google_maps_url && (
               <a
