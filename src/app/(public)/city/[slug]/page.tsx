@@ -10,6 +10,9 @@ import { toCountrySlug } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
 
+const CITY_IMAGES_BASE =
+  "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
+
 export async function generateMetadata({
   params,
 }: {
@@ -108,6 +111,10 @@ export default async function CityPage({
     ],
   };
 
+  const cityImageUrl = city.image_path
+    ? `${CITY_IMAGES_BASE}/${city.image_path}`
+    : null;
+
   return (
     <>
       <script
@@ -115,31 +122,72 @@ export default async function CityPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <div className="py-6 sm:py-8">
-        <div className="mb-6">
-          <div className="label-xs text-[var(--muted-foreground)] mb-2">
-            {countryPublished ? (
-              <Link
-                href={`/country/${countrySlug}`}
-                className="hover:text-[var(--foreground)] transition-colors"
-              >
-                {city.country.toUpperCase()}
-              </Link>
-            ) : (
-              <span>{city.country.toUpperCase()}</span>
+        {/* ── City header ── */}
+        {cityImageUrl ? (
+          /* With image: mobile = image → text, desktop = text → image */
+          <div className="mb-10 sm:mb-14 flex flex-col">
+            {/* City image — below text on desktop, above on mobile */}
+            <div className="bg-[#f7f7f5] aspect-square overflow-hidden mb-10 sm:order-2 sm:mt-10 sm:mb-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cityImageUrl}
+                alt={city.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* City text — above image on desktop, below on mobile */}
+            <div className="flex flex-col gap-4 sm:order-1">
+              <div className="flex flex-col gap-1">
+                <div className="label-mono text-[var(--muted-foreground)]">
+                  {countryPublished ? (
+                    <Link
+                      href={`/country/${countrySlug}`}
+                      className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
+                    >
+                      {city.country}
+                    </Link>
+                  ) : (
+                    <span className="text-[var(--foreground)]">{city.country}</span>
+                  )}
+                </div>
+                <h1 className="h1-editorial">{city.name}</h1>
+              </div>
+              {city.description && (
+                <p className="text-[15px] text-[var(--foreground)] leading-[1.4]">
+                  {city.description}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* No image: standard stacked layout */
+          <div className="mb-8">
+            <div className="label-mono text-[var(--muted-foreground)] mb-1">
+              {countryPublished ? (
+                <Link
+                  href={`/country/${countrySlug}`}
+                  className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
+                >
+                  {city.country}
+                </Link>
+              ) : (
+                <span className="text-[var(--foreground)]">{city.country}</span>
+              )}
+            </div>
+            <h1 className="h1-editorial">{city.name}</h1>
+            {city.description && (
+              <p className="mt-4 text-[15px] text-[var(--foreground)] leading-[1.4]">
+                {city.description}
+              </p>
             )}
           </div>
-          <h1 className="h1-editorial">{city.name}</h1>
-          {city.description && (
-            <p className="mt-3 text-base text-[var(--muted-foreground)] leading-relaxed max-w-2xl">
-              {city.description}
-            </p>
-          )}
-        </div>
+        )}
 
         <CityExplorer city={city} venues={venues} />
 
         {/* ── Editorial moment ── */}
-        <section className="py-10 mt-8 border-t border-[var(--border)]">
+        <section className="py-10 mt-8">
           <div className="flex flex-col items-center gap-5 py-4">
             <Image
               src="/better-places.svg"

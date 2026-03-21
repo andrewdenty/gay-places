@@ -69,9 +69,9 @@ body {
    Uses the Next.js font variable directly (not the @theme inline var) */
 .h1-editorial {
   font-family: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
-  font-size: 40px;
+  font-size: 48px;
   line-height: 1.2;
-  letter-spacing: -0.8px;
+  letter-spacing: -0.96px;
   font-weight: 400;
 }
 
@@ -115,6 +115,34 @@ body {
   font-weight: 600;
   letter-spacing: 1.2px;
   text-transform: uppercase;
+}
+
+/* Geist Mono label — breadcrumbs, metadata, small UI labels */
+.label-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  line-height: normal;
+}
+
+/* Geist Mono tag — venue tags in card listings */
+.tag-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-transform: capitalize;
+}
+
+/* Geist Mono status — open/closed status in card listings */
+.status-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-transform: capitalize;
 }
 
 .label-small {
