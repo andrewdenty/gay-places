@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconButton } from "@/components/ui/icon-button";
+import { X } from "lucide-react";
 import { venueUrlPath } from "@/lib/slugs";
 
 type CityResult = {
@@ -199,10 +200,7 @@ export function SearchModal({
                   className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
                   aria-label="Clear search"
                 >
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                    <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                  </svg>
+                  <X size={12} strokeWidth={1.5} />
                 </button>
               ) : loading && (
                 <div className="absolute right-5 h-3.5 w-3.5 animate-spin rounded-full border border-[var(--border)] border-t-[var(--muted-foreground)]" />
@@ -211,10 +209,7 @@ export function SearchModal({
 
             {/* Close button */}
             <IconButton label="Close search" onClick={onClose}>
-              <svg width="20" height="20" viewBox="0 0 12 12" fill="none">
-                <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
+              <X size={24} strokeWidth={1.5} />
             </IconButton>
           </div>
 

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { SearchModal } from "@/components/search/search-modal";
 import { NavDrawer } from "@/components/layout/nav-drawer";
 import { IconButton } from "@/components/ui/icon-button";
+import { Menu } from "lucide-react";
 
 export function SiteHeader({ isAdmin = false, userEmail, initialCities }: { isAdmin?: boolean; userEmail?: string; initialCities?: { id: string; slug: string; name: string; country: string; venue_count?: number }[] }) {
   const [scrolled, setScrolled] = useState(false);
@@ -113,11 +114,7 @@ export function SiteHeader({ isAdmin = false, userEmail, initialCities }: { isAd
               </svg>
             </IconButton>
             <IconButton label="Menu" onClick={() => setMenuOpen(true)}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <line x1="0" y1="5" x2="20" y2="5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                <line x1="0" y1="10" x2="20" y2="10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                <line x1="0" y1="15" x2="20" y2="15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
+              <Menu size={24} strokeWidth={1.5} />
             </IconButton>
           </div>
         </div>

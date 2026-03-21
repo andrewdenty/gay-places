@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { NavDrawer } from "@/components/layout/nav-drawer";
 import { IconButton } from "@/components/ui/icon-button";
+import { Menu } from "lucide-react";
 
 export function AdminHeader({ userEmail }: { userEmail: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -33,11 +34,7 @@ export function AdminHeader({ userEmail }: { userEmail: string }) {
               View Site
             </Link>
             <IconButton label="Menu" onClick={() => setMenuOpen(true)}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <line x1="0" y1="5" x2="20" y2="5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                <line x1="0" y1="10" x2="20" y2="10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                <line x1="0" y1="15" x2="20" y2="15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
+              <Menu size={24} strokeWidth={1.5} />
             </IconButton>
           </div>
         </div>
