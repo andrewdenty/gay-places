@@ -4,8 +4,8 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 const MAX_FILE_SIZE_MB = 50;
-const MAX_DIMENSION = 1920;
-const JPEG_QUALITY = 0.82;
+const MAX_DIMENSION = 2560;
+const OUTPUT_QUALITY = 0.9;
 
 async function compressImage(file: File): Promise<File> {
   return new Promise((resolve) => {
@@ -41,11 +41,11 @@ async function compressImage(file: File): Promise<File> {
             resolve(file);
             return;
           }
-          const compressedName = file.name.replace(/\.[^.]+$/, ".jpg");
-          resolve(new File([blob], compressedName, { type: "image/jpeg" }));
+          const compressedName = file.name.replace(/\.[^.]+$/, ".webp");
+          resolve(new File([blob], compressedName, { type: "image/webp" }));
         },
-        "image/jpeg",
-        JPEG_QUALITY,
+        "image/webp",
+        OUTPUT_QUALITY,
       );
     };
 
