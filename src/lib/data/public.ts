@@ -363,6 +363,39 @@ export async function getAllPublishedVenuesForSitemap(): Promise<
   }));
 }
 
+export type VenueCoord = {
+  id: string;
+  lat: number;
+  lng: number;
+  name: string;
+  slug: string;
+  venue_type: string;
+  city_slug: string;
+};
+
+export async function getVenueCoordsByCountryName(countryName: string): Promise<VenueCoord[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("venues")
+    .select("id,lat,lng,name,slug,venue_type,cities!inner(country,slug)")
+    .eq("published", true)
+    .eq("cities.country", countryName);
+  if (error) throw error;
+  return ((data ?? []) as unknown[]).map((v) => {
+    const row = v as Record<string, unknown>;
+    const city = row.cities as { slug: string } | null;
+    return {
+      id: row.id as string,
+      lat: row.lat as number,
+      lng: row.lng as number,
+      name: row.name as string,
+      slug: row.slug as string,
+      venue_type: row.venue_type as string,
+      city_slug: city?.slug ?? "",
+    };
+  });
+}
+
 /** @deprecated Use getVenueBySlug for public pages. Kept for internal/admin use. */
 export async function getVenueById(id: string): Promise<Venue | null> {
   const supabase = await createSupabaseServerClient();

@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import {
   getCountryBySlug,
   getCitiesByCountryName,
   getVenueCountByCityId,
   getVenuesByIds,
+  getVenueCoordsByCountryName,
 } from "@/lib/data/public";
 import { CountryCityRow } from "@/components/country/country-city-row";
+import { CountryMapWrapper } from "@/components/maps/CountryMapWrapper";
 import { Tag } from "@/components/ui/tag";
 import { env } from "@/lib/env";
 import type { Venue } from "@/lib/data/public";
@@ -154,8 +157,11 @@ export default async function CountryPage({
   const country = await getCountryBySlug(slug);
   if (!country) notFound();
 
-  // Fetch cities in this country
-  const cities = await getCitiesByCountryName(country.name);
+  // Fetch cities and venue coords in parallel
+  const [cities, venueCoords] = await Promise.all([
+    getCitiesByCountryName(country.name),
+    getVenueCoordsByCountryName(country.name),
+  ]);
 
   // Fetch venue counts per city in parallel
   const venueCounts = await Promise.all(
@@ -191,24 +197,39 @@ export default async function CountryPage({
   const hasEditorial = (country.editorial ?? "").trim().length > 0;
   const hasFeaturedVenues = orderedVenues.length > 0;
 
+  // Compute map center from city averages
+  const mapCenter: [number, number] = cities.length > 0
+    ? [
+        cities.reduce((sum, c) => sum + c.center_lng, 0) / cities.length,
+        cities.reduce((sum, c) => sum + c.center_lat, 0) / cities.length,
+      ]
+    : [0, 20];
+
   return (
     <div className="py-6 sm:py-8">
       {/* Hero */}
-      <header className="border-b border-[var(--border)] pb-8 mb-8">
+      <header className="mb-10 sm:mb-14">
         {region && (
-          <div className="label-xs text-[var(--muted-foreground)] mb-3">
-            <Link href="/" className="hover:text-[var(--foreground)] transition-colors">
+          <div className="label-mono text-[var(--muted-foreground)] mb-1">
+            <Link href="/" className="text-[var(--foreground)] hover:opacity-70 transition-opacity">
               {region.toUpperCase()}
             </Link>
           </div>
         )}
         <h1 className="h1-editorial mb-0">{country.name}</h1>
         {(country.intro ?? "").trim().length > 0 && (
-          <p className="mt-3 text-[15px] text-[var(--muted-foreground)] max-w-[480px] leading-[1.6]">
+          <p className="mt-4 text-[15px] text-[var(--foreground)] leading-[1.4] max-w-[480px]">
             {country.intro}
           </p>
         )}
       </header>
+
+      {/* Map */}
+      {venueCoords.length > 0 && (
+        <section className="mb-16">
+          <CountryMapWrapper venues={venueCoords} center={mapCenter} />
+        </section>
+      )}
 
       {/* Editorial overview */}
       {hasEditorial && (
@@ -223,18 +244,29 @@ export default async function CountryPage({
       )}
 
       {/* City guides */}
-      <section className="mb-8">
-        <div className="flex items-baseline justify-between mb-5">
-          <h2 className="h2-editorial">City guides</h2>
+      <section className="mb-16">
+        <div className="flex items-end justify-between pb-2 border-b-[1.5px] border-[var(--foreground)] mb-0">
+          <h2
+            className="text-[var(--foreground)]"
+            style={{
+              fontFamily: "var(--font-instrument-serif), Georgia, serif",
+              fontSize: "30px",
+              lineHeight: 1.2,
+              letterSpacing: "-0.6px",
+              fontWeight: 400,
+            }}
+          >
+            Explore by City
+          </h2>
           {orderedCities.length > 0 && (
-            <span className="label-xs text-[var(--muted-foreground)]">
+            <span className="text-[13px] text-[var(--foreground)] leading-[1.4] pb-0.5">
               {orderedCities.length} {orderedCities.length === 1 ? "city" : "cities"}
             </span>
           )}
         </div>
 
         {orderedCities.length > 0 ? (
-          <div className="space-y-0">
+          <div>
             {orderedCities.map((city) => (
               <CountryCityRow
                 key={city.id}
@@ -286,6 +318,24 @@ export default async function CountryPage({
           </div>
         </section>
       )}
+
+      {/* Editorial moment */}
+      <section className="py-10 mt-8">
+        <div className="flex flex-col items-center gap-5 py-4">
+          <Image
+            src="/better-places.svg"
+            alt="Find Better Places"
+            width={350}
+            height={287}
+            className="w-full max-w-[350px]"
+          />
+          <p className="text-[15px] text-[var(--foreground)] text-center leading-[1.4] max-w-[500px]">
+            Gay Places is a quietly curated guide to gay bars, clubs, and other spaces around the
+            world. Less directory, more edit, it brings together places with atmosphere, character,
+            and a reason to go.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
