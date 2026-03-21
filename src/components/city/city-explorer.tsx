@@ -31,7 +31,7 @@ const allPills: PillOption[] = [
   { label: "Clubs", kind: "type", value: "club" },
   { label: "Saunas", kind: "type", value: "sauna" },
   { label: "Cafés", kind: "type", value: "cafe" },
-  { label: "Open now", kind: "open" },
+  { label: "Open Now", kind: "open" },
 ];
 
 export function CityExplorer({ city, venues }: Props) {
@@ -40,7 +40,6 @@ export function CityExplorer({ city, venues }: Props) {
   const [query, setQuery] = useState("");
   const [type, setType] = useState<VenueType>("all");
   const [openNow, setOpenNow] = useState(false);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -95,9 +94,9 @@ export function CityExplorer({ city, venues }: Props) {
   return (
     <div className="space-y-0">
       {/* Filters + Search section */}
-      <div className="border-b border-[var(--row-separator)]">
+      <div className="border-b-[1.5px] border-[#171717]">
         {/* Pill row */}
-        <div className="flex gap-[6px] overflow-x-auto py-[16px] scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6">
+        <div className="flex gap-[6px] overflow-x-auto pb-[32px] scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6">
           {/* Search icon pill */}
           <button
             type="button"
@@ -209,16 +208,13 @@ export function CityExplorer({ city, venues }: Props) {
         </div>
       </div>
 
-      {/* Venue count */}
-      <div className="py-3 label-xs text-[var(--muted-foreground)]">
-        {filtered.length} place{filtered.length === 1 ? "" : "s"}
-      </div>
-
       {/* Venue list */}
       <div>
         {filtered.map((v) => {
           const open = !v.closed && isOpenNow(v.opening_hours);
-          const flatTags = flattenVenueTags(v.venue_tags ?? {}).slice(0, 3);
+          // Max 4 tags, single-line display
+          const flatTags = flattenVenueTags(v.venue_tags ?? {}).slice(0, 4);
+          const description = v.description_editorial ?? v.description_base ?? v.description;
 
           return (
             <div
@@ -227,71 +223,64 @@ export function CityExplorer({ city, venues }: Props) {
               tabIndex={0}
               onClick={() => router.push(venueUrlPath(city.slug, v.venue_type, v.slug))}
               onKeyDown={(e) => e.key === "Enter" && router.push(venueUrlPath(city.slug, v.venue_type, v.slug))}
-              onMouseEnter={() => setSelectedSlug(v.slug)}
-              onFocus={() => setSelectedSlug(v.slug)}
               className="block cursor-pointer"
             >
-              <article
-                className={`border-b border-[var(--row-separator)] py-[16px] mx-[-8px] px-[8px] transition-colors ${
-                  selectedSlug === v.slug ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"
-                }`}
-              >
+              <article className="border-b-[1.5px] border-[#171717] py-[40px] mx-[-8px] px-[8px]">
                 {/* Row 1: Name + open status */}
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-[16px] font-semibold tracking-[-0.32px] text-[var(--foreground)]">
+                  <h3
+                    style={{
+                      fontFamily: 'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
+                      fontSize: "30px",
+                      lineHeight: 1.2,
+                      letterSpacing: "-0.6px",
+                      fontWeight: 400,
+                    }}
+                    className="text-[var(--foreground)]"
+                  >
                     {v.name}
                   </h3>
                   {v.closed ? (
-                    <span className="label-xs shrink-0 rounded-full border border-[#E63946]/30 bg-red-50 px-[7px] py-[2px] text-red-600">
-                      PERMANENTLY CLOSED
+                    <span className="status-mono shrink-0 flex items-center gap-[6px] text-[var(--muted-foreground)] mt-[6px]">
+                      <span className="h-2 w-2 rounded-full shrink-0 bg-[#E63946]" />
+                      Permanently closed
                     </span>
                   ) : (
-                    <span className="label-xs flex shrink-0 items-center gap-[5px] text-[var(--muted-foreground)]">
+                    <span className="status-mono shrink-0 flex items-center gap-[6px] text-[var(--foreground)] mt-[6px]">
                       <span
-                        className="h-2 w-2 rounded-full"
+                        className="h-2 w-2 rounded-full shrink-0"
                         style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
                       />
-                      {open ? "OPEN NOW" : "CLOSED"}
+                      {open ? "Open now" : "Closed"}
                     </span>
                   )}
                 </div>
 
-                {/* Row 2: Tags as dot-separated text */}
+                {/* Row 2: Tags — single line, max 4 */}
                 {flatTags.length > 0 && (
-                  <div className="mt-[8px] label-xs text-[var(--muted-foreground)]">
+                  <div className="mt-[12px] flex items-center gap-[6px] overflow-hidden whitespace-nowrap">
                     {flatTags.map((t, i) => (
-                      <span key={t}>
-                        {i > 0 && <span className="mx-[6px]">·</span>}
-                        {t.toUpperCase()}
+                      <span key={t} className="flex items-center gap-[6px] shrink-0">
+                        {i > 0 && (
+                          <span
+                            className="text-[10px] font-semibold tracking-[1.2px] text-[var(--muted-foreground)] select-none"
+                            aria-hidden="true"
+                          >
+                            •
+                          </span>
+                        )}
+                        <span className="tag-mono text-[var(--muted-foreground)]">{t}</span>
                       </span>
                     ))}
                   </div>
                 )}
 
-                {/* Row 3: Description */}
-                {v.description && (
-                  <p className="mt-[6px] text-[13px] leading-[1.4] text-[var(--foreground)] line-clamp-2">
-                    {v.description}
+                {/* Row 3: Description — up to 3 lines */}
+                {description && (
+                  <p className="mt-[8px] text-[15px] leading-[1.4] text-[var(--foreground)] line-clamp-3">
+                    {description}
                   </p>
                 )}
-
-                {/* Row 4: Address + MAP link */}
-                <div className="mt-[8px] flex items-center justify-between gap-3">
-                  <p className="text-[13px] text-[var(--muted-foreground)]">
-                    {v.address}
-                  </p>
-                  {v.google_maps_url && (
-                    <a
-                      href={v.google_maps_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="label-xs shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                    >
-                      OPEN IN MAPS ↗
-                    </a>
-                  )}
-                </div>
               </article>
             </div>
           );
@@ -299,12 +288,9 @@ export function CityExplorer({ city, venues }: Props) {
       </div>
 
       {/* Map section */}
-      <div className="pt-8 pb-8">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="h2-editorial">Map</h2>
-          <span className="label-xs text-[var(--muted-foreground)]">
-            {city.name.toUpperCase()}
-          </span>
+      <div className="pt-[40px] pb-8">
+        <div className="mb-4">
+          <h2 className="h2-editorial">{city.name} Map</h2>
         </div>
         <div className="overflow-hidden border border-[var(--border)]">
           <CityMap

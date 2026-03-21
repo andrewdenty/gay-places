@@ -23,6 +23,7 @@ export type City = {
   center_lat: number;
   center_lng: number;
   description?: string | null;
+  image_path?: string | null;
 };
 
 export type Venue = {
@@ -59,7 +60,7 @@ export type Venue = {
 const VENUE_FIELDS =
   "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours";
 
-const CITY_FIELDS_WITH_DESC = "id,slug,name,country,center_lat,center_lng,description";
+const CITY_FIELDS_WITH_DESC = "id,slug,name,country,center_lat,center_lng,description,image_path";
 const CITY_FIELDS_BASE = "id,slug,name,country,center_lat,center_lng";
 
 /**
