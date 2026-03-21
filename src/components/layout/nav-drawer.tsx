@@ -95,8 +95,7 @@ export function NavDrawer({
         aria-hidden={!isOpen}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
-          <span className="label-xs text-[var(--muted-foreground)]">MENU</span>
+        <div className="flex items-center justify-end border-b border-[var(--border)] px-5 py-4">
           <IconButton label="Close menu" onClick={onClose}>
             <X size={24} strokeWidth={1.5} />
           </IconButton>
@@ -106,7 +105,7 @@ export function NavDrawer({
         <div className="flex-1 overflow-y-auto">
           {/* Browse Cities */}
           <div className="px-5 pt-5 pb-2">
-            <p className="label-xs text-[var(--muted-foreground)] mb-3">BROWSE</p>
+            <p className="font-mono text-[12px] text-[var(--muted-foreground)] mb-3">Browse</p>
             {cities.length === 0 && (
               <div className="space-y-3">
                 {[...Array(4)].map((_, i) => (
@@ -123,11 +122,11 @@ export function NavDrawer({
                 <Link
                   key={city.id}
                   href={`/city/${city.slug}`}
-                  className="flex items-center justify-between py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors group"
+                  className="flex items-center justify-between py-2.5 text-[15px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors group"
                   onClick={onClose}
                 >
                   <span>{city.name}</span>
-                  <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--muted-foreground)]">
+                  <span className="font-mono text-[12px] text-[var(--muted-foreground)]">
                     {city.venue_count != null
                       ? `${city.venue_count} ${city.venue_count === 1 ? "place" : "places"}`
                       : city.country}
@@ -142,16 +141,16 @@ export function NavDrawer({
 
           {/* Contribute */}
           <div className="px-5 pb-2">
-            <p className="label-xs text-[var(--muted-foreground)] mb-3">CONTRIBUTE</p>
-            <nav className="space-y-0">
+            <p className="font-mono text-[12px] text-[var(--muted-foreground)] mb-3">Contribute</p>
+            <div className="py-1.5">
               <Link
                 href="/suggest"
-                className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
+                className="btn-sm btn-sm-secondary"
                 onClick={onClose}
               >
                 Submit a Place
               </Link>
-            </nav>
+            </div>
           </div>
 
           {/* Divider */}
@@ -159,15 +158,15 @@ export function NavDrawer({
 
           {/* Account */}
           <div className="px-5 pb-6">
-            <p className="label-xs text-[var(--muted-foreground)] mb-3">
-              {userEmail ? userEmail.toUpperCase() : "ACCOUNT"}
+            <p className="font-mono text-[12px] text-[var(--muted-foreground)] mb-3">
+              {userEmail ? userEmail : "Account"}
             </p>
             <nav className="space-y-0">
               {userEmail ? (
                 <>
                   <Link
                     href="/account"
-                    className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
+                    className="flex items-center py-2.5 text-[15px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
                     onClick={onClose}
                   >
                     My Account
@@ -175,7 +174,7 @@ export function NavDrawer({
                   {isAdmin && (
                     <Link
                       href="/admin"
-                      className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
+                      className="flex items-center py-2.5 text-[15px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
                       onClick={onClose}
                     >
                       Admin
@@ -184,20 +183,22 @@ export function NavDrawer({
                   <form action="/auth/sign-out" method="post">
                     <button
                       type="submit"
-                      className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
+                      className="flex items-center py-2.5 text-[15px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
                     >
                       Log Out
                     </button>
                   </form>
                 </>
               ) : (
-                <Link
-                  href="/sign-in"
-                  className="flex items-center py-2.5 text-[14px] text-[var(--foreground)] hover:text-[var(--muted-foreground)] transition-colors"
-                  onClick={onClose}
-                >
-                  Sign In
-                </Link>
+                <div className="py-1.5">
+                  <Link
+                    href="/sign-in"
+                    className="btn-sm btn-sm-secondary"
+                    onClick={onClose}
+                  >
+                    Sign In
+                  </Link>
+                </div>
               )}
             </nav>
           </div>
