@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { X } from "lucide-react";
 import type { PropsWithChildren } from "react";
 
 export function AdminModal({
@@ -72,26 +73,7 @@ export function AdminModal({
             className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
             aria-label="Close"
           >
-            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-              <line
-                x1="1"
-                y1="1"
-                x2="10"
-                y2="10"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinecap="round"
-              />
-              <line
-                x1="10"
-                y1="1"
-                x2="1"
-                y2="10"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinecap="round"
-              />
-            </svg>
+            <X size={24} strokeWidth={1.5} />
           </button>
         </div>
 

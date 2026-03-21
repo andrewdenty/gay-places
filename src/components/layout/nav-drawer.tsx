@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconButton } from "@/components/ui/icon-button";
+import { X } from "lucide-react";
 
 type City = {
   id: string;
@@ -97,10 +98,7 @@ export function NavDrawer({
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
           <span className="label-xs text-[var(--muted-foreground)]">MENU</span>
           <IconButton label="Close menu" onClick={onClose}>
-            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-              <line x1="1" y1="1" x2="10" y2="10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-              <line x1="10" y1="1" x2="1" y2="10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-            </svg>
+            <X size={24} strokeWidth={1.5} />
           </IconButton>
         </div>
 
