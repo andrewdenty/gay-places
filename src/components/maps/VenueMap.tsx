@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUpRight } from "lucide-react";
 import maplibregl from "maplibre-gl";
 import { MapView } from "./MapView";
 
@@ -37,15 +38,16 @@ export function VenueMap({ lat, lng, name, googleMapsUrl }: Props) {
 
   return (
     <section className="border-b border-[var(--border)] py-[24px]">
-      <div className="mb-3 flex items-center justify-between">
-        <span className="h2-editorial">Map</span>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <span className="h2-editorial-sm">Map</span>
         <a
           href={mapsLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="label-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          className="btn-sm btn-sm-primary"
         >
-          OPEN IN MAPS ↗
+          Open in Maps
+          <ArrowUpRight size={16} strokeWidth={1.5} />
         </a>
       </div>
       <div

@@ -38,6 +38,55 @@ function weekdayToKey(weekday: string): WeekdayKey {
   return "sun";
 }
 
+/** Convert "HH:MM" (24h) to a friendly label like "2am", "11:30pm", "midnight", "noon" */
+function formatHour(hhmm: string): string {
+  const parts = hhmm.split(":");
+  const h = parseInt(parts[0] ?? "0", 10);
+  const m = parseInt(parts[1] ?? "0", 10);
+  if (h === 0 && m === 0) return "midnight";
+  if (h === 12 && m === 0) return "noon";
+  const ampm = h < 12 ? "am" : "pm";
+  const hour = h % 12 || 12;
+  return m === 0 ? `${hour}${ampm}` : `${hour}:${m.toString().padStart(2, "0")}${ampm}`;
+}
+
+/**
+ * If the venue is currently open, returns a string like "Open until 2am".
+ * Returns null if closed or no hours data.
+ */
+export function getOpenUntilLabel(hours: OpeningHours | null | undefined): string | null {
+  if (!hours) return null;
+  const tz = hours.tz ?? "UTC";
+  const { weekday, minutes } = getZonedNowParts(tz);
+  const key = weekdayToKey(weekday);
+
+  const todays = (hours[key] ?? []) as OpeningHoursRange[];
+  for (const r of todays) {
+    const start = toMinutes(r.start);
+    const end = toMinutes(r.end);
+    if (start === null || end === null) continue;
+
+    if (end >= start) {
+      if (minutes >= start && minutes < end) return `Open until ${formatHour(r.end)}`;
+    } else {
+      // Crosses midnight
+      if (minutes >= start || minutes < end) return `Open until ${formatHour(r.end)}`;
+    }
+  }
+
+  // Check previous day's ranges that cross midnight into today
+  const prevKey = weekdayKeys[(weekdayKeys.indexOf(key) + 6) % 7];
+  const prev = (hours[prevKey] ?? []) as OpeningHoursRange[];
+  for (const r of prev) {
+    const start = toMinutes(r.start);
+    const end = toMinutes(r.end);
+    if (start === null || end === null) continue;
+    if (end < start && minutes < end) return `Open until ${formatHour(r.end)}`;
+  }
+
+  return null;
+}
+
 export function isOpenNow(hours: OpeningHours | null | undefined): boolean {
   if (!hours) return false;
   const tz = hours.tz ?? "UTC";
