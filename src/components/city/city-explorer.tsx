@@ -242,13 +242,13 @@ export function CityExplorer({ city, venues }: Props) {
                   </h3>
                   {v.closed ? (
                     <span className="status-mono shrink-0 flex items-center gap-[6px] text-[var(--muted-foreground)] mt-[6px]">
-                      <span className="h-2 w-2 rounded-full shrink-0 bg-[#E63946]" />
+                      <span className="block h-2 w-2 rounded-full shrink-0 bg-[#E63946]" />
                       Permanently closed
                     </span>
                   ) : (
                     <span className="status-mono shrink-0 flex items-center gap-[6px] text-[var(--foreground)] mt-[6px]">
                       <span
-                        className="h-2 w-2 rounded-full shrink-0"
+                        className="block h-2 w-2 rounded-full shrink-0"
                         style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
                       />
                       {open ? "Open now" : "Closed"}
