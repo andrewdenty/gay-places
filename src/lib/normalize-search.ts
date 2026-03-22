@@ -5,6 +5,8 @@
  */
 export function normalizeSearch(s: string): string {
   return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[\u2018\u2019\u201A\u201B\u02BC]/g, "'");
 }
