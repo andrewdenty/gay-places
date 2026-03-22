@@ -42,11 +42,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const venueRoutes: MetadataRoute.Sitemap = venues.map((venue) => ({
-    url: `${BASE_URL}${venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)}`,
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
+  const venueRoutes: MetadataRoute.Sitemap = venues
+    .filter((venue) => venue.city_slug && venue.slug)
+    .map((venue) => ({
+      url: `${BASE_URL}${venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
 
   return [...staticRoutes, ...countryRoutes, ...cityRoutes, ...venueRoutes];
 }
