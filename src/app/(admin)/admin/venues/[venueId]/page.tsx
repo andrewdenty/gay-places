@@ -235,12 +235,12 @@ export default async function EditVenuePage({
           {/* ── Description ────────────────────────────────────────────── */}
           <SectionLabel>Description</SectionLabel>
 
-          {/* Summary (auto-generated, read-only) */}
+          {/* Summary */}
           <div className="sm:col-span-2">
             <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
               <span>
                 Summary{" "}
-                <span className="text-muted-foreground/60">— 1–3 sentences shown on city listings; auto-generated</span>
+                <span className="text-muted-foreground/60">— 1–3 sentences shown on city listings</span>
               </span>
               <div className="flex items-center gap-2">
                 {venue.description_generation_status && (
@@ -256,13 +256,13 @@ export default async function EditVenuePage({
               </div>
             </div>
             <textarea
-              readOnly
-              value={venue.description_base ?? ""}
+              form="main-form"
+              name="description_base"
+              defaultValue={venue.description_base ?? ""}
               placeholder="Not yet generated — click Generate to create one."
               rows={2}
-              className={`${TEXTAREA} cursor-default opacity-70`}
+              className={TEXTAREA}
             />
-            <input form="main-form" type="hidden" name="description_base_exists" value={venue.description_base ? "1" : ""} />
             {venue.description_last_generated_at && (
               <p className="mt-0.5 text-[11px] text-muted-foreground">
                 Last generated{" "}
