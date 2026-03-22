@@ -175,33 +175,13 @@ export async function uploadVenuePhoto(formData: FormData) {
 
   if (!file?.size) return;
 
-  const isHeic =
-    file.type === "image/heic" ||
-    file.type === "image/heif" ||
-    file.name.toLowerCase().endsWith(".heic") ||
-    file.name.toLowerCase().endsWith(".heif");
-
-  let bytes: Buffer;
-  let contentType: string;
-  let ext: string;
-
-  if (isHeic) {
-    const sharp = (await import("sharp")).default;
-    const raw = Buffer.from(await file.arrayBuffer());
-    bytes = await sharp(raw).jpeg({ quality: 90 }).toBuffer();
-    contentType = "image/jpeg";
-    ext = "jpg";
-  } else {
-    bytes = Buffer.from(await file.arrayBuffer());
-    contentType = file.type || "image/jpeg";
-    ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  }
-
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `public/${venueId}/${Date.now()}.${ext}`;
+  const bytes = await file.arrayBuffer();
 
   const { error: storageError } = await adminSupabase.storage
     .from("venue-photos")
-    .upload(path, bytes, { contentType, upsert: false });
+    .upload(path, bytes, { contentType: file.type, upsert: false });
   if (storageError) throw storageError;
 
   const { error } = await supabase.from("venue_photos").insert({

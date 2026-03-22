@@ -17,16 +17,7 @@ function isHeic(file: File): boolean {
 }
 
 async function compressImage(file: File): Promise<File> {
-  if (isHeic(file)) {
-    const heic2any = (await import("heic2any")).default;
-    const converted = await heic2any({ blob: file, toType: "image/jpeg" });
-    const blob = Array.isArray(converted) ? converted[0] : converted;
-    file = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
-      type: "image/jpeg",
-    });
-  }
-
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
 
@@ -35,7 +26,7 @@ async function compressImage(file: File): Promise<File> {
 
       let { width, height } = img;
       if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
-        // No resize needed, but still re-encode as JPEG to reduce size
+        // No resize needed, but still re-encode as WebP to reduce size
       } else if (width > height) {
         height = Math.round((height * MAX_DIMENSION) / width);
         width = MAX_DIMENSION;
@@ -69,7 +60,15 @@ async function compressImage(file: File): Promise<File> {
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      resolve(file);
+      if (isHeic(file)) {
+        reject(
+          new Error(
+            "HEIC photos can only be uploaded from Safari. Please open this page in Safari, or convert the photo to JPEG first.",
+          ),
+        );
+      } else {
+        resolve(file);
+      }
     };
 
     img.src = objectUrl;
