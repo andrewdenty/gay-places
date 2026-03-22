@@ -8,6 +8,7 @@ import { TAG_CATEGORIES, type VenueTagCategory, type VenueTags } from "@/lib/ven
 import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto, generateBaseDescription, generateEditorialDescription } from "./actions";
 import { DeleteVenueButton } from "./delete-venue-button";
 import { AdminPhotoUpload } from "./admin-photo-upload";
+import { DescriptionGenerateForm } from "./description-generate-button";
 import { venueUrlPath } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
@@ -123,6 +124,12 @@ export default async function EditVenuePage({
       {/* Venue details form */}
       <Card className="mt-6 p-6">
         <div className="text-sm font-semibold">Place details</div>
+        {/*
+          The main form closes after Tags. The description section sits between
+          Tags and Hours with its own inline generate forms — no nesting required.
+          Fields below (description_editorial, opening_hours, checkboxes, save
+          button) are associated back to this form via form="main-form".
+        */}
         <form
           id="main-form"
           action={updateVenueDetails}
@@ -217,7 +224,14 @@ export default async function EditVenuePage({
               customTagOptions={customTagOptions}
             />
           </div>
+        </form>
 
+        {/*
+          Description section — outside the main form so generate forms can sit
+          inline without nesting. description_editorial and description_base_exists
+          are associated back to the main form via the HTML5 form="main-form" attribute.
+        */}
+        <div className="mt-0 grid gap-3 sm:grid-cols-2">
           {/* ── Description ────────────────────────────────────────────── */}
           <SectionLabel>Description</SectionLabel>
 
@@ -228,20 +242,27 @@ export default async function EditVenuePage({
                 Summary{" "}
                 <span className="text-muted-foreground/60">— 1–3 sentences shown on city listings; auto-generated</span>
               </span>
-              {venue.description_generation_status && (
-                <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
-                  {venue.description_generation_status}
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {venue.description_generation_status && (
+                  <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+                    {venue.description_generation_status}
+                  </span>
+                )}
+                <DescriptionGenerateForm
+                  action={generateBaseDescription}
+                  venueId={venue.id}
+                  hasExisting={!!venue.description_base}
+                />
+              </div>
             </div>
             <textarea
               readOnly
               value={venue.description_base ?? ""}
-              placeholder="Not yet generated — use the Regenerate button to generate."
+              placeholder="Not yet generated — click Generate to create one."
               rows={2}
               className={`${TEXTAREA} cursor-default opacity-70`}
             />
-            <input type="hidden" name="description_base_exists" value={venue.description_base ? "1" : ""} />
+            <input form="main-form" type="hidden" name="description_base_exists" value={venue.description_base ? "1" : ""} />
             {venue.description_last_generated_at && (
               <p className="mt-0.5 text-[11px] text-muted-foreground">
                 Last generated{" "}
@@ -255,13 +276,21 @@ export default async function EditVenuePage({
 
           {/* Editorial description (human-curated) */}
           <div className="sm:col-span-2">
-            <div className="mb-1 text-xs text-muted-foreground">
-              Editorial description{" "}
-              <span className="text-muted-foreground/60">
-                — in-depth paragraph shown on the venue page
+            <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span>
+                Editorial description{" "}
+                <span className="text-muted-foreground/60">
+                  — in-depth paragraph shown on the venue page
+                </span>
               </span>
+              <DescriptionGenerateForm
+                action={generateEditorialDescription}
+                venueId={venue.id}
+                hasExisting={!!venue.description_editorial}
+              />
             </div>
             <textarea
+              form="main-form"
               name="description_editorial"
               defaultValue={venue.description_editorial ?? ""}
               placeholder="Write an editorial paragraph about this venue…"
@@ -275,6 +304,7 @@ export default async function EditVenuePage({
           <div className="sm:col-span-2">
             <div className="mb-1 text-xs text-muted-foreground">JSON</div>
             <textarea
+              form="main-form"
               name="opening_hours"
               defaultValue={JSON.stringify(venue.opening_hours ?? {}, null, 2)}
               placeholder="{}"
@@ -288,6 +318,7 @@ export default async function EditVenuePage({
           <div className="flex items-center gap-6 sm:col-span-2">
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
+                form="main-form"
                 type="checkbox"
                 name="published"
                 defaultChecked={venue.published ?? false}
@@ -297,6 +328,7 @@ export default async function EditVenuePage({
             </label>
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
+                form="main-form"
                 type="checkbox"
                 name="closed"
                 defaultChecked={venue.closed ?? false}
@@ -307,41 +339,8 @@ export default async function EditVenuePage({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
-            <Button type="submit">Save changes</Button>
+            <Button form="main-form" type="submit">Save changes</Button>
           </div>
-        </form>
-
-        {/* Description generation actions */}
-        <div className="mt-3 border-t border-border pt-4 flex flex-col gap-3">
-          {/* Regenerate summary — next to the summary description */}
-          <form action={generateBaseDescription}>
-            <input type="hidden" name="id" value={venue.id} />
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Summary:</span>{" "}
-                Auto-generate from the place name, city, type, and tags.
-                {venue.description_base ? " This will overwrite the existing summary." : ""}
-              </p>
-              <Button type="submit" variant="secondary" size="sm">
-                {venue.description_base ? "Regenerate" : "Generate"} summary
-              </Button>
-            </div>
-          </form>
-
-          {/* Generate editorial description — next to the editorial description */}
-          <form action={generateEditorialDescription}>
-            <input type="hidden" name="id" value={venue.id} />
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Editorial:</span>{" "}
-                Generate an in-depth editorial paragraph using Gemini AI.
-                {venue.description_editorial ? " This will overwrite the existing editorial." : ""}
-              </p>
-              <Button type="submit" variant="secondary" size="sm">
-                {venue.description_editorial ? "Regenerate" : "Generate"} editorial
-              </Button>
-            </div>
-          </form>
         </div>
       </Card>
 
