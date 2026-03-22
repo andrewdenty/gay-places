@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { IconButton } from "@/components/ui/icon-button";
 import { Search, X, ArrowRight } from "lucide-react";
 import { venueUrlPath, toCountrySlug } from "@/lib/slugs";
 
@@ -173,7 +172,7 @@ export function SearchModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Search area — positioned in upper third */}
-      <div className="relative z-10 flex flex-col items-center px-4 pt-6 sm:pt-[15vh]">
+      <div className="relative z-10 flex flex-col items-center px-4 pt-4 sm:pt-[15vh]">
         <div className="w-full max-w-[560px]">
           {/* Search field + close button row */}
           <div className="flex items-center gap-3">
@@ -214,9 +213,15 @@ export function SearchModal({
             </div>
 
             {/* Close button */}
-            <IconButton label="Close search" onClick={onClose}>
-              <X size={24} strokeWidth={1.5} />
-            </IconButton>
+            <button
+              type="button"
+              aria-label="Close search"
+              onClick={onClose}
+              className="shrink-0 flex items-center justify-center rounded-[60px] border p-3 transition-colors hover:bg-[#F7F7F5]"
+              style={{ borderColor: "#F0F0ED" }}
+            >
+              <X size={24} strokeWidth={1.5} color="#171717" />
+            </button>
           </div>
 
           {/* Results */}
