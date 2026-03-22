@@ -7,7 +7,25 @@ const MAX_FILE_SIZE_MB = 50;
 const MAX_DIMENSION = 2560;
 const OUTPUT_QUALITY = 0.9;
 
+function isHeic(file: File): boolean {
+  return (
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    file.name.toLowerCase().endsWith(".heic") ||
+    file.name.toLowerCase().endsWith(".heif")
+  );
+}
+
 async function compressImage(file: File): Promise<File> {
+  if (isHeic(file)) {
+    const heic2any = (await import("heic2any")).default;
+    const converted = await heic2any({ blob: file, toType: "image/jpeg" });
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    file = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
+      type: "image/jpeg",
+    });
+  }
+
   return new Promise((resolve) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
