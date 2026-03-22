@@ -177,11 +177,19 @@ export function SearchModal({
           {/* Search field + close button row */}
           <div className="flex items-center gap-3">
             {/* Pill input */}
-            <div className="relative flex flex-1 items-center">
+            <div
+              className="relative flex flex-1 items-center gap-2 rounded-[80px] px-6"
+              style={{
+                height: "56px",
+                backgroundColor: "#F7F7F5",
+                border: focused ? "1.5px solid #E4E4E1" : "1.5px solid #F0F0ED",
+              }}
+            >
               <Search
-                className="absolute left-5 text-[var(--muted-foreground)] pointer-events-none"
+                className="shrink-0 pointer-events-none"
                 size={20}
                 strokeWidth={1.5}
+                color="#6E6E6D"
               />
               <input
                 ref={setInputRef}
@@ -191,24 +199,23 @@ export function SearchModal({
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 placeholder="Search gay places..."
-                className="w-full rounded-full pl-12 pr-10 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
+                className="flex-1 min-w-0 bg-transparent text-[16px] outline-none transition-colors placeholder:text-[#6E6E6D]"
                 style={{
-                  height: "56px",
-                  backgroundColor: "#F7F7F5",
-                  border: focused ? "1.5px solid #E4E4E1" : "1.5px solid #F0F0ED",
+                  color: "#171717",
+                  caretColor: "#171717",
                 }}
               />
               {query ? (
                 <button
                   type="button"
                   onClick={() => { setQuery(""); inputRef.current?.focus(); }}
-                  className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                  className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[#6E6E6D] hover:text-[#171717] transition-colors"
                   aria-label="Clear search"
                 >
                   <X size={16} strokeWidth={1.5} />
                 </button>
               ) : loading && (
-                <div className="absolute right-5 h-3.5 w-3.5 animate-spin rounded-full border border-[var(--border)] border-t-[var(--muted-foreground)]" />
+                <div className="absolute right-5 h-3.5 w-3.5 animate-spin rounded-full border border-[#E4E4E1] border-t-[#6E6E6D]" />
               )}
             </div>
 
