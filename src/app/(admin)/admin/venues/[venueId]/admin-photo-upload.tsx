@@ -106,30 +106,26 @@ export function AdminPhotoUpload({
         accept="image/*"
         className="sr-only"
         required
-        onChange={(e) => setFilename(e.target.files?.[0]?.name ?? null)}
+        onChange={(e) => {
+          const selected = e.target.files?.[0] ?? null;
+          setFilename(selected?.name ?? null);
+          if (selected) formRef.current?.requestSubmit();
+        }}
       />
       <div className="flex flex-wrap items-center gap-3">
         <Button
           type="button"
           variant="secondary"
+          disabled={busy}
           onClick={() => fileInputRef.current?.click()}
         >
           Choose photo
         </Button>
         {filename && (
           <span className="max-w-xs truncate text-sm text-muted-foreground">
-            {filename}
+            {busy ? "Uploading…" : filename}
           </span>
         )}
-        <Button
-          type="submit"
-          disabled={!filename || busy}
-          aria-label={
-            filename ? "Upload photo" : "Choose a photo first to enable upload"
-          }
-        >
-          {busy ? "Uploading…" : "Upload"}
-        </Button>
       </div>
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
     </form>
