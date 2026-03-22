@@ -353,7 +353,7 @@ ${buildTagAllowlist()}
 1. Use Google Places data as authoritative for: name, address, lat/lng, hours, phone, website.
 2. If no Places data, use discovery sources to inform the response. Leave lat/lng null if unverifiable.
 3. Write a \`summary_short\` of 1–3 sentences. This appears alongside a venue listing on a city page, so it needs to work at a glance. Lead with what makes the venue worth visiting — its character, crowd, design, history, or position in the city's scene. Be specific and concrete. Do not use: vibrant, iconic, legendary, must-visit, welcoming, lively, beloved, thriving, or any phrase that could apply to any venue in any city.
-4. Write \`why_unique\` as a single editorial paragraph of 3–6 sentences. This appears on the venue page immediately after \`summary_short\`, so it should go deeper rather than repeat. Draw on the venue's history, regulars, programming, design, or role in the local scene. Write in prose — no bullet points, no lists. The tone should feel like the opening of a magazine profile: observational, confident, and precise.
+4. Write \`why_unique\` as a single editorial paragraph of 2–4 sentences. This appears on the venue page immediately after \`summary_short\`, so it should go deeper rather than repeat. Draw on the venue's history, regulars, programming, design, or role in the local scene. Write in prose — no bullet points, no lists. The tone should feel like the opening of a magazine profile: observational, confident, and precise.
 5. Assign tags from the allowlist ONLY. 3–7 tags total. Leave a category empty rather than guess.
 6. Use the hours format: {"tz":"...", "mon":[], "tue":[], "wed":[], "thu":[], "fri":[{"start":"HH:MM","end":"HH:MM"}], "sat":[], "sun":[]}. Leave days empty if unknown.
 7. Populate discovery_sources and fact_sources with relevant URLs.
@@ -574,7 +574,7 @@ export async function enrichVenueWithGemini(
       },
     ],
     generationConfig: {
-      temperature: 0.3,
+      temperature: 1.0,
       maxOutputTokens: 4096,
       thinkingConfig: {
         thinkingBudget: 0,
