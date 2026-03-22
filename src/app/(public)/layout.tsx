@@ -17,7 +17,7 @@ export default async function PublicLayout({ children }: PropsWithChildren) {
       cities,
     ] = await Promise.all([
       supabase.auth.getUser(),
-      getTopCitiesByVenueCount(5).catch(() => []),
+      getTopCitiesByVenueCount(4).catch(() => []),
     ]);
     initialCities = cities;
     if (user) {

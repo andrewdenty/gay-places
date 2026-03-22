@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { IconButton } from "@/components/ui/icon-button";
 import { Search, X, ArrowRight } from "lucide-react";
 import { venueUrlPath, toCountrySlug } from "@/lib/slugs";
 
@@ -173,16 +172,24 @@ export function SearchModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Search area — positioned in upper third */}
-      <div className="relative z-10 flex flex-col items-center px-4 pt-6 sm:pt-[15vh]">
+      <div className="relative z-10 flex flex-col items-center px-4 pt-4 sm:pt-[15vh]">
         <div className="w-full max-w-[560px]">
           {/* Search field + close button row */}
           <div className="flex items-center gap-3">
             {/* Pill input */}
-            <div className="relative flex flex-1 items-center">
+            <div
+              className="relative flex flex-1 items-center gap-2 rounded-[80px] px-6"
+              style={{
+                height: "56px",
+                backgroundColor: "#F7F7F5",
+                border: focused ? "1.5px solid #E4E4E1" : "1.5px solid #F0F0ED",
+              }}
+            >
               <Search
-                className="absolute left-5 text-[var(--muted-foreground)] pointer-events-none"
+                className="shrink-0 pointer-events-none"
                 size={20}
                 strokeWidth={1.5}
+                color="#6E6E6D"
               />
               <input
                 ref={setInputRef}
@@ -191,32 +198,37 @@ export function SearchModal({
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
-                placeholder="Search bars, clubs, places and cities…"
-                className="w-full rounded-full pl-12 pr-10 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
+                placeholder="Search gay places..."
+                className="flex-1 min-w-0 bg-transparent text-[16px] outline-none transition-colors placeholder:text-[#6E6E6D]"
                 style={{
-                  height: "56px",
-                  backgroundColor: "#F7F7F5",
-                  border: focused ? "1.5px solid #E4E4E1" : "1.5px solid #F0F0ED",
+                  color: "#171717",
+                  caretColor: "#171717",
                 }}
               />
               {query ? (
                 <button
                   type="button"
                   onClick={() => { setQuery(""); inputRef.current?.focus(); }}
-                  className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                  className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[#6E6E6D] hover:text-[#171717] transition-colors"
                   aria-label="Clear search"
                 >
                   <X size={16} strokeWidth={1.5} />
                 </button>
               ) : loading && (
-                <div className="absolute right-5 h-3.5 w-3.5 animate-spin rounded-full border border-[var(--border)] border-t-[var(--muted-foreground)]" />
+                <div className="absolute right-5 h-3.5 w-3.5 animate-spin rounded-full border border-[#E4E4E1] border-t-[#6E6E6D]" />
               )}
             </div>
 
             {/* Close button */}
-            <IconButton label="Close search" onClick={onClose}>
-              <X size={24} strokeWidth={1.5} />
-            </IconButton>
+            <button
+              type="button"
+              aria-label="Close search"
+              onClick={onClose}
+              className="shrink-0 flex items-center justify-center rounded-[60px] border p-3 transition-colors hover:bg-[#F7F7F5]"
+              style={{ borderColor: "#F0F0ED" }}
+            >
+              <X size={24} strokeWidth={1.5} color="#171717" />
+            </button>
           </div>
 
           {/* Results */}

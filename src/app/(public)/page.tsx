@@ -46,7 +46,7 @@ export default async function LandingPage() {
 
       {/* ── Featured Cities ── */}
       {featuredCities.length > 0 && (
-        <section className="mb-16">
+        <section id="featured-cities" className="mb-16">
           {/* Section header */}
           <div className="flex items-end justify-between pb-2 border-b-[1.5px] border-[var(--foreground)] mb-4">
             <h2
@@ -119,7 +119,7 @@ export default async function LandingPage() {
       </section>
 
       {/* ── All Guides ── */}
-      <section className="py-14">
+      <section id="all-guides" className="py-14">
         {/* Section header */}
         <div className="flex items-end justify-between pb-2 border-b-[1.5px] border-[var(--foreground)] mb-4">
           <h2
