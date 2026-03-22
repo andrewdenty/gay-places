@@ -50,10 +50,10 @@ async function compressImage(file: File): Promise<File> {
             resolve(file);
             return;
           }
-          const compressedName = file.name.replace(/\.[^.]+$/, ".webp");
-          resolve(new File([blob], compressedName, { type: "image/webp" }));
+          const compressedName = file.name.replace(/\.[^.]+$/, ".jpg");
+          resolve(new File([blob], compressedName, { type: "image/jpeg" }));
         },
-        "image/webp",
+        "image/jpeg",
         OUTPUT_QUALITY,
       );
     };
