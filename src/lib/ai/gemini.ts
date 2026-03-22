@@ -200,7 +200,7 @@ export async function discoverVenuesWithGemini(
   const maxResults = options.max_results ?? 20;
   const prompt = buildPrompt(cityName, country, maxResults);
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   const body = {
     contents: [
@@ -587,7 +587,7 @@ export async function enrichVenueWithGemini(
 
   const prompt = buildEnrichmentPrompt(input);
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   const body = {
     contents: [
