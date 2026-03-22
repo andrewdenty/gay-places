@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { VenueTagPicker } from "@/components/venue/venue-tag-picker";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { TAG_CATEGORIES, type VenueTagCategory, type VenueTags } from "@/lib/venue-tags";
-import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto, generateBaseDescription } from "./actions";
+import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto, generateBaseDescription, generateEditorialDescription } from "./actions";
 import { DeleteVenueButton } from "./delete-venue-button";
 import { AdminPhotoUpload } from "./admin-photo-upload";
 import { venueUrlPath } from "@/lib/slugs";
@@ -124,6 +124,7 @@ export default async function EditVenuePage({
       <Card className="mt-6 p-6">
         <div className="text-sm font-semibold">Place details</div>
         <form
+          id="main-form"
           action={updateVenueDetails}
           className="mt-5 grid gap-3 sm:grid-cols-2"
         >
@@ -220,24 +221,7 @@ export default async function EditVenuePage({
           {/* ── Description ────────────────────────────────────────────── */}
           <SectionLabel>Description</SectionLabel>
 
-          {/* Editorial description (human-curated, takes priority) */}
-          <div className="sm:col-span-2">
-            <div className="mb-1 text-xs text-muted-foreground">
-              Editorial description{" "}
-              <span className="text-muted-foreground/60">
-                — in-depth paragraph shown on the venue page; overrides auto-generated text
-              </span>
-            </div>
-            <textarea
-              name="description_editorial"
-              defaultValue={venue.description_editorial ?? ""}
-              placeholder="Write an editorial paragraph about this venue…"
-              rows={4}
-              className={TEXTAREA}
-            />
-          </div>
-
-          {/* Base description (auto-generated, read-only) */}
+          {/* Summary (auto-generated, read-only) */}
           <div className="sm:col-span-2">
             <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
               <span>
@@ -253,7 +237,7 @@ export default async function EditVenuePage({
             <textarea
               readOnly
               value={venue.description_base ?? ""}
-              placeholder="Not yet generated — use the button below to generate."
+              placeholder="Not yet generated — use the Regenerate button to generate."
               rows={2}
               className={`${TEXTAREA} cursor-default opacity-70`}
             />
@@ -267,6 +251,23 @@ export default async function EditVenuePage({
                 )}
               </p>
             )}
+          </div>
+
+          {/* Editorial description (human-curated) */}
+          <div className="sm:col-span-2">
+            <div className="mb-1 text-xs text-muted-foreground">
+              Editorial description{" "}
+              <span className="text-muted-foreground/60">
+                — in-depth paragraph shown on the venue page
+              </span>
+            </div>
+            <textarea
+              name="description_editorial"
+              defaultValue={venue.description_editorial ?? ""}
+              placeholder="Write an editorial paragraph about this venue…"
+              rows={4}
+              className={TEXTAREA}
+            />
           </div>
 
           {/* ── Hours ──────────────────────────────────────────────────── */}
@@ -310,21 +311,38 @@ export default async function EditVenuePage({
           </div>
         </form>
 
-        {/* Generate base description — separate form so it doesn't interfere with the main save */}
-        <form action={generateBaseDescription} className="mt-3 border-t border-border pt-4">
-          <input type="hidden" name="id" value={venue.id} />
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground">
-              Auto-generate a base description from the place name, city, type, and tags.
-              {venue.description_base
-                ? " This will overwrite the existing base description."
-                : ""}
-            </p>
-            <Button type="submit" variant="secondary" size="sm">
-              {venue.description_base ? "Regenerate" : "Generate"} base description
-            </Button>
-          </div>
-        </form>
+        {/* Description generation actions */}
+        <div className="mt-3 border-t border-border pt-4 flex flex-col gap-3">
+          {/* Regenerate summary — next to the summary description */}
+          <form action={generateBaseDescription}>
+            <input type="hidden" name="id" value={venue.id} />
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium">Summary:</span>{" "}
+                Auto-generate from the place name, city, type, and tags.
+                {venue.description_base ? " This will overwrite the existing summary." : ""}
+              </p>
+              <Button type="submit" variant="secondary" size="sm">
+                {venue.description_base ? "Regenerate" : "Generate"} summary
+              </Button>
+            </div>
+          </form>
+
+          {/* Generate editorial description — next to the editorial description */}
+          <form action={generateEditorialDescription}>
+            <input type="hidden" name="id" value={venue.id} />
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium">Editorial:</span>{" "}
+                Generate an in-depth editorial paragraph using Gemini AI.
+                {venue.description_editorial ? " This will overwrite the existing editorial." : ""}
+              </p>
+              <Button type="submit" variant="secondary" size="sm">
+                {venue.description_editorial ? "Regenerate" : "Generate"} editorial
+              </Button>
+            </div>
+          </form>
+        </div>
       </Card>
 
       {/* Photos */}
