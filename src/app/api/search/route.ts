@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+type SearchResult = {
+  countries: { name: string; venueCount: number }[];
+  cities: { id: string; slug: string; name: string; country: string; venueCount: number }[];
+  venues: { id: string; slug: string; name: string; venue_type: string; city_slug: string; city_name: string }[];
+};
+
+/** Strip diacritics the same way normalizeSearch does on the client. */
+function normalizeQ(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q")?.trim();
   if (!q || q.length < 1) {
@@ -8,7 +23,23 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const pattern = `%${q}%`;
+
+  // Try the unaccent-aware RPC first (requires migration 0020).
+  const { data, error } = await supabase.rpc("search_global", { q });
+
+  if (!error) {
+    const result = data as SearchResult;
+    return NextResponse.json({
+      countries: result.countries ?? [],
+      cities: result.cities ?? [],
+      venues: result.venues ?? [],
+    });
+  }
+
+  // Function not yet deployed — fall back to plain ilike.
+  // Normalize the query so at minimum "malmö" → "malmo" queries work in reverse.
+  const nq = normalizeQ(q);
+  const pattern = `%${nq}%`;
 
   const [countriesRes, citiesRes, venuesRes] = await Promise.all([
     supabase
@@ -34,7 +65,6 @@ export async function GET(request: NextRequest) {
       .limit(8),
   ]);
 
-  // Group by country and sum venue counts
   const countryMap = new Map<string, number>();
   for (const row of countriesRes.data ?? []) {
     const venueRows = row.venues as { count: number }[] | null;
@@ -49,13 +79,7 @@ export async function GET(request: NextRequest) {
   const cities = (citiesRes.data ?? []).map((city) => {
     const venueRows = city.venues as { count: number }[] | null;
     const venueCount = Array.isArray(venueRows) ? Number(venueRows[0]?.count ?? 0) : 0;
-    return {
-      id: city.id,
-      slug: city.slug,
-      name: city.name,
-      country: city.country,
-      venueCount,
-    };
+    return { id: city.id, slug: city.slug, name: city.name, country: city.country, venueCount };
   });
 
   const venues = (venuesRes.data ?? []).map((v) => {
