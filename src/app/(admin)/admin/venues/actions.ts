@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { venueUrlPath } from "@/lib/slugs";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -53,7 +54,19 @@ export async function createVenue(formData: FormData) {
     published,
   });
   if (error) throw error;
+
   revalidatePath("/admin/venues");
+  revalidatePath("/");
+
+  // Revalidate the public city listing page
+  const { data: cityInfo } = await supabase
+    .from("cities")
+    .select("slug")
+    .eq("id", city_id)
+    .maybeSingle();
+  if (cityInfo) {
+    revalidatePath(`/city/${cityInfo.slug}`);
+  }
 }
 
 export async function updateVenue(formData: FormData) {
@@ -84,6 +97,18 @@ export async function updateVenue(formData: FormData) {
     })
     .eq("id", id);
   if (error) throw error;
+
+  // Revalidate the public city and venue pages
+  const { data: venueInfo } = await supabase
+    .from("venues")
+    .select("slug,venue_type,cities!inner(slug)")
+    .eq("id", id)
+    .maybeSingle();
+  if (venueInfo) {
+    const citySlug = (venueInfo.cities as unknown as { slug: string }).slug;
+    revalidatePath(`/city/${citySlug}`);
+    revalidatePath(venueUrlPath(citySlug, venueInfo.venue_type, venueInfo.slug));
+  }
 }
 
 export async function deleteVenue(venueId: string): Promise<void> {

@@ -199,23 +199,17 @@ export async function getCityBySlug(slug: string): Promise<City | null> {
 
 export async function getVenuesByCitySlug(slug: string): Promise<Venue[]> {
   const supabase = await createSupabaseServerClient();
-  const { data: city, error: cityError } = await supabase
-    .from("cities")
-    .select("id")
-    .eq("slug", slug.toLowerCase())
-    .eq("published", true)
-    .maybeSingle();
-  if (cityError) throw cityError;
-  if (!city) return [];
-
   const { data, error } = await supabase
     .from("venues")
-    .select(VENUE_FIELDS)
-    .eq("city_id", city.id)
+    .select(`${VENUE_FIELDS},cities!inner(slug)`)
+    .eq("cities.slug", slug.toLowerCase())
+    .eq("cities.published", true)
     .eq("published", true)
     .order("name", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as Venue[];
+  return ((data ?? []) as (Venue & { cities: unknown })[]).map(
+    ({ cities: _c, ...venue }) => venue as Venue,
+  );
 }
 
 export async function getVenueBySlug(
@@ -223,24 +217,18 @@ export async function getVenueBySlug(
   venueSlug: string,
 ): Promise<Venue | null> {
   const supabase = await createSupabaseServerClient();
-  const { data: city, error: cityError } = await supabase
-    .from("cities")
-    .select("id")
-    .eq("slug", citySlug.toLowerCase())
-    .eq("published", true)
-    .maybeSingle();
-  if (cityError) throw cityError;
-  if (!city) return null;
-
   const { data, error } = await supabase
     .from("venues")
-    .select(VENUE_FIELDS)
-    .eq("city_id", city.id)
+    .select(`${VENUE_FIELDS},cities!inner(slug)`)
+    .eq("cities.slug", citySlug.toLowerCase())
+    .eq("cities.published", true)
     .eq("slug", venueSlug.toLowerCase())
     .eq("published", true)
     .maybeSingle();
   if (error) throw error;
-  return (data ?? null) as Venue | null;
+  if (!data) return null;
+  const { cities: _c, ...venue } = data as Venue & { cities: unknown };
+  return venue as Venue;
 }
 
 export async function getPublishedCountrySlugs(): Promise<Set<string>> {

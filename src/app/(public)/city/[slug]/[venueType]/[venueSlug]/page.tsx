@@ -9,14 +9,26 @@ import { PhotoGallery } from "@/components/venue/photo-gallery";
 import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs, getAllPublishedVenuesForSitemap } from "@/lib/data/public";
 import { env } from "@/lib/env";
 import { isOpenNow, getOpenUntilLabel } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
 import type { OpeningHoursRange } from "@/lib/types/opening-hours";
 import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return [];
+  }
+  const venues = await getAllPublishedVenuesForSitemap().catch(() => []);
+  return venues.map((venue) => ({
+    slug: venue.city_slug,
+    venueType: venueTypeToUrlSegment(venue.venue_type),
+    venueSlug: venue.slug,
+  }));
+}
 
 const VENUE_TYPE_SCHEMA: Record<string, string> = {
   bar: "BarOrPub",
@@ -85,10 +97,11 @@ export default async function VenuePage({
     );
   }
 
-  const city = await getCityBySlug(slug);
+  const [city, venue] = await Promise.all([
+    getCityBySlug(slug),
+    getVenueBySlug(slug, venueSlug),
+  ]);
   if (!city) notFound();
-
-  const venue = await getVenueBySlug(slug, venueSlug);
   if (!venue) notFound();
 
   // If the venueType segment in the URL doesn't match the actual venue type,

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { geocodeCity } from "@/lib/utils/geocode";
+import { toCountrySlug } from "@/lib/slugs";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -55,6 +56,10 @@ export async function createCity(formData: FormData) {
     description,
   });
   if (error) throw error;
+
+  // Revalidate admin and public listing pages
+  revalidatePath("/admin/cities");
+  revalidatePath("/");
 }
 
 export async function updateCity(formData: FormData) {
@@ -72,6 +77,19 @@ export async function updateCity(formData: FormData) {
     .update({ name, country, center_lat, center_lng, published, description })
     .eq("id", id);
   if (error) throw error;
+
+  // Fetch the city slug to revalidate the correct public paths
+  const { data: cityInfo } = await supabase
+    .from("cities")
+    .select("slug")
+    .eq("id", id)
+    .maybeSingle();
+  if (cityInfo) {
+    revalidatePath("/");
+    revalidatePath(`/city/${cityInfo.slug}`);
+    revalidatePath(`/admin/cities/${cityInfo.slug}`);
+    revalidatePath(`/country/${toCountrySlug(country)}`);
+  }
 }
 
 export async function uploadCityImage(formData: FormData) {
@@ -109,6 +127,8 @@ export async function uploadCityImage(formData: FormData) {
   if (error) throw error;
 
   revalidatePath(`/admin/cities/${citySlug}`);
+  revalidatePath("/");
+  revalidatePath(`/city/${citySlug}`);
 }
 
 export async function removeCityImage(formData: FormData) {
@@ -129,5 +149,7 @@ export async function removeCityImage(formData: FormData) {
   if (error) throw error;
 
   revalidatePath(`/admin/cities/${citySlug}`);
+  revalidatePath("/");
+  revalidatePath(`/city/${citySlug}`);
 }
 
