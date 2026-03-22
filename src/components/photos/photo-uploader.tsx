@@ -3,6 +3,78 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
+const MAX_FILE_SIZE_MB = 50;
+const MAX_DIMENSION = 2560;
+const OUTPUT_QUALITY = 0.9;
+
+function isHeic(file: File): boolean {
+  return (
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    file.name.toLowerCase().endsWith(".heic") ||
+    file.name.toLowerCase().endsWith(".heif")
+  );
+}
+
+async function compressImage(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let { width, height } = img;
+      if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
+        // No resize needed, but still re-encode as WebP to reduce size
+      } else if (width > height) {
+        height = Math.round((height * MAX_DIMENSION) / width);
+        width = MAX_DIMENSION;
+      } else {
+        width = Math.round((width * MAX_DIMENSION) / height);
+        height = MAX_DIMENSION;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const compressedName = file.name.replace(/\.[^.]+$/, ".jpg");
+          resolve(new File([blob], compressedName, { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        OUTPUT_QUALITY,
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      if (isHeic(file)) {
+        reject(
+          new Error(
+            "HEIC photos can only be uploaded from Safari. Please open this page in Safari, or convert the photo to JPEG first.",
+          ),
+        );
+      } else {
+        resolve(file);
+      }
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 interface PhotoUploaderProps {
   venueId: string;
   onUpdateSubmission: (
@@ -28,14 +100,24 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
     setBusy(true);
     setStatus(null);
     try {
-      // Step 1: Create the submission record and get the upload path
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        throw new Error(`Photo must be under ${MAX_FILE_SIZE_MB} MB`);
+      }
+
+      setStatus("Compressing photo…");
+      const compressed = await compressImage(file);
+
+      // Step 1: Create the submission record and get the upload path.
+      // Use the compressed file's name so the storage path extension matches
+      // the actual content type (e.g. .webp, not .heic).
+      setStatus(null);
       const createRes = await fetch("/api/submissions/photo", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           venue_id: venueId,
           caption,
-          filename: file.name,
+          filename: compressed.name,
         }),
       });
       const created = (await createRes.json()) as
@@ -49,7 +131,7 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
       // Step 2: Upload the file via the server endpoint (uses service-role key,
       //         bypassing Storage RLS)
       const uploadForm = new FormData();
-      uploadForm.append("file", file);
+      uploadForm.append("file", compressed);
       uploadForm.append("submission_id", created.submission_id);
       uploadForm.append("upload_path", created.upload_path);
 
@@ -72,7 +154,7 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
         venue_id: venueId,
         caption,
         storage_path: created.upload_path,
-        filename: file.name,
+        filename: compressed.name,
       });
 
       setStatus("Uploaded. Your photo is now pending moderation.");
