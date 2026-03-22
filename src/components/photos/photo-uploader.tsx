@@ -108,7 +108,9 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
       setStatus("Compressing photo…");
       const compressed = await compressImage(file);
 
-      // Step 1: Create the submission record and get the upload path
+      // Step 1: Create the submission record and get the upload path.
+      // Use the compressed file's name so the storage path extension matches
+      // the actual content type (e.g. .webp, not .heic).
       setStatus(null);
       const createRes = await fetch("/api/submissions/photo", {
         method: "POST",
@@ -116,7 +118,7 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
         body: JSON.stringify({
           venue_id: venueId,
           caption,
-          filename: file.name,
+          filename: compressed.name,
         }),
       });
       const created = (await createRes.json()) as
@@ -153,7 +155,7 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
         venue_id: venueId,
         caption,
         storage_path: created.upload_path,
-        filename: file.name,
+        filename: compressed.name,
       });
 
       setStatus("Uploaded. Your photo is now pending moderation.");
