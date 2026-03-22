@@ -95,17 +95,18 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function onUpload() {
-    if (!file) return;
+  async function onUpload(selectedFile?: File) {
+    const fileToUpload = selectedFile ?? file;
+    if (!fileToUpload) return;
     setBusy(true);
     setStatus(null);
     try {
-      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      if (fileToUpload.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
         throw new Error(`Photo must be under ${MAX_FILE_SIZE_MB} MB`);
       }
 
       setStatus("Compressing photo…");
-      const compressed = await compressImage(file);
+      const compressed = await compressImage(fileToUpload);
 
       // Step 1: Create the submission record and get the upload path.
       // Use the compressed file's name so the storage path extension matches
@@ -174,31 +175,33 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
         type="file"
         accept="image/*"
         className="sr-only"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        onChange={(e) => {
+          const selected = e.target.files?.[0] ?? null;
+          setFile(selected);
+          if (selected) onUpload(selected);
+        }}
       />
-      <div className="flex flex-wrap items-center gap-3">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          Choose photo
-        </Button>
-        {file && (
-          <span className="max-w-xs truncate text-sm text-muted-foreground">
-            {file.name}
-          </span>
-        )}
-      </div>
       <input
         value={caption}
         onChange={(e) => setCaption(e.target.value)}
         placeholder="Caption (optional)"
         className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
       />
-      <Button type="button" onClick={onUpload} disabled={!file || busy}>
-        {busy ? "Uploading…" : "Upload for moderation"}
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={busy}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {busy ? "Uploading…" : "Choose photo"}
+        </Button>
+        {file && !busy && (
+          <span className="max-w-xs truncate text-sm text-muted-foreground">
+            {file.name}
+          </span>
+        )}
+      </div>
       {status ? <div className="text-sm text-muted-foreground">{status}</div> : null}
     </div>
   );
