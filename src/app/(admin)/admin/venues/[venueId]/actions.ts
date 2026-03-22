@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createDescriptionGenerator } from "@data-pipeline/ai";
+import { env } from "@/lib/env";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -93,16 +93,19 @@ export async function updateVenueDetails(formData: FormData) {
 }
 
 /**
- * Generate (or regenerate) a venue's base description using the active
- * description generator. In v1 this is always the deterministic generator.
- * Swap in an AI generator by updating createDescriptionGenerator() in
- * packages/data-pipeline/ai/index.ts — no changes needed here.
+ * Generate (or regenerate) a venue's base description (summary) using Gemini.
+ * Produces a 1–3 sentence editorial summary matching the style used by the
+ * ingest pipeline's summary_short field.
  */
 export async function generateBaseDescription(formData: FormData) {
   const supabase = await requireAdmin();
   const id = getText(formData, "id");
 
-  // Fetch the fields the generator needs, including the city name.
+  const apiKey = env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not set. Add it to your environment variables.");
+  }
+
   const { data: venue, error: fetchError } = await supabase
     .from("venues")
     .select("name,venue_type,venue_tags,city_id,cities(name,country)")
@@ -112,29 +115,156 @@ export async function generateBaseDescription(formData: FormData) {
   if (fetchError) throw fetchError;
   if (!venue) throw new Error("Venue not found");
 
-  // cities join returns a single object for a many-to-one FK relationship.
   const cityRow = venue.cities as unknown as { name: string; country: string } | null;
-
-  // Flatten structured venue_tags into a simple string array for the generator.
   const venueTags = (venue.venue_tags ?? {}) as Record<string, unknown>;
   const flatTags = Object.values(venueTags)
     .flatMap((v) => (Array.isArray(v) ? (v as string[]) : []));
 
-  const generator = createDescriptionGenerator();
-  const result = await generator.generate({
-    name: venue.name,
-    city: cityRow?.name ?? "",
-    country: cityRow?.country ?? undefined,
-    venue_type: venue.venue_type,
-    tags: flatTags,
+  const venueTypeLabel =
+    venue.venue_type === "club" ? "dance club"
+    : venue.venue_type === "cafe" ? "café"
+    : venue.venue_type === "event_space" ? "event space"
+    : (venue.venue_type ?? "venue");
+
+  const tagLine = flatTags.length > 0 ? ` Known for: ${flatTags.join(", ")}.` : "";
+
+  const prompt = `You are a travel writer for Gay Places, an editorial guide to gay venues around the world. Your writing is authoritative, specific, and culturally aware — closer to Monocle or a boutique travel magazine than a nightlife directory.
+
+Write a summary of 1–3 sentences about the following venue. This appears alongside a venue listing on a city page, so it needs to work at a glance. Lead with what makes the venue worth visiting — its character, crowd, design, history, or position in the city's scene. Be specific and concrete. Do not use: vibrant, iconic, legendary, must-visit, welcoming, lively, beloved, thriving, or any phrase that could apply to any venue in any city.
+
+Venue: ${venue.name}
+Type: ${venueTypeLabel}
+City: ${cityRow?.name ?? ""}${cityRow?.country ? `, ${cityRow.country}` : ""}${tagLine}
+
+Return ONLY the summary text — no labels, no quotes, no markdown.`;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.5,
+      maxOutputTokens: 256,
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Gemini API returned HTTP ${response.status}: ${text.slice(0, 300)}`);
+  }
+
+  const json = (await response.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    error?: { message?: string };
+  };
+
+  if (json.error) throw new Error(`Gemini API error: ${json.error.message ?? "Unknown"}`);
+
+  const summary = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+  if (!summary) throw new Error("Gemini returned an empty response");
 
   const { error: updateError } = await supabase
     .from("venues")
     .update({
-      description_base: result.description_base,
-      description_generation_status: result.status,
-      description_last_generated_at: result.generated_at.toISOString(),
+      description_base: summary,
+      description_generation_status: "ai_draft",
+      description_last_generated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (updateError) throw updateError;
+
+  revalidatePath(`/admin/venues/${id}`);
+}
+
+/**
+ * Generate (or regenerate) a venue's editorial description using Gemini.
+ * Produces an in-depth editorial paragraph designed to appear after the
+ * base summary on the venue detail page.
+ */
+export async function generateEditorialDescription(formData: FormData) {
+  const supabase = await requireAdmin();
+  const id = getText(formData, "id");
+
+  const apiKey = env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not set. Add it to your environment variables.");
+  }
+
+  const { data: venue, error: fetchError } = await supabase
+    .from("venues")
+    .select("name,venue_type,venue_tags,description_base,city_id,cities(name,country)")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fetchError) throw fetchError;
+  if (!venue) throw new Error("Venue not found");
+
+  const cityRow = venue.cities as unknown as { name: string; country: string } | null;
+  const venueTags = (venue.venue_tags ?? {}) as Record<string, unknown>;
+  const flatTags = Object.values(venueTags)
+    .flatMap((v) => (Array.isArray(v) ? (v as string[]) : []));
+
+  const venueTypeLabel =
+    venue.venue_type === "club" ? "dance club"
+    : venue.venue_type === "cafe" ? "café"
+    : venue.venue_type === "event_space" ? "event space"
+    : (venue.venue_type ?? "venue");
+
+  const tagLine = flatTags.length > 0 ? ` Known for: ${flatTags.join(", ")}.` : "";
+  const summaryLine = venue.description_base ? `\nExisting summary: ${venue.description_base}` : "";
+
+  const prompt = `You are a travel writer for Gay Places, an editorial guide to gay venues around the world. Your writing is authoritative, specific, and culturally aware — closer to Monocle or a boutique travel magazine than a nightlife directory.
+
+Write a single editorial paragraph of 3–5 sentences about the following venue. This paragraph appears on the venue page immediately after a short summary sentence, so it should go deeper — not repeat. Draw on the venue's character, crowd, programming, design, or role in the local scene. Write in prose, no lists or bullet points. Be specific and concrete. Do not use: vibrant, iconic, legendary, must-visit, welcoming, lively, beloved, thriving, or any phrase that could apply to any venue in any city.
+
+Venue: ${venue.name}
+Type: ${venueTypeLabel}
+City: ${cityRow?.name ?? ""}${cityRow?.country ? `, ${cityRow.country}` : ""}${tagLine}${summaryLine}
+
+Return ONLY the paragraph text — no labels, no quotes, no markdown.`;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 512,
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Gemini API returned HTTP ${response.status}: ${text.slice(0, 300)}`);
+  }
+
+  const json = (await response.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    error?: { message?: string };
+  };
+
+  if (json.error) throw new Error(`Gemini API error: ${json.error.message ?? "Unknown"}`);
+
+  const editorial = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+  if (!editorial) throw new Error("Gemini returned an empty response");
+
+  const { error: updateError } = await supabase
+    .from("venues")
+    .update({
+      description_editorial: editorial,
+      description_generation_status: "ai_draft",
     })
     .eq("id", id);
   if (updateError) throw updateError;

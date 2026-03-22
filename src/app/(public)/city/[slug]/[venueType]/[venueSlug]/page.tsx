@@ -269,10 +269,17 @@ export default async function VenuePage({
             </div>
           )}
 
-          {/* Description — priority: editorial → base → legacy */}
-          {(venue.description_editorial || venue.description_base || venue.description) && (
+          {/* Intro — base description (short summary) */}
+          {(venue.description_base || venue.description) && (
             <p className="mt-4 text-[15px] leading-[1.4] text-[var(--foreground)]">
-              {venue.description_editorial ?? venue.description_base ?? venue.description}
+              {venue.description_base ?? venue.description}
+            </p>
+          )}
+
+          {/* Editorial — in-depth paragraph shown below the intro */}
+          {venue.description_editorial && (
+            <p className="mt-3 text-[15px] leading-[1.4] text-[var(--foreground)]">
+              {venue.description_editorial}
             </p>
           )}
 
