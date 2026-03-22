@@ -108,10 +108,18 @@ function mapVenueType(raw?: string): VenueType {
 
 function generateSlug(name: string): string {
   return name
-    .replace(/[^a-zA-Z0-9\s\-]/g, "") // Remove non-alphanumeric except spaces and hyphens
-    .replace(/[\s\-]+/g, "-") // Collapse spaces/hyphens into single hyphen
+    .normalize("NFD")                  // decompose: ö → o + combining umlaut
+    .replace(/[\u0300-\u036f]/g, "")   // strip combining marks
+    .replace(/[øØ]/g, "o")
+    .replace(/[æÆ]/g, "ae")
+    .replace(/[œŒ]/g, "oe")
+    .replace(/[ßẞ]/g, "ss")
+    .replace(/[đĐ]/g, "d")
+    .replace(/[łŁ]/g, "l")
+    .replace(/[þÞ]/g, "th")
     .toLowerCase()
-    .replace(/^-+|-+$/g, ""); // Trim leading/trailing hyphens
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 // ---------------------------------------------------------------------------

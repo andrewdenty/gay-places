@@ -1,9 +1,29 @@
 /**
+ * Converts a name to a URL-safe ASCII slug, transliterating diacritics.
+ * e.g. "Malmö" → "malmo", "São Paulo" → "sao-paulo"
+ */
+export function toSlug(name: string): string {
+  return name
+    .normalize("NFD")                  // decompose: ö → o + combining umlaut
+    .replace(/[\u0300-\u036f]/g, "")   // strip combining marks
+    .replace(/[øØ]/g, "o")
+    .replace(/[æÆ]/g, "ae")
+    .replace(/[œŒ]/g, "oe")
+    .replace(/[ßẞ]/g, "ss")
+    .replace(/[đĐ]/g, "d")
+    .replace(/[łŁ]/g, "l")
+    .replace(/[þÞ]/g, "th")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
  * Derives a URL-safe slug from a country name.
  * e.g. "United States" → "united-states"
  */
 export function toCountrySlug(name: string) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  return toSlug(name);
 }
 
 /**
