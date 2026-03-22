@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { OpeningHours } from "@/lib/types/opening-hours";
 import type { VenueTags } from "@/lib/venue-tags";
+import { toSlug } from "@/lib/slugs";
 
 export type Country = {
   id: string;
@@ -175,10 +176,11 @@ export async function getTopCitiesByVenueCount(limit = 5): Promise<CityWithVenue
 
 export async function getCityBySlug(slug: string): Promise<City | null> {
   const supabase = await createSupabaseServerClient();
+  const normalizedSlug = toSlug(slug);
   const { data, error } = await supabase
     .from("cities")
     .select(CITY_FIELDS_WITH_DESC)
-    .eq("slug", slug.toLowerCase())
+    .eq("slug", normalizedSlug)
     .eq("published", true)
     .maybeSingle();
   if (error) {
@@ -186,7 +188,7 @@ export async function getCityBySlug(slug: string): Promise<City | null> {
       const { data: fallback, error: fallbackError } = await supabase
         .from("cities")
         .select(CITY_FIELDS_BASE)
-        .eq("slug", slug)
+        .eq("slug", normalizedSlug)
         .eq("published", true)
         .maybeSingle();
       if (fallbackError) throw fallbackError;
@@ -202,7 +204,7 @@ export async function getVenuesByCitySlug(slug: string): Promise<Venue[]> {
   const { data: city, error: cityError } = await supabase
     .from("cities")
     .select("id")
-    .eq("slug", slug.toLowerCase())
+    .eq("slug", toSlug(slug))
     .eq("published", true)
     .maybeSingle();
   if (cityError) throw cityError;
