@@ -1,19 +1,7 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
-
-function SubmitButton({ hasExisting }: { hasExisting: boolean }) {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="shrink-0 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {pending ? "Generating…" : hasExisting ? "Regenerate" : "Generate"}
-    </button>
-  );
-}
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 export function DescriptionGenerateForm({
   action,
@@ -24,10 +12,28 @@ export function DescriptionGenerateForm({
   venueId: string;
   hasExisting: boolean;
 }) {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    startTransition(async () => {
+      await action(formData);
+      router.refresh();
+    });
+  }
+
   return (
-    <form action={action}>
+    <form onSubmit={handleSubmit}>
       <input type="hidden" name="id" value={venueId} />
-      <SubmitButton hasExisting={hasExisting} />
+      <button
+        type="submit"
+        disabled={isPending}
+        className="shrink-0 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isPending ? "Generating…" : hasExisting ? "Regenerate" : "Generate"}
+      </button>
     </form>
   );
 }
