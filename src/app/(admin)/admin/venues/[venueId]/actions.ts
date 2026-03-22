@@ -30,6 +30,7 @@ export async function updateVenueDetails(formData: FormData) {
   const lat = Number(getText(formData, "lat"));
   const lng = Number(getText(formData, "lng"));
   const venue_type = getText(formData, "venue_type") || "other";
+  const description_base = getText(formData, "description_base") || null;
   const description_editorial = getText(formData, "description_editorial") || null;
   const website_url = getText(formData, "website_url") || null;
   const google_maps_url = getText(formData, "google_maps_url") || null;
@@ -56,7 +57,7 @@ export async function updateVenueDetails(formData: FormData) {
 
   // Mark status as human_edited when an admin saves a non-empty editorial description.
   // When editorial is cleared, reset to 'generated' if a base description exists, otherwise leave unchanged.
-  const descriptionBaseExists = getText(formData, "description_base_exists") === "1";
+  const descriptionBaseExists = !!description_base;
   const description_generation_status = description_editorial
     ? "human_edited"
     : descriptionBaseExists
@@ -72,6 +73,7 @@ export async function updateVenueDetails(formData: FormData) {
       lat,
       lng,
       venue_type,
+      description_base,
       description_editorial,
       ...(description_generation_status !== undefined && {
         description_generation_status,
