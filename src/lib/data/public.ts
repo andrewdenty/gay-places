@@ -356,11 +356,13 @@ export async function getAllPublishedVenuesForSitemap(): Promise<
     .select("slug,venue_type,cities!inner(slug)")
     .eq("published", true);
   if (error) throw error;
-  return ((data as unknown) as VenueSitemapRow[] ?? []).map((row) => ({
-    slug: row.slug,
-    venue_type: row.venue_type ?? "other",
-    city_slug: row.cities[0]?.slug ?? "",
-  }));
+  return ((data as unknown) as VenueSitemapRow[] ?? [])
+    .map((row) => ({
+      slug: row.slug,
+      venue_type: row.venue_type ?? "other",
+      city_slug: row.cities[0]?.slug ?? "",
+    }))
+    .filter((v) => v.city_slug);
 }
 
 export type VenueCoord = {
