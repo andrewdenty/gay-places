@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, Search, ArrowRight } from "lucide-react";
+import { SearchModal } from "@/components/search/search-modal";
 
 type City = {
   id: string;
@@ -29,6 +30,7 @@ export function NavDrawer({
   const pathname = usePathname();
   const [cities, setCities] = useState<City[]>(initialCities ?? []);
   const [fetched, setFetched] = useState(!!initialCities?.length);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Fetch cities once on first open (only if not pre-loaded)
   useEffect(() => {
@@ -85,7 +87,7 @@ export function NavDrawer({
 
       {/* Drawer panel */}
       <div
-        className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[320px] flex-col"
+        className="fixed right-0 top-0 z-50 flex h-full w-full sm:max-w-[320px] flex-col"
         style={{
           backgroundColor: "#FCFCFB",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
@@ -95,7 +97,7 @@ export function NavDrawer({
       >
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="flex flex-col gap-8 p-4">
+          <div className="flex flex-col gap-10 p-4">
 
             {/* Dismiss button */}
             <div className="flex justify-end">
@@ -110,8 +112,9 @@ export function NavDrawer({
             </div>
 
             {/* Search bar */}
-            <div
-              className="flex items-center gap-2 rounded-[80px] px-6"
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex w-full items-center gap-2 rounded-[80px] px-6 text-left"
               style={{
                 backgroundColor: "#F7F7F5",
                 border: "1.5px solid #F0F0ED",
@@ -119,13 +122,10 @@ export function NavDrawer({
               }}
             >
               <Search size={20} strokeWidth={1.5} color="#6E6E6D" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="flex-1 bg-transparent text-[15px] leading-[1.4] outline-none placeholder:text-[#6E6E6D]"
-                style={{ color: "#171717" }}
-              />
-            </div>
+              <span className="text-[15px] leading-[1.4]" style={{ color: "#6E6E6D" }}>
+                Search...
+              </span>
+            </button>
 
             {/* Featured Cities */}
             <div className="flex flex-col gap-4">
@@ -259,6 +259,8 @@ export function NavDrawer({
           </div>
         </div>
       </div>
+
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
