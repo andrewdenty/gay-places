@@ -239,7 +239,7 @@ export function SearchModal({
                       type="button"
                       onClick={() => navigate(`/country/${toCountrySlug(country.name)}`)}
                       aria-current={selectedIndex === i ? true : undefined}
-                      className={`flex w-full items-center justify-between py-4 text-left transition-colors ${selectedIndex === i ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]"}`}
+                      className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === i ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
                     >
                       <div className="flex flex-col gap-1">
                         <div className="text-[15px] font-semibold text-[var(--foreground)]">
@@ -268,7 +268,7 @@ export function SearchModal({
                         type="button"
                         onClick={() => navigate(`/city/${city.slug}`)}
                         aria-current={selectedIndex === cityIndex ? true : undefined}
-                        className={`flex w-full items-center justify-between py-4 text-left transition-colors ${selectedIndex === cityIndex ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]"}`}
+                        className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === cityIndex ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
                       >
                         <div className="flex flex-col gap-1">
                           <div className="text-[15px] font-semibold text-[var(--foreground)]">
@@ -298,7 +298,7 @@ export function SearchModal({
                         type="button"
                         onClick={() => navigate(venueUrlPath(venue.city_slug, venue.venue_type, venue.slug))}
                         aria-current={selectedIndex === venueIndex ? true : undefined}
-                        className={`flex w-full items-center justify-between py-4 text-left transition-colors ${selectedIndex === venueIndex ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]"}`}
+                        className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === venueIndex ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
                       >
                         <div className="flex flex-col gap-1">
                           <div className="text-[15px] font-semibold text-[var(--foreground)]">
