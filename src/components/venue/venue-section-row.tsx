@@ -14,7 +14,7 @@ export function VenueSectionRow({
 }: Props) {
   return (
     <div
-      className={`flex items-start justify-between gap-6 py-[32px] ${
+      className={`flex items-center justify-between gap-6 py-[32px] ${
         bordered ? "border-b border-[var(--border)]" : ""
       } ${className}`}
     >

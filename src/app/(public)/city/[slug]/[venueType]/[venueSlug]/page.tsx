@@ -419,7 +419,7 @@ export default async function VenuePage({
 
         {/* Section 8 — Contribute */}
         <VenueSectionRow label="Contribute" bordered={false}>
-          <div className="flex items-center gap-[8px]">
+          <div className="flex flex-wrap items-center justify-end gap-[8px]">
             <Link href={`/venues/${venue.id}/suggest-edit`} className="btn-sm btn-sm-secondary">
               Suggest an edit
             </Link>
