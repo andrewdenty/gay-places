@@ -199,7 +199,7 @@ export function SearchModal({
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 placeholder="Search gay places..."
-                className="flex-1 min-w-0 bg-transparent text-[16px] outline-none transition-colors placeholder:text-[#6E6E6D]"
+                className="flex-1 min-w-0 bg-transparent text-[15px] outline-none transition-colors placeholder:text-[#6E6E6D]"
                 style={{
                   color: "#171717",
                   caretColor: "#171717",

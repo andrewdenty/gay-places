@@ -108,7 +108,7 @@ export function NavDrawer({
                 }}
               >
                 <Search size={20} strokeWidth={1.5} color="#6E6E6D" className="shrink-0" />
-                <span className="text-[16px] leading-[1.4]" style={{ color: "#6E6E6D" }}>
+                <span className="text-[15px] leading-[1.4]" style={{ color: "#6E6E6D" }}>
                   Search gay places...
                 </span>
               </button>
