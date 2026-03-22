@@ -4,17 +4,25 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q")?.trim();
   if (!q || q.length < 1) {
-    return NextResponse.json({ cities: [], venues: [] });
+    return NextResponse.json({ countries: [], cities: [], venues: [] });
   }
 
   const supabase = await createSupabaseServerClient();
   const pattern = `%${q}%`;
 
-  const [citiesRes, venuesRes] = await Promise.all([
+  const [countriesRes, citiesRes, venuesRes] = await Promise.all([
     supabase
       .from("cities")
-      .select("id,slug,name,country")
+      .select("country,venues(count)")
       .eq("published", true)
+      .eq("venues.published", true)
+      .ilike("country", pattern)
+      .limit(50),
+    supabase
+      .from("cities")
+      .select("id,slug,name,country,venues(count)")
+      .eq("published", true)
+      .eq("venues.published", true)
       .ilike("name", pattern)
       .order("name")
       .limit(5),
@@ -26,7 +34,30 @@ export async function GET(request: NextRequest) {
       .limit(8),
   ]);
 
-  const cities = citiesRes.data ?? [];
+  // Group by country and sum venue counts
+  const countryMap = new Map<string, number>();
+  for (const row of countriesRes.data ?? []) {
+    const venueRows = row.venues as { count: number }[] | null;
+    const count = Array.isArray(venueRows) ? Number(venueRows[0]?.count ?? 0) : 0;
+    countryMap.set(row.country, (countryMap.get(row.country) ?? 0) + count);
+  }
+  const countries = [...countryMap.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(0, 5)
+    .map(([name, venueCount]) => ({ name, venueCount }));
+
+  const cities = (citiesRes.data ?? []).map((city) => {
+    const venueRows = city.venues as { count: number }[] | null;
+    const venueCount = Array.isArray(venueRows) ? Number(venueRows[0]?.count ?? 0) : 0;
+    return {
+      id: city.id,
+      slug: city.slug,
+      name: city.name,
+      country: city.country,
+      venueCount,
+    };
+  });
+
   const venues = (venuesRes.data ?? []).map((v) => {
     const citiesJoin = v.cities as { slug: string; name: string }[] | null;
     const cityData = Array.isArray(citiesJoin) ? citiesJoin[0] ?? null : (citiesJoin as { slug: string; name: string } | null);
@@ -40,5 +71,5 @@ export async function GET(request: NextRequest) {
     };
   });
 
-  return NextResponse.json({ cities, venues });
+  return NextResponse.json({ countries, cities, venues });
 }
