@@ -137,7 +137,7 @@ export function NavDrawer({
                   <span className="font-mono text-[10px] uppercase" style={{ letterSpacing: "1.2px", color: "#000000" }}>
                     Featured Cities
                   </span>
-                  <ArrowRight size={16} strokeWidth={1.5} color="#171717" />
+                  <ArrowRight size={16} strokeWidth={1.5} color="#171717" className="mr-2" />
                 </Link>
 
                 {cities.length === 0 && (
@@ -168,7 +168,7 @@ export function NavDrawer({
                 <span className="font-mono text-[10px] uppercase" style={{ letterSpacing: "1.2px", color: "#000000" }}>
                   All Guides
                 </span>
-                <ArrowRight size={16} strokeWidth={1.5} color="#171717" />
+                <ArrowRight size={16} strokeWidth={1.5} color="#171717" className="mr-2" />
               </Link>
 
               {/* Contribute */}
@@ -187,49 +187,49 @@ export function NavDrawer({
               </div>
 
               {/* Account */}
-              <div className="flex flex-col gap-4">
-                <span className="font-mono text-[10px] uppercase" style={{ letterSpacing: "1.2px", color: "#171717" }}>
-                  Account
-                </span>
-                {userEmail ? (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[15px] leading-[1.4]" style={{ color: "#171717" }}>{userEmail}</span>
-                      <form action="/auth/sign-out" method="post">
-                        <button
-                          type="submit"
-                          className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5]"
-                          style={{ borderColor: "#E4E4E1", color: "#171717" }}
-                        >
-                          Log out
-                        </button>
-                      </form>
-                    </div>
-                    {isAdmin && (
-                      <Link
-                        href="/admin"
-                        className="text-[15px] leading-[1.4] transition-colors hover:text-[#6E6E6D]"
-                        style={{ color: "#171717" }}
-                        onClick={onClose}
-                      >
-                        Admin
-                      </Link>
-                    )}
-                  </>
-                ) : (
+              {userEmail ? (
+                <div className="flex flex-col gap-4">
+                  <span className="font-mono text-[10px] uppercase" style={{ letterSpacing: "1.2px", color: "#171717" }}>
+                    Account
+                  </span>
                   <div className="flex items-center justify-between">
-                    <span className="text-[15px] leading-[1.4]" style={{ color: "#6E6E6D" }}>Not signed in</span>
+                    <span className="text-[15px] leading-[1.4]" style={{ color: "#171717" }}>{userEmail}</span>
+                    <form action="/auth/sign-out" method="post">
+                      <button
+                        type="submit"
+                        className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5]"
+                        style={{ borderColor: "#E4E4E1", color: "#171717" }}
+                      >
+                        Log out
+                      </button>
+                    </form>
+                  </div>
+                  {isAdmin && (
                     <Link
-                      href="/sign-in"
-                      className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5]"
-                      style={{ borderColor: "#E4E4E1", color: "#171717" }}
+                      href="/admin"
+                      className="text-[15px] leading-[1.4] transition-colors hover:text-[#6E6E6D]"
+                      style={{ color: "#171717" }}
                       onClick={onClose}
                     >
-                      Sign in
+                      Admin
                     </Link>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] uppercase" style={{ letterSpacing: "1.2px", color: "#171717" }}>
+                    Account
+                  </span>
+                  <Link
+                    href="/sign-in"
+                    className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5]"
+                    style={{ borderColor: "#E4E4E1", color: "#171717" }}
+                    onClick={onClose}
+                  >
+                    Sign in
+                  </Link>
+                </div>
+              )}
 
             </div>
           </div>
