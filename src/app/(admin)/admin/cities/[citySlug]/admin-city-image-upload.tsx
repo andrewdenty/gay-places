@@ -15,10 +15,29 @@ export function AdminCityImageUpload({
   uploadAction,
 }: AdminCityImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [filename, setFilename] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      await uploadAction(formData);
+      setFilename(null);
+      formRef.current?.reset();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <form action={uploadAction} className="mt-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="mt-4">
       <input type="hidden" name="city_id" value={cityId} />
       <input type="hidden" name="city_slug" value={citySlug} />
       <input
@@ -28,29 +47,28 @@ export function AdminCityImageUpload({
         accept="image/*"
         className="sr-only"
         required
-        onChange={(e) => setFilename(e.target.files?.[0]?.name ?? null)}
+        onChange={(e) => {
+          const selected = e.target.files?.[0] ?? null;
+          setFilename(selected?.name ?? null);
+          if (selected) formRef.current?.requestSubmit();
+        }}
       />
       <div className="flex flex-wrap items-center gap-3">
         <Button
           type="button"
           variant="secondary"
+          disabled={busy}
           onClick={() => fileInputRef.current?.click()}
         >
           Choose image
         </Button>
         {filename && (
           <span className="max-w-xs truncate text-sm text-muted-foreground">
-            {filename}
+            {busy ? "Uploading…" : filename}
           </span>
         )}
-        <Button
-          type="submit"
-          disabled={!filename}
-          aria-label={filename ? "Upload image" : "Choose an image first to enable upload"}
-        >
-          Upload
-        </Button>
       </div>
+      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
     </form>
   );
 }
