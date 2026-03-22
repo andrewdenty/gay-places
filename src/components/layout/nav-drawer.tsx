@@ -71,9 +71,9 @@ export function NavDrawer({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — desktop only; on mobile the drawer is full-width so no backdrop needed */}
       <div
-        className="fixed inset-0 z-40 transition-opacity duration-300"
+        className="fixed inset-0 z-40 transition-opacity duration-300 hidden sm:block"
         style={{
           backgroundColor: "rgba(23,23,23,0.2)",
           opacity: isOpen ? 1 : 0,
@@ -109,7 +109,7 @@ export function NavDrawer({
               >
                 <Search size={20} strokeWidth={1.5} color="#6E6E6D" className="shrink-0" />
                 <span className="text-[15px] leading-[1.4]" style={{ color: "#6E6E6D" }}>
-                  Search...
+                  Search gay places...
                 </span>
               </button>
 

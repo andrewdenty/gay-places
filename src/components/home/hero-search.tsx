@@ -28,7 +28,7 @@ export function HeroSearch() {
       >
         <Search size={20} strokeWidth={1.5} className="shrink-0 text-[var(--muted-foreground)]" />
         <span className="text-[15px] text-[var(--muted-foreground)] leading-[1.4]">
-          Search bars, clubs, places and cities…
+          Search gay places...
         </span>
       </button>
 

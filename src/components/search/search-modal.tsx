@@ -190,7 +190,7 @@ export function SearchModal({
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
-                placeholder="Search bars, clubs, places and cities…"
+                placeholder="Search gay places..."
                 className="w-full rounded-full pl-12 pr-10 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
                 style={{
                   height: "56px",
