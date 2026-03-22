@@ -8,6 +8,7 @@ import { VenueSectionRow } from "@/components/venue/venue-section-row";
 import { PhotoGallery } from "@/components/venue/photo-gallery";
 import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
+import { VenueDescription } from "@/components/venue/venue-description";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
 import { env } from "@/lib/env";
@@ -269,18 +270,12 @@ export default async function VenuePage({
             </div>
           )}
 
-          {/* Intro — base description (short summary) */}
+          {/* Intro + expandable editorial */}
           {(venue.description_base || venue.description) && (
-            <p className="mt-4 text-[15px] leading-[1.4] text-[var(--foreground)]">
-              {venue.description_base ?? venue.description}
-            </p>
-          )}
-
-          {/* Editorial — in-depth paragraph shown below the intro */}
-          {venue.description_editorial && (
-            <p className="mt-3 text-[15px] leading-[1.4] text-[var(--foreground)]">
-              {venue.description_editorial}
-            </p>
+            <VenueDescription
+              summary={venue.description_base ?? venue.description!}
+              editorial={venue.description_editorial}
+            />
           )}
 
           {/* Address + Map button — below description */}
