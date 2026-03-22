@@ -87,11 +87,13 @@ export default async function LandingPage() {
                 </div>
 
                 {/* Cover image */}
-                <div className="shrink-0 size-20 overflow-hidden">
-                  <img
+                <div className="relative shrink-0 size-20 overflow-hidden">
+                  <Image
                     src={`${STORAGE_BASE}/${city.cover_image_path}`}
                     alt={city.name}
-                    className="size-full object-cover"
+                    fill
+                    sizes="80px"
+                    className="object-cover"
                   />
                 </div>
               </Link>

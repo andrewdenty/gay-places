@@ -8,6 +8,7 @@ import {
   getVenueCountByCityId,
   getVenuesByIds,
   getVenueCoordsByCountryName,
+  getPublishedCountrySlugs,
 } from "@/lib/data/public";
 import { CountryCityRow } from "@/components/country/country-city-row";
 import { CountryMapWrapper } from "@/components/maps/CountryMapWrapper";
@@ -16,7 +17,15 @@ import { env } from "@/lib/env";
 import type { Venue } from "@/lib/data/public";
 import { venueUrlPath } from "@/lib/slugs";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return [];
+  }
+  const slugs = await getPublishedCountrySlugs().catch(() => new Set<string>());
+  return Array.from(slugs).map((slug) => ({ slug }));
+}
 
 // Derives region from country name — mirrors RegionBrowser logic
 const COUNTRY_REGION: Record<string, string> = {

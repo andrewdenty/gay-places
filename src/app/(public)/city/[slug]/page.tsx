@@ -2,13 +2,21 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs, getCities } from "@/lib/data/public";
 import { CityExplorer } from "@/components/city/city-explorer";
 import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
 import { toCountrySlug } from "@/lib/slugs";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return [];
+  }
+  const cities = await getCities().catch(() => []);
+  return cities.map((city) => ({ slug: city.slug }));
+}
 
 const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
@@ -127,12 +135,14 @@ export default async function CityPage({
           /* With image: mobile = image → text, desktop = text → image */
           <div className="mb-10 sm:mb-14 flex flex-col">
             {/* City image — below text on desktop, above on mobile */}
-            <div className="bg-[#f7f7f5] aspect-square overflow-hidden mb-10 sm:order-2 sm:mt-10 sm:mb-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <div className="relative bg-[#f7f7f5] aspect-square overflow-hidden mb-10 sm:order-2 sm:mt-10 sm:mb-0">
+              <Image
                 src={cityImageUrl}
                 alt={city.name}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 720px) 100vw, 720px"
+                className="object-cover"
+                priority
               />
             </div>
 

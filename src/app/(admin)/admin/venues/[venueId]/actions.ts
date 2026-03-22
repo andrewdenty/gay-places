@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createDescriptionGenerator } from "@data-pipeline/ai";
+import { venueUrlPath } from "@/lib/slugs";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -88,8 +89,22 @@ export async function updateVenueDetails(formData: FormData) {
     .eq("id", id);
   if (error) throw error;
 
+  // Revalidate admin pages
   revalidatePath("/admin/venues");
   revalidatePath(`/admin/venues/${id}`);
+
+  // Revalidate public pages so changes are visible immediately
+  const { data: venueInfo } = await supabase
+    .from("venues")
+    .select("slug,venue_type,cities!inner(slug)")
+    .eq("id", id)
+    .maybeSingle();
+  if (venueInfo) {
+    const citySlug = (venueInfo.cities as unknown as { slug: string }).slug;
+    revalidatePath("/");
+    revalidatePath(`/city/${citySlug}`);
+    revalidatePath(venueUrlPath(citySlug, venueInfo.venue_type, venueInfo.slug));
+  }
 }
 
 /**
@@ -191,6 +206,17 @@ export async function uploadVenuePhoto(formData: FormData) {
   if (error) throw error;
 
   revalidatePath(`/admin/venues/${venueId}`);
+
+  // Revalidate the public venue page
+  const { data: venueInfo } = await supabase
+    .from("venues")
+    .select("slug,venue_type,cities!inner(slug)")
+    .eq("id", venueId)
+    .maybeSingle();
+  if (venueInfo) {
+    const citySlug = (venueInfo.cities as unknown as { slug: string }).slug;
+    revalidatePath(venueUrlPath(citySlug, venueInfo.venue_type, venueInfo.slug));
+  }
 }
 
 export async function deleteVenuePhoto(formData: FormData) {
@@ -208,4 +234,15 @@ export async function deleteVenuePhoto(formData: FormData) {
   if (error) throw error;
 
   revalidatePath(`/admin/venues/${venueId}`);
+
+  // Revalidate the public venue page
+  const { data: venueInfo } = await supabase
+    .from("venues")
+    .select("slug,venue_type,cities!inner(slug)")
+    .eq("id", venueId)
+    .maybeSingle();
+  if (venueInfo) {
+    const citySlug = (venueInfo.cities as unknown as { slug: string }).slug;
+    revalidatePath(venueUrlPath(citySlug, venueInfo.venue_type, venueInfo.slug));
+  }
 }
