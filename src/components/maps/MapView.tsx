@@ -40,6 +40,11 @@ export function MapView({ center, zoom, className, onReady }: Props) {
       "bottom-right"
     );
 
+    // MapLibre v5 starts compact attribution expanded — force it collapsed
+    const attrib = map.getContainer().querySelector('.maplibregl-ctrl-attrib');
+    attrib?.removeAttribute('open');
+    attrib?.classList.remove('maplibregl-compact-show');
+
     mapRef.current = map;
 
     if (onReady) {
