@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Locate } from "lucide-react";
+import { Search } from "lucide-react";
 import { SearchModal } from "@/components/search/search-modal";
-import { IconButton } from "@/components/ui/icon-button";
+import { NearMeFieldButton } from "@/components/ui/near-me-field-button";
 
 export function HeroSearch() {
   const [open, setOpen] = useState(false);
@@ -12,14 +12,17 @@ export function HeroSearch() {
 
   return (
     <>
-      <div className="flex items-center gap-2 max-w-[500px]">
+      <div className="max-w-[500px]">
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="group flex flex-1 min-w-0 items-center gap-3 h-12 rounded-full border px-6 text-left transition-colors cursor-text"
+          className="group flex w-full items-center rounded-full border text-left transition-colors cursor-text"
           style={{
             backgroundColor: "#F7F7F5",
             borderColor: "#F0F0ED",
+            height: "56px",
+            paddingLeft: "16px",
+            paddingRight: "8px",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "#F0F0ED";
@@ -31,14 +34,11 @@ export function HeroSearch() {
           }}
         >
           <Search size={20} strokeWidth={1.5} className="shrink-0 text-[var(--muted-foreground)]" />
-          <span className="text-[15px] text-[var(--muted-foreground)] leading-[1.4]">
+          <span className="flex-1 min-w-0 ml-3 text-[15px] text-[var(--muted-foreground)] leading-[1.4]">
             Search gay places...
           </span>
+          <NearMeFieldButton onClick={() => router.push("/near-me")} />
         </button>
-
-        <IconButton label="Find places near me" onClick={() => router.push("/near-me")}>
-          <Locate size={20} strokeWidth={1.5} />
-        </IconButton>
       </div>
 
       <SearchModal isOpen={open} onClose={() => setOpen(false)} />

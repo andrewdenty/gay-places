@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { X, Search, ArrowRight, Locate } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { X, Search, ArrowRight } from "lucide-react";
 import { SearchModal } from "@/components/search/search-modal";
+import { NearMeFieldButton } from "@/components/ui/near-me-field-button";
 
 type City = {
   id: string;
@@ -28,6 +29,7 @@ export function NavDrawer({
   initialCities?: City[];
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [cities, setCities] = useState<City[]>(initialCities ?? []);
   const [fetched, setFetched] = useState(!!initialCities?.length);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -85,7 +87,7 @@ export function NavDrawer({
 
       {/* Drawer panel */}
       <div
-        className="fixed right-0 top-0 z-50 flex h-full w-full sm:max-w-[320px] flex-col"
+        className="fixed right-0 top-0 z-50 flex h-full w-full sm:max-w-[400px] flex-col"
         style={{
           backgroundColor: "#FCFCFB",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
@@ -100,17 +102,20 @@ export function NavDrawer({
             <div className="flex items-center gap-3 pb-4 border-b" style={{ borderColor: "#F0F0ED" }}>
               <button
                 onClick={() => setSearchOpen(true)}
-                className="flex flex-1 items-center gap-2 rounded-[80px] px-6 text-left"
+                className="flex flex-1 items-center rounded-[80px] text-left"
                 style={{
                   backgroundColor: "#F7F7F5",
                   border: "1px solid #F0F0ED",
-                  height: "48px",
+                  height: "56px",
+                  paddingLeft: "16px",
+                  paddingRight: "8px",
                 }}
               >
                 <Search size={20} strokeWidth={1.5} color="#6E6E6D" className="shrink-0" />
-                <span className="text-[15px] leading-[1.4]" style={{ color: "#6E6E6D" }}>
+                <span className="flex-1 min-w-0 ml-2 text-[15px] leading-[1.4]" style={{ color: "#6E6E6D" }}>
                   Search gay places...
                 </span>
+                <NearMeFieldButton onClick={() => { onClose(); router.push("/near-me"); }} />
               </button>
 
               {/* X button — closes nav */}
@@ -126,22 +131,6 @@ export function NavDrawer({
 
             {/* Nav content */}
             <div className="flex flex-col gap-12 pt-8">
-
-              {/* Near Me */}
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase" style={{ letterSpacing: "1.2px", color: "#000000" }}>
-                  Near Me
-                </span>
-                <Link
-                  href="/near-me"
-                  className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5] inline-flex items-center gap-[6px]"
-                  style={{ borderColor: "#E4E4E1", color: "#171717" }}
-                  onClick={onClose}
-                >
-                  <Locate size={14} strokeWidth={1.5} />
-                  Use my location
-                </Link>
-              </div>
 
               {/* Featured Cities */}
               <div className="flex flex-col gap-4">
