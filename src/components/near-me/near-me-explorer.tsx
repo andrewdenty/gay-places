@@ -118,7 +118,7 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
   return (
     <div>
       {/* Map */}
-      <div className="-mx-4 sm:-mx-6 overflow-hidden border-b border-[var(--border)]">
+      <div className="overflow-hidden rounded-lg border-b border-[var(--border)]">
         <NearMeMap
           venues={mapVenues}
           userLat={userLat}
