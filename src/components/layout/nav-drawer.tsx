@@ -94,17 +94,17 @@ export function NavDrawer({
         aria-hidden={!isOpen}
       >
         <div className="flex-1 overflow-y-auto">
-          <div className="flex flex-col gap-16 p-4">
+          <div className="flex flex-col p-4">
 
             {/* Search field + dismiss button — always in same position */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pb-4 border-b" style={{ borderColor: "#F0F0ED" }}>
               <button
                 onClick={() => setSearchOpen(true)}
                 className="flex flex-1 items-center gap-2 rounded-[80px] px-6 text-left"
                 style={{
                   backgroundColor: "#F7F7F5",
-                  border: "1.5px solid #F0F0ED",
-                  height: "56px",
+                  border: "1px solid #F0F0ED",
+                  height: "48px",
                 }}
               >
                 <Search size={20} strokeWidth={1.5} color="#6E6E6D" className="shrink-0" />
@@ -117,15 +117,15 @@ export function NavDrawer({
               <button
                 onClick={onClose}
                 aria-label="Close menu"
-                className="shrink-0 flex items-center justify-center rounded-[60px] border p-3 transition-colors hover:bg-[#F7F7F5]"
-                style={{ borderColor: "#F0F0ED" }}
+                title="Close menu"
+                className="shrink-0 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#E4E4E1] hover:bg-[#F7F7F5] transition-colors"
               >
                 <X size={24} strokeWidth={1.5} color="#171717" />
               </button>
             </div>
 
             {/* Nav content */}
-            <div className="flex flex-col gap-10">
+            <div className="flex flex-col gap-12 pt-8">
 
               {/* Near Me */}
               <div className="flex items-center justify-between">

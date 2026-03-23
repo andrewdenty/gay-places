@@ -3,14 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { SearchModal } from "@/components/search/search-modal";
 import { NavDrawer } from "@/components/layout/nav-drawer";
 import { IconButton } from "@/components/ui/icon-button";
-import { Menu, Locate } from "lucide-react";
+import { Menu } from "lucide-react";
 
 export function SiteHeader({ isAdmin = false, userEmail, initialCities }: { isAdmin?: boolean; userEmail?: string; initialCities?: { id: string; slug: string; name: string; country: string; venue_count?: number }[] }) {
-  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -114,9 +112,6 @@ export function SiteHeader({ isAdmin = false, userEmail, initialCities }: { isAd
                 <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" />
                 <line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
-            </IconButton>
-            <IconButton label="Find places near me" onClick={() => router.push("/near-me")}>
-              <Locate size={20} strokeWidth={1.5} />
             </IconButton>
             <IconButton label="Menu" onClick={() => setMenuOpen(true)}>
               <Menu size={24} strokeWidth={1.5} />

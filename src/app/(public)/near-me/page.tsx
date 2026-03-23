@@ -1,7 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Locate } from "lucide-react";
 import { useGeolocation } from "@/lib/hooks/use-geolocation";
 import { NearMeExplorer } from "@/components/near-me/near-me-explorer";
 import type { Venue } from "@/lib/data/public";
@@ -13,7 +13,7 @@ type NearbyVenueWithCity = Venue & {
 };
 
 export default function NearMePage() {
-  const { status, lat, lng, error, request } = useGeolocation();
+  const { status, lat, lng, request } = useGeolocation();
   const [venues, setVenues] = useState<NearbyVenueWithCity[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -47,10 +47,6 @@ export default function NearMePage() {
     <div>
       {/* Page header */}
       <div className="pt-8 pb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <Locate size={20} strokeWidth={1.5} className="text-[var(--muted-foreground)]" />
-          <span className="label-mono text-[var(--foreground)]">Near Me</span>
-        </div>
         <h1
           style={{
             fontFamily: 'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
@@ -61,14 +57,20 @@ export default function NearMePage() {
           }}
           className="text-[var(--foreground)]"
         >
-          Places near you
+          Places near you...
         </h1>
       </div>
 
       {/* Requesting state */}
       {status === "requesting" && (
         <div className="py-20 flex flex-col items-center gap-4">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#E4E4E1] border-t-[#6E6E6D]" />
+          <Image
+            src="/rainbow-logo.svg"
+            alt=""
+            width={32}
+            height={32}
+            className="animate-spin"
+          />
           <p className="text-[15px] text-[var(--muted-foreground)] text-center">
             Requesting your location…
           </p>
@@ -78,16 +80,18 @@ export default function NearMePage() {
       {/* Denied / unavailable state */}
       {(status === "denied" || status === "unavailable") && (
         <div className="py-20 flex flex-col items-center gap-4">
-          <Locate size={32} strokeWidth={1.2} className="text-[var(--muted-foreground)]" />
+          <p className="text-[17px] font-medium text-[var(--foreground)] text-center">
+            Want to see what&rsquo;s nearby?
+          </p>
           <p className="text-[15px] text-[var(--muted-foreground)] text-center max-w-[320px]">
-            {error}
+            Turn on location in your browser settings.
           </p>
           <button
             type="button"
             onClick={request}
             className="btn-sm btn-sm-primary"
           >
-            Try again
+            Request location
           </button>
         </div>
       )}
@@ -95,7 +99,13 @@ export default function NearMePage() {
       {/* Loading venues */}
       {status === "granted" && loading && (
         <div className="py-20 flex flex-col items-center gap-4">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#E4E4E1] border-t-[#6E6E6D]" />
+          <Image
+            src="/rainbow-logo.svg"
+            alt=""
+            width={32}
+            height={32}
+            className="animate-spin"
+          />
           <p className="text-[15px] text-[var(--muted-foreground)] text-center">
             Finding places near you…
           </p>
@@ -113,7 +123,7 @@ export default function NearMePage() {
             onClick={request}
             className="btn-sm btn-sm-primary"
           >
-            Try again
+            Request location
           </button>
         </div>
       )}
@@ -123,7 +133,6 @@ export default function NearMePage() {
         <>
           {venues.length === 0 ? (
             <div className="py-20 flex flex-col items-center gap-4">
-              <Locate size={32} strokeWidth={1.2} className="text-[var(--muted-foreground)]" />
               <p className="text-[15px] text-[var(--muted-foreground)] text-center max-w-[320px]">
                 No places found near your location yet. We&rsquo;re adding new cities all the time.
               </p>

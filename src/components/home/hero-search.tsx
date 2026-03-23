@@ -16,7 +16,7 @@ export function HeroSearch() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="group flex flex-1 min-w-0 items-center gap-3 h-14 rounded-full border-[1.5px] px-6 text-left transition-colors cursor-text"
+          className="group flex flex-1 min-w-0 items-center gap-3 h-12 rounded-full border px-6 text-left transition-colors cursor-text"
           style={{
             backgroundColor: "#F7F7F5",
             borderColor: "#F0F0ED",

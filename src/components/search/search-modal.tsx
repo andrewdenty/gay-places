@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, ArrowRight, Locate } from "lucide-react";
 import { venueUrlPath, toCountrySlug } from "@/lib/slugs";
+import { IconButton } from "@/components/ui/icon-button";
 
 type CountryResult = {
   name: string;
@@ -204,9 +205,9 @@ export function SearchModal({
             <div
               className="relative flex flex-1 items-center gap-2 rounded-[80px] px-6"
               style={{
-                height: "56px",
+                height: "48px",
                 backgroundColor: "#F7F7F5",
-                border: focused ? "1.5px solid #E4E4E1" : "1.5px solid #F0F0ED",
+                border: focused ? "1px solid #E4E4E1" : "1px solid #F0F0ED",
               }}
             >
               <Search
@@ -243,90 +244,28 @@ export function SearchModal({
               )}
             </div>
 
-            {/* Close button */}
-            <button
-              type="button"
-              aria-label="Close search"
-              onClick={onClose}
-              className="shrink-0 flex items-center justify-center rounded-[60px] border p-3 transition-colors hover:bg-[#F7F7F5]"
-              style={{ borderColor: "#F0F0ED" }}
-            >
-              <X size={24} strokeWidth={1.5} color="#171717" />
-            </button>
-          </div>
+            {/* Near me button */}
+            <IconButton label="Find places near me" onClick={() => navigate("/near-me")}>
+              <Locate size={20} strokeWidth={1.5} />
+            </IconButton>
 
-          {/* Empty state — Use My Location prompt */}
-          {!hasQuery && (
-            <div className="mt-8 flex justify-center">
-              <button
-                type="button"
-                onClick={() => navigate("/near-me")}
-                className="inline-flex items-center gap-[8px] rounded-full border transition-colors hover:bg-[#F7F7F5]"
-                style={{
-                  height: "48px",
-                  paddingLeft: "24px",
-                  paddingRight: "24px",
-                  borderColor: "#E4E4E1",
-                  color: "#171717",
-                  fontSize: "15px",
-                  fontWeight: 400,
-                }}
-              >
-                <Locate size={18} strokeWidth={1.5} />
-                Use My Location
-              </button>
-            </div>
-          )}
+            {/* Close button */}
+            <IconButton label="Close search" onClick={onClose}>
+              <X size={24} strokeWidth={1.5} />
+            </IconButton>
+          </div>
 
           {/* Results */}
           {hasQuery && (
             <div className={`mt-6 flex flex-col gap-6 transition-opacity ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
               {!hasResults && loading && (
-                <div className="px-5 py-8 flex flex-col items-center gap-4">
-                  <span className="text-[13px] text-[var(--muted-foreground)]">
-                    Searching…
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/near-me")}
-                    className="inline-flex items-center gap-[8px] rounded-full border transition-colors hover:bg-[#F7F7F5]"
-                    style={{
-                      height: "48px",
-                      paddingLeft: "24px",
-                      paddingRight: "24px",
-                      borderColor: "#E4E4E1",
-                      color: "#171717",
-                      fontSize: "15px",
-                      fontWeight: 400,
-                    }}
-                  >
-                    <Locate size={18} strokeWidth={1.5} />
-                    Use My Location
-                  </button>
+                <div className="px-5 py-8 text-center text-[13px] text-[var(--muted-foreground)]">
+                  Searching…
                 </div>
               )}
               {!hasResults && !loading && (
-                <div className="px-5 py-8 flex flex-col items-center gap-4">
-                  <span className="text-[13px] text-[var(--muted-foreground)]">
-                    No results for &ldquo;{query.trim()}&rdquo;
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/near-me")}
-                    className="inline-flex items-center gap-[8px] rounded-full border transition-colors hover:bg-[#F7F7F5]"
-                    style={{
-                      height: "48px",
-                      paddingLeft: "24px",
-                      paddingRight: "24px",
-                      borderColor: "#E4E4E1",
-                      color: "#171717",
-                      fontSize: "15px",
-                      fontWeight: 400,
-                    }}
-                  >
-                    <Locate size={18} strokeWidth={1.5} />
-                    Use My Location
-                  </button>
+                <div className="px-5 py-8 text-center text-[13px] text-[var(--muted-foreground)]">
+                  No results for &ldquo;{query.trim()}&rdquo;
                 </div>
               )}
 
