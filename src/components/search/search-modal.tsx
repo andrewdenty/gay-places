@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, ArrowRight } from "lucide-react";
 import { venueUrlPath, toCountrySlug } from "@/lib/slugs";
+import { IconButton } from "@/components/ui/icon-button";
+import { NearMeFieldButton } from "@/components/ui/near-me-field-button";
 
 type CountryResult = {
   name: string;
@@ -202,11 +204,13 @@ export function SearchModal({
           <div className="flex items-center gap-3">
             {/* Pill input */}
             <div
-              className="relative flex flex-1 items-center gap-2 rounded-[80px] px-6"
+              className="relative flex flex-1 items-center rounded-[80px]"
               style={{
                 height: "56px",
                 backgroundColor: "#F7F7F5",
-                border: focused ? "1.5px solid #E4E4E1" : "1.5px solid #F0F0ED",
+                border: focused ? "1px solid #E4E4E1" : "1px solid #F0F0ED",
+                paddingLeft: "16px",
+                paddingRight: "8px",
               }}
             >
               <Search
@@ -223,7 +227,7 @@ export function SearchModal({
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 placeholder="Search gay places..."
-                className="flex-1 min-w-0 bg-transparent text-[15px] outline-none transition-colors placeholder:text-[#6E6E6D]"
+                className="flex-1 min-w-0 ml-2 bg-transparent text-[15px] outline-none transition-colors placeholder:text-[#6E6E6D]"
                 style={{
                   color: "#171717",
                   caretColor: "#171717",
@@ -233,26 +237,25 @@ export function SearchModal({
                 <button
                   type="button"
                   onClick={() => { setQuery(""); inputRef.current?.focus(); }}
-                  className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[#6E6E6D] hover:text-[#171717] transition-colors"
+                  className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#6E6E6D] hover:text-[#171717] transition-colors mr-2"
                   aria-label="Clear search"
                 >
                   <X size={16} strokeWidth={1.5} />
                 </button>
-              ) : loading && (
-                <div className="absolute right-5 h-3.5 w-3.5 animate-spin rounded-full border border-[#E4E4E1] border-t-[#6E6E6D]" />
+              ) : (
+                <>
+                  {loading && (
+                    <div className="shrink-0 h-3.5 w-3.5 animate-spin rounded-full border border-[#E4E4E1] border-t-[#6E6E6D] mr-2" />
+                  )}
+                  <NearMeFieldButton hideTextOnMobile onClick={() => navigate("/near-me")} />
+                </>
               )}
             </div>
 
             {/* Close button */}
-            <button
-              type="button"
-              aria-label="Close search"
-              onClick={onClose}
-              className="shrink-0 flex items-center justify-center rounded-[60px] border p-3 transition-colors hover:bg-[#F7F7F5]"
-              style={{ borderColor: "#F0F0ED" }}
-            >
-              <X size={24} strokeWidth={1.5} color="#171717" />
-            </button>
+            <IconButton label="Close search" onClick={onClose}>
+              <X size={24} strokeWidth={1.5} />
+            </IconButton>
           </div>
 
           {/* Results */}

@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { X, Search, ArrowRight } from "lucide-react";
 import { SearchModal } from "@/components/search/search-modal";
+import { NearMeFieldButton } from "@/components/ui/near-me-field-button";
 
 type City = {
   id: string;
@@ -28,6 +29,7 @@ export function NavDrawer({
   initialCities?: City[];
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [cities, setCities] = useState<City[]>(initialCities ?? []);
   const [fetched, setFetched] = useState(!!initialCities?.length);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -85,7 +87,7 @@ export function NavDrawer({
 
       {/* Drawer panel */}
       <div
-        className="fixed right-0 top-0 z-50 flex h-full w-full sm:max-w-[320px] flex-col"
+        className="fixed right-0 top-0 z-50 flex h-full w-full sm:max-w-[400px] flex-col"
         style={{
           backgroundColor: "#FCFCFB",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
@@ -94,38 +96,41 @@ export function NavDrawer({
         aria-hidden={!isOpen}
       >
         <div className="flex-1 overflow-y-auto">
-          <div className="flex flex-col gap-16 p-4">
+          <div className="flex flex-col p-4">
 
             {/* Search field + dismiss button — always in same position */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pb-4 border-b" style={{ borderColor: "#F0F0ED" }}>
               <button
                 onClick={() => setSearchOpen(true)}
-                className="flex flex-1 items-center gap-2 rounded-[80px] px-6 text-left"
+                className="flex flex-1 items-center rounded-[80px] text-left"
                 style={{
                   backgroundColor: "#F7F7F5",
-                  border: "1.5px solid #F0F0ED",
+                  border: "1px solid #F0F0ED",
                   height: "56px",
+                  paddingLeft: "16px",
+                  paddingRight: "8px",
                 }}
               >
                 <Search size={20} strokeWidth={1.5} color="#6E6E6D" className="shrink-0" />
-                <span className="text-[15px] leading-[1.4]" style={{ color: "#6E6E6D" }}>
+                <span className="flex-1 min-w-0 ml-2 text-[15px] leading-[1.4]" style={{ color: "#6E6E6D" }}>
                   Search gay places...
                 </span>
+                <NearMeFieldButton hideTextOnMobile onClick={() => { onClose(); router.push("/near-me"); }} />
               </button>
 
               {/* X button — closes nav */}
               <button
                 onClick={onClose}
                 aria-label="Close menu"
-                className="shrink-0 flex items-center justify-center rounded-[60px] border p-3 transition-colors hover:bg-[#F7F7F5]"
-                style={{ borderColor: "#F0F0ED" }}
+                title="Close menu"
+                className="shrink-0 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#E4E4E1] hover:bg-[#F7F7F5] transition-colors"
               >
                 <X size={24} strokeWidth={1.5} color="#171717" />
               </button>
             </div>
 
             {/* Nav content */}
-            <div className="flex flex-col gap-10">
+            <div className="flex flex-col gap-12 pt-8">
 
               {/* Featured Cities */}
               <div className="flex flex-col gap-4">
