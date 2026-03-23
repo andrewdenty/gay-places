@@ -212,7 +212,7 @@ export async function discoverVenuesWithGemini(
       temperature: 0.2,
       maxOutputTokens: 8192,
       thinkingConfig: {
-        thinkingBudget: 0,
+        thinkingBudget: 1024,
       },
     },
   };
@@ -597,9 +597,9 @@ export async function enrichVenueWithGemini(
     ],
     generationConfig: {
       temperature: 0.5,
-      maxOutputTokens: 4096,
+      maxOutputTokens: 8192,
       thinkingConfig: {
-        thinkingBudget: 0,
+        thinkingBudget: 5000,
       },
     },
   };
