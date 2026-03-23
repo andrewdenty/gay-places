@@ -229,12 +229,6 @@ body {
   opacity: 0.85;
 }
 
-/* MapLibre v5: attribution starts expanded due to _updateCompact bug — hide initial state.
-   compact-show + [open] together only occurs on init; after toggling, one is always absent. */
-details.maplibregl-ctrl-attrib.maplibregl-compact-show[open] .maplibregl-ctrl-attrib-inner {
-  display: none !important;
-}
-
 /* MapLibre popup overrides — editorial, sharp edges */
 .gay-places-popup .maplibregl-popup-content {
   border-radius: 0;
