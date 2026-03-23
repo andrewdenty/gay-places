@@ -255,7 +255,7 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [venues, userLat, userLng],
+    [venues, userLat, userLng, clearMarkers],
   );
 
   return (

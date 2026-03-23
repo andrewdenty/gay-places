@@ -21,8 +21,7 @@ export default function NearMePage() {
   // Auto-request location on mount
   useEffect(() => {
     request();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [request]);
 
   // Fetch nearby venues when location is available
   useEffect(() => {
