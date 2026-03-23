@@ -16,7 +16,7 @@ import { env } from "@/lib/env";
 import type { Venue } from "@/lib/data/public";
 import { venueUrlPath } from "@/lib/slugs";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 // Derives region from country name — mirrors RegionBrowser logic
 const COUNTRY_REGION: Record<string, string> = {

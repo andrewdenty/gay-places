@@ -68,7 +68,7 @@ export default async function LandingPage() {
 
           {/* City cards */}
           <div>
-            {featuredCities.map((city) => (
+            {featuredCities.map((city, index) => (
               <Link
                 key={city.slug}
                 href={`/city/${city.slug}`}
@@ -88,10 +88,14 @@ export default async function LandingPage() {
 
                 {/* Cover image */}
                 <div className="shrink-0 size-20 overflow-hidden">
-                  <img
+                  <Image
                     src={`${STORAGE_BASE}/${city.cover_image_path}`}
                     alt={city.name}
+                    width={80}
+                    height={80}
                     className="size-full object-cover"
+                    priority={index === 0}
+                    sizes="80px"
                   />
                 </div>
               </Link>
