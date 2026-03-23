@@ -115,7 +115,7 @@ export function NavDrawer({
                 <span className="flex-1 min-w-0 ml-2 text-[15px] leading-[1.4]" style={{ color: "#6E6E6D" }}>
                   Search gay places...
                 </span>
-                <NearMeFieldButton onClick={() => { onClose(); router.push("/near-me"); }} />
+                <NearMeFieldButton hideTextOnMobile onClick={() => { onClose(); router.push("/near-me"); }} />
               </button>
 
               {/* X button — closes nav */}

@@ -247,7 +247,7 @@ export function SearchModal({
                   {loading && (
                     <div className="shrink-0 h-3.5 w-3.5 animate-spin rounded-full border border-[#E4E4E1] border-t-[#6E6E6D] mr-2" />
                   )}
-                  <NearMeFieldButton onClick={() => navigate("/near-me")} />
+                  <NearMeFieldButton hideTextOnMobile onClick={() => navigate("/near-me")} />
                 </>
               )}
             </div>
