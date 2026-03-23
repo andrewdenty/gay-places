@@ -216,8 +216,34 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
                   )}
                 </div>
 
-                {/* Row 2: Distance + city + directions */}
-                <div className="mt-[8px] mb-[12px] flex items-center justify-between gap-3">
+                {/* Row 2: Tags — single line, max 4 */}
+                {flatTags.length > 0 && (
+                  <div className="mt-[8px] flex items-center gap-[6px] overflow-hidden whitespace-nowrap">
+                    {flatTags.map((t, i) => (
+                      <span key={t} className="flex items-center gap-[6px] shrink-0">
+                        {i > 0 && (
+                          <span
+                            className="text-[10px] font-semibold tracking-[1.2px] text-[var(--muted-foreground)] select-none"
+                            aria-hidden="true"
+                          >
+                            •
+                          </span>
+                        )}
+                        <span className="tag-mono text-[var(--muted-foreground)]">{t}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Row 3: Description — up to 3 lines */}
+                {description && (
+                  <p className="mt-[8px] text-[15px] leading-[1.4] text-[var(--foreground)] line-clamp-3">
+                    {description}
+                  </p>
+                )}
+
+                {/* Row 4: Distance + city + directions */}
+                <div className="mt-[12px] flex items-center justify-between gap-3">
                   <div className="flex items-center gap-[6px]">
                     <span className="text-[13px] leading-[1.4] text-[var(--foreground)]">
                       {formatDistance(v.distanceKm)}
@@ -238,32 +264,6 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
                     Directions
                   </a>
                 </div>
-
-                {/* Row 3: Tags — single line, max 4 */}
-                {flatTags.length > 0 && (
-                  <div className="flex items-center gap-[6px] overflow-hidden whitespace-nowrap">
-                    {flatTags.map((t, i) => (
-                      <span key={t} className="flex items-center gap-[6px] shrink-0">
-                        {i > 0 && (
-                          <span
-                            className="text-[10px] font-semibold tracking-[1.2px] text-[var(--muted-foreground)] select-none"
-                            aria-hidden="true"
-                          >
-                            •
-                          </span>
-                        )}
-                        <span className="tag-mono text-[var(--muted-foreground)]">{t}</span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Row 4: Description — up to 3 lines */}
-                {description && (
-                  <p className="mt-[8px] text-[15px] leading-[1.4] text-[var(--foreground)] line-clamp-3">
-                    {description}
-                  </p>
-                )}
               </article>
             </div>
           );
