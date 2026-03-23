@@ -55,7 +55,7 @@ export function OpeningHoursView({ hours }: { hours: OpeningHours | null }) {
           >
             <div
               className={`flex w-full items-center gap-[14px] pb-[8px] tag-mono${
-                isToday ? " font-semibold" : ""
+                isToday ? " font-semibold!" : ""
               }`}
             >
               <span className="flex-1">{d.label}</span>
