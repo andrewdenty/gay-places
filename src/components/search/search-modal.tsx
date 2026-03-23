@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, ArrowRight } from "lucide-react";
 import { venueUrlPath, toCountrySlug } from "@/lib/slugs";
@@ -53,6 +53,7 @@ export function SearchModal({
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isPending, startTransition] = useTransition();
   // Keep a ref so keyboard handlers always see the latest value without
   // needing selectedIndex in the effect dependency array.
   const selectedIndexRef = useRef(selectedIndex);
@@ -76,9 +77,21 @@ export function SearchModal({
   }, [isOpen]);
 
   const navigate = useCallback((href: string) => {
-    onClose();
-    router.push(href);
-  }, [onClose, router]);
+    startTransition(() => {
+      router.push(href);
+    });
+  }, [router, startTransition]);
+
+  // Close the modal once the navigation transition completes
+  const wasPendingRef = useRef(false);
+  useEffect(() => {
+    if (isPending) {
+      wasPendingRef.current = true;
+    } else if (wasPendingRef.current) {
+      wasPendingRef.current = false;
+      onClose();
+    }
+  }, [isPending, onClose]);
 
   // Reset selection when query changes
   useEffect(() => {
@@ -130,13 +143,14 @@ export function SearchModal({
     };
   }, [isOpen]);
 
-  // Debounced search
+  // Debounced search — keeps stale results visible while loading new ones
   useEffect(() => {
     const q = query.trim();
     if (!q) {
       setCountries([]);
       setCities([]);
       setVenues([]);
+      setLoading(false);
       return;
     }
     setLoading(true);
@@ -144,15 +158,25 @@ export function SearchModal({
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
-        setCountries(data.countries ?? []);
-        setCities(data.cities ?? []);
-        setVenues(data.venues ?? []);
+        const newCountries: CountryResult[] = data.countries ?? [];
+        const newCities: CityResult[] = data.cities ?? [];
+        const newVenues: VenueResult[] = data.venues ?? [];
+        setCountries(newCountries);
+        setCities(newCities);
+        setVenues(newVenues);
+        // Prefetch top result destinations for near-instant navigation
+        const hrefs = [
+          ...newCountries.slice(0, 2).map((c) => `/country/${toCountrySlug(c.name)}`),
+          ...newCities.slice(0, 3).map((c) => `/city/${c.slug}`),
+          ...newVenues.slice(0, 3).map((v) => venueUrlPath(v.city_slug, v.venue_type, v.slug)),
+        ];
+        hrefs.forEach((href) => router.prefetch(href));
       } finally {
         setLoading(false);
       }
-    }, 200);
+    }, 100);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, router]);
 
   const hasResults = countries.length > 0 || cities.length > 0 || venues.length > 0;
   const hasQuery = query.trim().length > 0;
@@ -232,8 +256,13 @@ export function SearchModal({
           </div>
 
           {/* Results */}
-          {hasQuery && (!loading || hasResults) && (
-            <div className="mt-6 flex flex-col gap-6">
+          {hasQuery && (
+            <div className={`mt-6 flex flex-col gap-6 transition-opacity ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
+              {!hasResults && loading && (
+                <div className="px-5 py-8 text-center text-[13px] text-[var(--muted-foreground)]">
+                  Searching…
+                </div>
+              )}
               {!hasResults && !loading && (
                 <div className="px-5 py-8 text-center text-[13px] text-[var(--muted-foreground)]">
                   No results for &ldquo;{query.trim()}&rdquo;
@@ -245,11 +274,14 @@ export function SearchModal({
                   <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[#E4E4E1]">
                     Countries
                   </div>
-                  {countries.map((country, i) => (
+                  {countries.map((country, i) => {
+                    const href = `/country/${toCountrySlug(country.name)}`;
+                    return (
                     <button
                       key={country.name}
                       type="button"
-                      onClick={() => navigate(`/country/${toCountrySlug(country.name)}`)}
+                      onClick={() => navigate(href)}
+                      onMouseEnter={() => router.prefetch(href)}
                       aria-current={selectedIndex === i ? true : undefined}
                       className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === i ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
                     >
@@ -263,7 +295,8 @@ export function SearchModal({
                       </div>
                       <ArrowRight size={20} strokeWidth={1.5} className="shrink-0 text-[var(--muted-foreground)]" />
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
@@ -274,11 +307,13 @@ export function SearchModal({
                   </div>
                   {cities.map((city, i) => {
                     const cityIndex = countries.length + i;
+                    const href = `/city/${city.slug}`;
                     return (
                       <button
                         key={city.id}
                         type="button"
-                        onClick={() => navigate(`/city/${city.slug}`)}
+                        onClick={() => navigate(href)}
+                        onMouseEnter={() => router.prefetch(href)}
                         aria-current={selectedIndex === cityIndex ? true : undefined}
                         className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === cityIndex ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
                       >
@@ -304,11 +339,13 @@ export function SearchModal({
                   </div>
                   {venues.map((venue, i) => {
                     const venueIndex = countries.length + cities.length + i;
+                    const href = venueUrlPath(venue.city_slug, venue.venue_type, venue.slug);
                     return (
                       <button
                         key={venue.id}
                         type="button"
-                        onClick={() => navigate(venueUrlPath(venue.city_slug, venue.venue_type, venue.slug))}
+                        onClick={() => navigate(href)}
+                        onMouseEnter={() => router.prefetch(href)}
                         aria-current={selectedIndex === venueIndex ? true : undefined}
                         className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === venueIndex ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
                       >
@@ -328,6 +365,13 @@ export function SearchModal({
                   })}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Navigation pending indicator */}
+          {isPending && (
+            <div className="mt-8 flex justify-center">
+              <div className="h-4 w-4 animate-spin rounded-full border border-[#E4E4E1] border-t-[#6E6E6D]" />
             </div>
           )}
         </div>
