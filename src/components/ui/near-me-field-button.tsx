@@ -16,7 +16,7 @@ export function NearMeFieldButton({ onClick }: NearMeFieldButtonProps) {
         e.stopPropagation();
         onClick();
       }}
-      className="shrink-0 flex items-center justify-center rounded-full transition-colors h-10 w-10 sm:w-auto sm:pl-3 sm:pr-2"
+      className="shrink-0 flex items-center justify-center rounded-full transition-colors h-10 w-auto pl-3 pr-2"
       style={{
         backgroundColor: "#F7F7F5",
         color: "#6E6E6D",
@@ -29,7 +29,7 @@ export function NearMeFieldButton({ onClick }: NearMeFieldButtonProps) {
       }}
     >
       <Locate size={18} strokeWidth={1.5} className="shrink-0" />
-      <span className="hidden sm:inline ml-1.5 text-[13px] leading-[1] whitespace-nowrap">
+      <span className="ml-1.5 text-[13px] leading-[1] whitespace-nowrap">
         Near me
       </span>
     </button>

@@ -243,7 +243,7 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
                 )}
 
                 {/* Row 4: Distance + city + directions */}
-                <div className="mt-[12px] flex items-center justify-between gap-3">
+                <div className="mt-[16px] flex items-center justify-between gap-3">
                   <div className="flex items-center gap-[6px]">
                     <span className="text-[13px] leading-[1.4] text-[var(--foreground)]">
                       {formatDistance(v.distanceKm)}
