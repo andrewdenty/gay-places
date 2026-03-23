@@ -22,6 +22,7 @@ const instrumentSerif = Instrument_Serif({
 
 export const viewport: Viewport = {
   viewportFit: "cover",
+  maximumScale: 1,
 };
 
 export const metadata: Metadata = {
