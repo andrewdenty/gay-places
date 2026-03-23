@@ -95,6 +95,7 @@ export default async function LandingPage() {
                     height={80}
                     className="size-full object-cover"
                     priority={index === 0}
+                    sizes="80px"
                   />
                 </div>
               </Link>

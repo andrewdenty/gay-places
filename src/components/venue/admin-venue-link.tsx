@@ -15,9 +15,14 @@ export function AdminVenueLink({ venueId }: { venueId: string }) {
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
-    supabase.rpc("is_admin").then(({ data }) => {
-      if (data === true) setIsAdmin(true);
-    });
+    (async () => {
+      try {
+        const { data } = await supabase.rpc("is_admin");
+        if (data === true) setIsAdmin(true);
+      } catch {
+        // Silently ignore: the admin link simply won't appear if the check fails.
+      }
+    })();
   }, []);
 
   if (!isAdmin) return null;

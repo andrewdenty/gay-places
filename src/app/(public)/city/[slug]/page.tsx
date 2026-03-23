@@ -134,7 +134,7 @@ export default async function CityPage({
                 fill
                 className="object-cover"
                 priority
-                sizes="(max-width: 720px) 100vw, 720px"
+                sizes="(max-width: 640px) 100vw, 720px"
               />
             </div>
 
