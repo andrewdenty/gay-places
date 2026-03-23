@@ -9,6 +9,7 @@ import { PhotoGallery } from "@/components/venue/photo-gallery";
 import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { VenueDescription } from "@/components/venue/venue-description";
+import { AdminVenueLink } from "@/components/venue/admin-venue-link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
 import { env } from "@/lib/env";
@@ -17,7 +18,10 @@ import { TAG_CATEGORIES } from "@/lib/venue-tags";
 import type { OpeningHoursRange } from "@/lib/types/opening-hours";
 import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs";
 
-export const dynamic = "force-dynamic";
+// Allow ISR: revalidate this page every hour. The is_admin check has been moved
+// to a client component (AdminVenueLink) so no user-specific data is baked into
+// the cached HTML.
+export const revalidate = 3600;
 
 const VENUE_TYPE_SCHEMA: Record<string, string> = {
   bar: "BarOrPub",
@@ -100,7 +104,7 @@ export default async function VenuePage({
   }
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: photos }, nearbyVenues, publishedCountrySlugs, { data: isAdminData }] = await Promise.all([
+  const [{ data: photos }, nearbyVenues, publishedCountrySlugs] = await Promise.all([
     supabase
       .from("venue_photos")
       .select("id, storage_path")
@@ -108,9 +112,7 @@ export default async function VenuePage({
       .limit(5),
     getNearbyVenues(venue.city_id, venue.id, venue.lat, venue.lng),
     getPublishedCountrySlugs(),
-    supabase.rpc("is_admin"),
   ]);
-  const isAdmin = isAdminData === true;
 
   const permanentlyClosed = venue.closed === true;
   const open = !permanentlyClosed && isOpenNow(venue.opening_hours);
@@ -428,11 +430,7 @@ export default async function VenuePage({
             <Link href={`/venues/${venue.id}/upload-photo`} className="btn-sm btn-sm-secondary">
               Add a photo
             </Link>
-            {isAdmin && (
-              <Link href={`/admin/venues/${venue.id}`} className="btn-sm btn-sm-secondary">
-                Admin
-              </Link>
-            )}
+            <AdminVenueLink venueId={venue.id} />
           </div>
         </VenueSectionRow>
       </div>

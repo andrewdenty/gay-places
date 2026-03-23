@@ -61,6 +61,13 @@ export type Venue = {
 const VENUE_FIELDS =
   "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours";
 
+// Minimal projection for the "Nearby places" list: only the fields required to
+// render the names/links and to sort by distance (lat, lng).
+const NEARBY_VENUE_FIELDS = "id,slug,name,venue_type,lat,lng";
+
+/** Minimal venue shape returned by {@link getNearbyVenues}. */
+export type NearbyVenue = Pick<Venue, "id" | "slug" | "name" | "venue_type" | "lat" | "lng">;
+
 const CITY_FIELDS_WITH_DESC = "id,slug,name,country,center_lat,center_lng,description,image_path";
 const CITY_FIELDS_BASE = "id,slug,name,country,center_lat,center_lng";
 
@@ -119,41 +126,27 @@ export type CityWithImage = CityWithVenueCount & { cover_image_path: string };
 export async function getTopCitiesWithImages(limit = 8): Promise<CityWithImage[]> {
   const supabase = await createSupabaseServerClient();
 
-  // Get all published cities with venue counts, sorted by venue count descending
+  // Single query: published cities that already have an image_path set in the DB.
+  // This replaces the previous pattern that fired one Storage list() call per candidate
+  // city (up to 20 extra HTTP round-trips on every home page load).
   const { data: cityData, error: cityError } = await supabase
     .from("cities")
-    .select("id,slug,name,country,center_lat,center_lng,venues(count)")
+    .select("id,slug,name,country,center_lat,center_lng,image_path,venues(count)")
     .eq("published", true)
-    .eq("venues.published", true);
+    .eq("venues.published", true)
+    .not("image_path", "is", null);
   if (cityError) throw cityError;
 
-  const citiesWithCount = ((cityData ?? []) as (City & { venues: [{ count: number }] | null })[])
+  type Row = City & { venues: [{ count: number }] | null; image_path: string };
+  const cities = (cityData ?? []) as Row[];
+
+  return cities
     .map((c) => ({ ...c, venue_count: c.venues?.[0]?.count ?? 0 }))
-    .sort((a, b) => b.venue_count - a.venue_count);
-
-  if (citiesWithCount.length === 0) return [];
-
-  // Check top candidates for a city-level image in the city-images bucket
-  const topCandidates = citiesWithCount.slice(0, 20);
-  const cityImageMap = new Map<string, string>();
-
-  await Promise.all(
-    topCandidates.map(async (city) => {
-      const { data: files } = await supabase.storage
-        .from("city-images")
-        .list(city.id, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
-      if (files && files.length > 0) {
-        cityImageMap.set(city.id, `${city.id}/${files[0].name}`);
-      }
-    })
-  );
-
-  return citiesWithCount
-    .filter((c) => cityImageMap.has(c.id))
+    .sort((a, b) => b.venue_count - a.venue_count)
     .slice(0, limit)
     .map(({ venues: _v, ...city }) => ({
       ...city,
-      cover_image_path: cityImageMap.get(city.id)!,
+      cover_image_path: city.image_path,
     })) as CityWithImage[];
 }
 
@@ -322,16 +315,18 @@ export async function getNearbyVenues(
   lat: number,
   lng: number,
   limit = 3,
-): Promise<Venue[]> {
+): Promise<NearbyVenue[]> {
   const supabase = await createSupabaseServerClient();
+  // Select only the fields needed for distance sorting and link rendering —
+  // avoids fetching the full 17-column VENUE_FIELDS payload for every sibling venue.
   const { data, error } = await supabase
     .from("venues")
-    .select(VENUE_FIELDS)
+    .select(NEARBY_VENUE_FIELDS)
     .eq("city_id", cityId)
     .eq("published", true)
     .neq("id", currentVenueId);
   if (error) throw error;
-  const venues = (data ?? []) as Venue[];
+  const venues = (data ?? []) as NearbyVenue[];
   return venues
     .map((v) => ({
       venue: v,

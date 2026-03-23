@@ -11,29 +11,12 @@ export async function POST(request: Request) {
   const supabase = createSupabaseAdminClient();
   const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-  const { data: existing, error: readError } = await supabase
-    .from("venue_page_views_daily")
-    .select("views")
-    .eq("date", date)
-    .eq("venue_id", venue_id)
-    .maybeSingle();
-  if (readError) return NextResponse.json({ error: readError.message }, { status: 400 });
-
-  if (!existing) {
-    const { error } = await supabase.from("venue_page_views_daily").insert({
-      date,
-      venue_id,
-      views: 1,
-    });
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    return NextResponse.json({ ok: true });
-  }
-
-  const { error } = await supabase
-    .from("venue_page_views_daily")
-    .update({ views: (existing.views ?? 0) + 1 })
-    .eq("date", date)
-    .eq("venue_id", venue_id);
+  // Single atomic upsert via a SQL function — replaces the previous read-then-write
+  // pattern that had a race condition under concurrent requests and used 2 round-trips.
+  const { error } = await supabase.rpc("increment_venue_view", {
+    p_venue_id: venue_id,
+    p_date: date,
+  });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });
 }
