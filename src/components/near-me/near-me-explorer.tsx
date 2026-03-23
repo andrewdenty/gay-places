@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Navigation } from "lucide-react";
+import { CornerUpRight } from "lucide-react";
 import type { Venue } from "@/lib/data/public";
 import type { NearMeVenue } from "@/components/near-me/near-me-map";
 import { isOpenNow } from "@/components/city/opening-hours";
@@ -216,20 +216,32 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
                   )}
                 </div>
 
-                {/* Row 2: Distance + city */}
-                <div className="mt-[8px] flex items-center gap-[6px]">
-                  <span className="tag-mono text-[var(--muted-foreground)]">
-                    {formatDistance(v.distanceKm)}
-                  </span>
-                  <span className="text-[10px] font-semibold tracking-[1.2px] text-[var(--muted-foreground)] select-none" aria-hidden="true">•</span>
-                  <span className="tag-mono text-[var(--muted-foreground)]">
-                    {v.city_name}{v.city_country ? `, ${v.city_country}` : ""}
-                  </span>
+                {/* Row 2: Distance + city + directions */}
+                <div className="mt-[8px] mb-[12px] flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-[6px]">
+                    <span className="text-[13px] leading-[1.4] text-[var(--foreground)]">
+                      {formatDistance(v.distanceKm)}
+                    </span>
+                    <span className="text-[13px] text-[var(--foreground)] select-none" aria-hidden="true">·</span>
+                    <span className="text-[13px] leading-[1.4] text-[var(--foreground)]">
+                      {v.city_name}{v.city_country ? `, ${v.city_country}` : ""}
+                    </span>
+                  </div>
+                  <a
+                    href={googleMapsDirectionsUrl(v.lat, v.lng, v.name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="btn-sm btn-sm-secondary inline-flex shrink-0 items-center gap-[6px]"
+                  >
+                    <CornerUpRight size={14} strokeWidth={1.5} />
+                    Directions
+                  </a>
                 </div>
 
                 {/* Row 3: Tags — single line, max 4 */}
                 {flatTags.length > 0 && (
-                  <div className="mt-[6px] flex items-center gap-[6px] overflow-hidden whitespace-nowrap">
+                  <div className="flex items-center gap-[6px] overflow-hidden whitespace-nowrap">
                     {flatTags.map((t, i) => (
                       <span key={t} className="flex items-center gap-[6px] shrink-0">
                         {i > 0 && (
@@ -252,20 +264,6 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
                     {description}
                   </p>
                 )}
-
-                {/* Row 5: Get Directions */}
-                <div className="mt-[12px]">
-                  <a
-                    href={googleMapsDirectionsUrl(v.lat, v.lng, v.name)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="btn-sm btn-sm-secondary inline-flex items-center gap-[6px]"
-                  >
-                    <Navigation size={14} strokeWidth={1.5} />
-                    Get Directions
-                  </a>
-                </div>
               </article>
             </div>
           );
