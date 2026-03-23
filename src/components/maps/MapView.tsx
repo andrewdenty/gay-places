@@ -40,6 +40,21 @@ export function MapView({ center, zoom, className, onReady }: Props) {
       "bottom-right"
     );
 
+    // MapLibre v5 bug: compact attribution starts expanded. Force correct
+    // collapsed state (compact class only, no compact-show, no open).
+    // Must also run on 'load' since _updateAttributions fires on styledata
+    // and calls _updateCompact — though it can't re-add compact-show once
+    // maplibregl-compact is already present, 'load' is a safety net.
+    const collapseAttrib = () => {
+      const attrib = map.getContainer().querySelector(".maplibregl-ctrl-attrib");
+      if (attrib) {
+        attrib.removeAttribute("open");
+        attrib.classList.remove("maplibregl-compact-show");
+      }
+    };
+    collapseAttrib();
+    map.once("load", collapseAttrib);
+
     mapRef.current = map;
 
     if (onReady) {
