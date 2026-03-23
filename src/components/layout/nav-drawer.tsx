@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Search, ArrowRight } from "lucide-react";
+import { X, Search, ArrowRight, Locate } from "lucide-react";
 import { SearchModal } from "@/components/search/search-modal";
 
 type City = {
@@ -126,6 +126,22 @@ export function NavDrawer({
 
             {/* Nav content */}
             <div className="flex flex-col gap-10">
+
+              {/* Near Me */}
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] uppercase" style={{ letterSpacing: "1.2px", color: "#000000" }}>
+                  Near Me
+                </span>
+                <Link
+                  href="/near-me"
+                  className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5] inline-flex items-center gap-[6px]"
+                  style={{ borderColor: "#E4E4E1", color: "#171717" }}
+                  onClick={onClose}
+                >
+                  <Locate size={14} strokeWidth={1.5} />
+                  Use my location
+                </Link>
+              </div>
 
               {/* Featured Cities */}
               <div className="flex flex-col gap-4">
