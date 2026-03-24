@@ -8,6 +8,8 @@ import { isOpenNow } from "@/components/city/opening-hours";
 import { flattenVenueTags } from "@/lib/venue-tags";
 import { venueUrlPath } from "@/lib/slugs";
 import { normalizeSearch } from "@/lib/normalize-search";
+import { FilterPills } from "@/components/filters/filter-pills";
+import type { PillOption, VenueType } from "@/components/filters/filter-pills";
 
 const CityMap = dynamic(
   () => import("@/components/maps/CityMap").then((m) => m.CityMap),
@@ -18,12 +20,6 @@ type Props = {
   city: City;
   venues: Venue[];
 };
-
-type VenueType = Venue["venue_type"] | "all";
-
-type PillOption =
-  | { label: string; kind: "type"; value: VenueType }
-  | { label: string; kind: "open" };
 
 const allPills: PillOption[] = [
   { label: "Show all", kind: "type", value: "all" },
@@ -114,32 +110,13 @@ export function CityExplorer({ city, venues }: Props) {
             </svg>
           </button>
 
-          {visiblePills.map((pill) => {
-            const isActive =
-              pill.kind === "open"
-                ? openNow
-                : type === pill.value && !query.trim();
-            return (
-              <button
-                key={pill.label}
-                type="button"
-                onClick={() => {
-                  if (pill.kind === "open") {
-                    setOpenNow((p) => !p);
-                  } else {
-                    setType(pill.value);
-                  }
-                }}
-                className={`h-[38px] shrink-0 rounded-full px-[12px] text-[12px] font-medium transition-colors ${
-                  isActive
-                    ? "bg-[#171717] text-white"
-                    : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717]"
-                }`}
-              >
-                {pill.label}
-              </button>
-            );
-          })}
+          <FilterPills
+            pills={visiblePills}
+            activeType={query.trim() ? "all" : type}
+            openNow={openNow}
+            onTypeChange={setType}
+            onOpenNowChange={setOpenNow}
+          />
         </div>
 
         {/* Search field — slides in below pills */}

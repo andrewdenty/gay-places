@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { FilterPills } from "@/components/filters/filter-pills";
+import type { PillOption, VenueType } from "@/components/filters/filter-pills";
 import { CornerUpRight } from "lucide-react";
 import type { Venue } from "@/lib/data/public";
 import type { NearMeVenue } from "@/components/near-me/near-me-map";
@@ -27,12 +29,6 @@ type Props = {
   userLat: number;
   userLng: number;
 };
-
-type VenueType = Venue["venue_type"] | "all";
-
-type PillOption =
-  | { label: string; kind: "type"; value: VenueType }
-  | { label: string; kind: "open" };
 
 const allPills: PillOption[] = [
   { label: "Show all", kind: "type", value: "all" },
@@ -130,30 +126,13 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
       {/* Filters */}
       <div className="border-b-[1.5px] border-[#171717] pt-6">
         <div className="flex gap-[6px] overflow-x-auto pb-[32px] scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6">
-          {visiblePills.map((pill) => {
-            const isActive =
-              pill.kind === "open" ? openNow : type === pill.value;
-            return (
-              <button
-                key={pill.label}
-                type="button"
-                onClick={() => {
-                  if (pill.kind === "open") {
-                    setOpenNow((p) => !p);
-                  } else {
-                    setType(pill.value);
-                  }
-                }}
-                className={`h-[38px] shrink-0 rounded-full px-[12px] text-[12px] font-medium transition-colors ${
-                  isActive
-                    ? "bg-[#171717] text-white"
-                    : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717]"
-                }`}
-              >
-                {pill.label}
-              </button>
-            );
-          })}
+          <FilterPills
+            pills={visiblePills}
+            activeType={type}
+            openNow={openNow}
+            onTypeChange={setType}
+            onOpenNowChange={setOpenNow}
+          />
         </div>
       </div>
 
