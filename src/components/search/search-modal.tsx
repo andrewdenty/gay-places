@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Search, X, ArrowRight } from "lucide-react";
 import { venueUrlPath, toCountrySlug } from "@/lib/slugs";
 import { IconButton } from "@/components/ui/icon-button";
@@ -374,7 +375,7 @@ export function SearchModal({
           {/* Navigation pending indicator */}
           {isPending && (
             <div className="mt-8 flex justify-center">
-              <div className="h-4 w-4 animate-spin rounded-full border border-[#E4E4E1] border-t-[#6E6E6D]" />
+              <Image src="/rainbow-logo.svg" alt="" width={24} height={24} className="animate-spin" />
             </div>
           )}
         </div>
