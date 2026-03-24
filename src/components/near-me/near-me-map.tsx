@@ -4,6 +4,7 @@ import maplibregl from "maplibre-gl";
 import Supercluster from "supercluster";
 import { useCallback, useEffect, useRef } from "react";
 import { MapView } from "@/components/maps/MapView";
+import { createDotMarker, createClusterMarker, buildPopupHtml, DOT_SIZE, DOT_SIZE_HIGHLIGHTED } from "@/components/maps/map-utils";
 import { venueUrlPath } from "@/lib/slugs";
 import { formatDistance } from "@/lib/geo";
 
@@ -28,47 +29,6 @@ type Props = {
 
 const CLUSTER_THRESHOLD = 20;
 
-function createDotMarker(label?: string, isHighlighted = false): HTMLButtonElement {
-  const el = document.createElement("button");
-  el.type = "button";
-  el.style.width = isHighlighted ? "20px" : "14px";
-  el.style.height = isHighlighted ? "20px" : "14px";
-  el.style.borderRadius = "50%";
-  el.style.background = "#171717";
-  el.style.border = `2px solid ${isHighlighted ? "#171717" : "#fff"}`;
-  el.style.boxShadow = isHighlighted
-    ? "0 0 0 4px rgba(23,23,23,0.15), 0 1px 4px rgba(0,0,0,0.3)"
-    : "0 1px 4px rgba(0,0,0,0.3)";
-  el.style.cursor = "pointer";
-  el.style.padding = "0";
-  el.style.transition = "width 0.15s, height 0.15s, box-shadow 0.15s";
-  if (label) el.setAttribute("aria-label", label);
-  return el;
-}
-
-function createClusterMarker(count: number): HTMLButtonElement {
-  const el = document.createElement("button");
-  el.type = "button";
-  el.style.width = "32px";
-  el.style.height = "32px";
-  el.style.borderRadius = "50%";
-  el.style.background = "#171717";
-  el.style.color = "#fff";
-  el.style.border = "2px solid rgba(255,255,255,0.8)";
-  el.style.boxShadow = "0 1px 4px rgba(0,0,0,0.3)";
-  el.style.cursor = "pointer";
-  el.style.padding = "0";
-  el.style.display = "flex";
-  el.style.alignItems = "center";
-  el.style.justifyContent = "center";
-  el.style.fontSize = "11px";
-  el.style.fontWeight = "600";
-  el.style.fontFamily = "inherit";
-  el.textContent = String(count);
-  el.setAttribute("aria-label", `${count} places`);
-  return el;
-}
-
 function createUserMarker(): HTMLDivElement {
   const el = document.createElement("div");
   el.style.width = "16px";
@@ -81,15 +41,16 @@ function createUserMarker(): HTMLDivElement {
   return el;
 }
 
-function buildPopupHtml(venue: NearMeVenue): string {
+function buildNearMePopupHtml(venue: NearMeVenue): string {
   const dist = venue.distanceKm != null ? formatDistance(venue.distanceKm) : "";
-  return `
-    <div style="padding:10px 12px;font-family:inherit;min-width:140px">
-      <div style="font-size:13px;font-weight:600;color:#171717;letter-spacing:-0.1px">${venue.name}</div>
-      ${dist ? `<div style="font-size:11px;color:#6e6e6d;margin-top:2px">${dist} away</div>` : ""}
-      <a href="${venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)}" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#6e6e6d;text-decoration:none" onmouseover="this.style.color='#171717'" onmouseout="this.style.color='#6e6e6d'">View place →</a>
-    </div>
-  `;
+  const extra = dist
+    ? `<div style="font-size:11px;color:#6e6e6d;margin-top:2px">${dist} away</div>`
+    : undefined;
+  return buildPopupHtml(
+    venue.name,
+    venueUrlPath(venue.city_slug, venue.venue_type, venue.slug),
+    extra,
+  );
 }
 
 export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
@@ -107,8 +68,8 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
     if (prevHoveredRef.current) {
       const prevEl = markerMap.get(prevHoveredRef.current);
       if (prevEl) {
-        prevEl.style.width = "14px";
-        prevEl.style.height = "14px";
+        prevEl.style.width = DOT_SIZE;
+        prevEl.style.height = DOT_SIZE;
         prevEl.style.border = "2px solid #fff";
         prevEl.style.boxShadow = "0 1px 4px rgba(0,0,0,0.3)";
       }
@@ -117,8 +78,8 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
     if (hoveredVenueId) {
       const el = markerMap.get(hoveredVenueId);
       if (el) {
-        el.style.width = "20px";
-        el.style.height = "20px";
+        el.style.width = DOT_SIZE_HIGHLIGHTED;
+        el.style.height = DOT_SIZE_HIGHLIGHTED;
         el.style.border = "2px solid #171717";
         el.style.boxShadow = "0 0 0 4px rgba(23,23,23,0.15), 0 1px 4px rgba(0,0,0,0.3)";
       }
@@ -158,7 +119,7 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
             offset: 12,
             maxWidth: "220px",
             className: "gay-places-popup",
-          }).setHTML(buildPopupHtml(v));
+          }).setHTML(buildNearMePopupHtml(v));
 
           el.addEventListener("click", () => {
             map.flyTo({ center: [v.lng, v.lat], zoom: Math.max(map.getZoom(), 14) });
@@ -225,7 +186,7 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
                 offset: 12,
                 maxWidth: "220px",
                 className: "gay-places-popup",
-              }).setHTML(buildPopupHtml(v));
+              }).setHTML(buildNearMePopupHtml(v));
 
               el.addEventListener("click", () => {
                 map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 14) });
