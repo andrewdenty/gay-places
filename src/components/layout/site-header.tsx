@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SearchModal } from "@/components/search/search-modal";
 import { NavDrawer } from "@/components/layout/nav-drawer";
 import { IconButton } from "@/components/ui/icon-button";
@@ -12,16 +12,27 @@ export function SiteHeader({ isAdmin = false, userEmail, initialCities }: { isAd
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Track current value without re-render, and lock out changes during transitions
+  const scrolledRef = useRef(false);
+  const transitionLockRef = useRef(false);
 
   useEffect(() => {
     // Hysteresis: different thresholds for entering/leaving compact state
-    // prevents rapid flickering when scrollY hovers near a single threshold
+    // prevents rapid flickering when scrollY hovers near a single threshold.
+    // Transition lock: ignore scroll events for 400ms after a state change to
+    // prevent feedback loops caused by scroll anchoring adjusting scrollY when
+    // the sticky header changes height.
     const onScroll = () => {
-      setScrolled((prev) => {
-        if (!prev && window.scrollY > 50) return true;
-        if (prev && window.scrollY < 30) return false;
-        return prev;
-      });
+      if (transitionLockRef.current) return;
+      const y = window.scrollY;
+      const prev = scrolledRef.current;
+      const next = (!prev && y > 50) ? true : (prev && y < 30) ? false : prev;
+      if (next !== prev) {
+        scrolledRef.current = next;
+        transitionLockRef.current = true;
+        setTimeout(() => { transitionLockRef.current = false; }, 400);
+        setScrolled(next);
+      }
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
