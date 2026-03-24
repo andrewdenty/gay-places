@@ -2,7 +2,7 @@
 
 import maplibregl from "maplibre-gl";
 import Supercluster from "supercluster";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { MapView } from "@/components/maps/MapView";
 import { venueUrlPath } from "@/lib/slugs";
 import { formatDistance } from "@/lib/geo";
@@ -31,8 +31,8 @@ const CLUSTER_THRESHOLD = 20;
 function createDotMarker(label?: string, isHighlighted = false): HTMLButtonElement {
   const el = document.createElement("button");
   el.type = "button";
-  el.style.width = isHighlighted ? "16px" : "10px";
-  el.style.height = isHighlighted ? "16px" : "10px";
+  el.style.width = isHighlighted ? "20px" : "14px";
+  el.style.height = isHighlighted ? "20px" : "14px";
   el.style.borderRadius = "50%";
   el.style.background = "#171717";
   el.style.border = `2px solid ${isHighlighted ? "#171717" : "#fff"}`;
@@ -97,6 +97,7 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
   const popupsRef = useRef<maplibregl.Popup[]>([]);
   const venueMarkerMapRef = useRef<Map<string, HTMLElement>>(new Map());
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
+  const clusterCleanupRef = useRef<(() => void) | null>(null);
 
   // Update marker highlighting when hovered venue changes
   const prevHoveredRef = useRef<string | null>(null);
@@ -106,8 +107,8 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
     if (prevHoveredRef.current) {
       const prevEl = markerMap.get(prevHoveredRef.current);
       if (prevEl) {
-        prevEl.style.width = "10px";
-        prevEl.style.height = "10px";
+        prevEl.style.width = "14px";
+        prevEl.style.height = "14px";
         prevEl.style.border = "2px solid #fff";
         prevEl.style.boxShadow = "0 1px 4px rgba(0,0,0,0.3)";
       }
@@ -116,8 +117,8 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
     if (hoveredVenueId) {
       const el = markerMap.get(hoveredVenueId);
       if (el) {
-        el.style.width = "16px";
-        el.style.height = "16px";
+        el.style.width = "20px";
+        el.style.height = "20px";
         el.style.border = "2px solid #171717";
         el.style.boxShadow = "0 0 0 4px rgba(23,23,23,0.15), 0 1px 4px rgba(0,0,0,0.3)";
       }
@@ -133,30 +134,21 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
     venueMarkerMapRef.current.clear();
   }, []);
 
-  const handleReady = useCallback(
-    (map: maplibregl.Map) => {
-      mapInstanceRef.current = map;
-
-      // Add user location marker
-      const userEl = createUserMarker();
-      new maplibregl.Marker({ element: userEl })
-        .setLngLat([userLng, userLat])
-        .addTo(map);
-
-      // Fit bounds to venues + user location
-      if (venues.length > 0) {
-        const bounds = new maplibregl.LngLatBounds();
-        bounds.extend([userLng, userLat]);
-        for (const v of venues) bounds.extend([v.lng, v.lat]);
-        map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: 0 });
+  const renderVenueMarkers = useCallback(
+    (map: maplibregl.Map, venuesToRender: NearMeVenue[]) => {
+      // Clean up previous cluster event listeners
+      if (clusterCleanupRef.current) {
+        clusterCleanupRef.current();
+        clusterCleanupRef.current = null;
       }
+      clearMarkers();
 
-      if (venues.length === 0) return;
+      if (venuesToRender.length === 0) return;
 
-      const useClustering = venues.length > CLUSTER_THRESHOLD;
+      const useClustering = venuesToRender.length > CLUSTER_THRESHOLD;
 
       if (!useClustering) {
-        for (const v of venues) {
+        for (const v of venuesToRender) {
           const el = createDotMarker(v.name);
           venueMarkerMapRef.current.set(v.id, el);
 
@@ -183,7 +175,7 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
       } else {
         const sc = new Supercluster({ radius: 40, maxZoom: 16 });
         sc.load(
-          venues.map((v) => ({
+          venuesToRender.map((v) => ({
             type: "Feature" as const,
             geometry: { type: "Point" as const, coordinates: [v.lng, v.lat] },
             properties: { id: v.id, slug: v.slug, name: v.name },
@@ -222,7 +214,7 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
                 .addTo(map);
               markersRef.current.push(marker);
             } else if (slug && name && id) {
-              const v = venues.find((x) => x.id === id);
+              const v = venuesToRender.find((x) => x.id === id);
               if (!v) continue;
               const el = createDotMarker(name);
               venueMarkerMapRef.current.set(id, el);
@@ -252,10 +244,45 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
         renderClusters();
         map.on("moveend", renderClusters);
         map.on("zoomend", renderClusters);
+
+        clusterCleanupRef.current = () => {
+          map.off("moveend", renderClusters);
+          map.off("zoomend", renderClusters);
+        };
       }
     },
+    [clearMarkers],
+  );
+
+  // Re-render markers when filtered venues change
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    renderVenueMarkers(map, venues);
+  }, [venues, renderVenueMarkers]);
+
+  const handleReady = useCallback(
+    (map: maplibregl.Map) => {
+      mapInstanceRef.current = map;
+
+      // Add user location marker
+      const userEl = createUserMarker();
+      new maplibregl.Marker({ element: userEl })
+        .setLngLat([userLng, userLat])
+        .addTo(map);
+
+      // Fit bounds to venues + user location
+      if (venues.length > 0) {
+        const bounds = new maplibregl.LngLatBounds();
+        bounds.extend([userLng, userLat]);
+        for (const v of venues) bounds.extend([v.lng, v.lat]);
+        map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: 0 });
+      }
+
+      renderVenueMarkers(map, venues);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [venues, userLat, userLng, clearMarkers],
+    [userLat, userLng, renderVenueMarkers],
   );
 
   return (
