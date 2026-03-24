@@ -94,7 +94,7 @@ export function CityExplorer({ city, venues }: Props) {
       {/* Filters + Search section */}
       <div className="border-b-[1.5px] border-[#171717]">
         {/* Pill row */}
-        <div className="flex gap-[6px] overflow-x-auto pb-[16px] scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6">
+        <div className={`flex gap-[6px] overflow-x-auto scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6 ${searchOpen ? "pb-[16px]" : "pb-[32px]"}`}>
           {/* Search icon pill */}
           <button
             type="button"
