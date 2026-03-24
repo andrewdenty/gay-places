@@ -65,7 +65,7 @@ export function buildPopupHtml(
   linkTarget = "_self",
 ): string {
   return `
-    <div style="padding:12px;font-family:inherit;min-width:160px">
+    <div style="padding:12px;font-family:inherit;min-width:160px;text-align:center">
       <div style="font-size:13px;font-weight:600;color:#171717;letter-spacing:-0.1px;margin-bottom:${extra ? "4px" : "8px"}">${name}</div>
       ${extra ?? ""}
       <a href="${href}" target="${linkTarget}" rel="noopener noreferrer" style="display:flex;width:100%;align-items:center;justify-content:center;gap:4px;margin-top:8px;padding:6px 10px;border-radius:60px;border:1px solid #e4e4e1;background:transparent;color:#171717;font-size:12px;font-weight:400;line-height:1.4;white-space:nowrap;text-decoration:none;cursor:pointer;box-sizing:border-box;outline:none" onmouseover="this.style.background='#f0f0ed'" onmouseout="this.style.background='transparent'">${linkText} ${ARROW_UP_RIGHT_SVG}</a>
