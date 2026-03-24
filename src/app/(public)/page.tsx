@@ -12,6 +12,24 @@ import { env } from "@/lib/env";
 const STORAGE_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Gay Places",
+  url: BASE_URL,
+  description:
+    "A curated guide to gay bars, clubs and queer spaces around the world.",
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Gay Places",
+  url: BASE_URL,
+};
+
 export default async function LandingPage() {
   const hasSupa = !!(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
@@ -22,8 +40,17 @@ export default async function LandingPage() {
   ]);
 
   return (
-    <div>
-      {/* ── Hero ── */}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+      <div>
+        {/* ── Hero ── */}
       <section className="pt-16 pb-20">
         <h1
           className="mb-8 text-[var(--foreground)]"
@@ -161,5 +188,6 @@ export default async function LandingPage() {
         )}
       </section>
     </div>
+    </>
   );
 }

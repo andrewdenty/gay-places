@@ -13,6 +13,7 @@ export const revalidate = 3600;
 const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
+
 export async function generateMetadata({
   params,
 }: {
@@ -24,15 +25,30 @@ export async function generateMetadata({
   const { slug } = await params;
   const city = await getCityBySlug(slug);
   if (!city) return {};
-  const title = `Gay ${city.name} Guide`;
+  const title = city.seo_title ?? `Gay ${city.name} Guide`;
   const description =
+    city.seo_description ??
     city.description ??
-    `Discover the best LGBTQ+ bars, clubs and queer venues in ${city.name}.`;
+    `Discover the best gay bars, clubs and queer venues in ${city.name}. Your curated guide to LGBTQ+ spaces.`;
   return {
     title,
     description,
     alternates: { canonical: `/city/${slug}` },
-    openGraph: { title, description },
+    openGraph: {
+      title,
+      description,
+      ...(city.image_path
+        ? {
+            images: [
+              {
+                url: `${CITY_IMAGES_BASE}/${city.image_path}`,
+                width: 1200,
+                height: 630,
+              },
+            ],
+          }
+        : {}),
+    },
   };
 }
 

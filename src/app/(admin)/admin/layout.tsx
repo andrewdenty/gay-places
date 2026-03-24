@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { PropsWithChildren } from "react";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminTabs } from "@/components/admin/admin-tabs";
@@ -6,6 +7,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminLayout({ children }: PropsWithChildren) {
   const supabase = await createSupabaseServerClient();

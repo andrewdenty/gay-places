@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Sign In",
+  robots: { index: false, follow: false },
+};
 import { Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
