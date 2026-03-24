@@ -2,7 +2,9 @@
 
 import { ArrowUpRight } from "lucide-react";
 import maplibregl from "maplibre-gl";
+import { useCallback } from "react";
 import { MapView } from "./MapView";
+import { createDotMarker, buildPopupHtml } from "./map-utils";
 
 type Props = {
   lat: number;
@@ -11,30 +13,34 @@ type Props = {
   googleMapsUrl?: string | null;
 };
 
-function createDotMarker(): HTMLElement {
-  const el = document.createElement("div");
-  el.style.width = "10px";
-  el.style.height = "10px";
-  el.style.borderRadius = "50%";
-  el.style.background = "#171717";
-  el.style.border = "2px solid #fff";
-  el.style.boxShadow = "0 1px 4px rgba(0,0,0,0.35)";
-  el.style.cursor = "default";
-  return el;
-}
-
 export function VenueMap({ lat, lng, name, googleMapsUrl }: Props) {
   const mapsLink =
     googleMapsUrl ?? `https://www.google.com/maps?q=${lat},${lng}`;
 
-  function handleReady(map: maplibregl.Map) {
-    const el = createDotMarker();
-    el.setAttribute("aria-label", name);
+  const handleReady = useCallback(
+    (map: maplibregl.Map) => {
+      const el = createDotMarker(name);
 
-    new maplibregl.Marker({ element: el })
-      .setLngLat([lng, lat])
-      .addTo(map);
-  }
+      const popup = new maplibregl.Popup({
+        closeButton: false,
+        closeOnClick: true,
+        offset: 12,
+        maxWidth: "220px",
+        className: "gay-places-popup",
+      }).setHTML(buildPopupHtml(name, mapsLink, undefined, "Open in maps", "_blank"));
+
+      el.addEventListener("click", () => {
+        map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 15) });
+      });
+
+      new maplibregl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(map);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lat, lng, name, mapsLink],
+  );
 
   return (
     <section className="border-b border-[var(--border)] py-[24px]">

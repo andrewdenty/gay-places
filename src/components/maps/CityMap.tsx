@@ -4,6 +4,7 @@ import maplibregl from "maplibre-gl";
 import Supercluster from "supercluster";
 import { useCallback, useRef } from "react";
 import { MapView } from "./MapView";
+import { createDotMarker, createClusterMarker, buildPopupHtml } from "./map-utils";
 import type { Venue } from "@/lib/data/public";
 import { venueUrlPath } from "@/lib/slugs";
 
@@ -14,54 +15,6 @@ type Props = {
 };
 
 const CLUSTER_THRESHOLD = 20;
-
-function createDotMarker(label?: string): HTMLButtonElement {
-  const el = document.createElement("button");
-  el.type = "button";
-  el.style.width = "10px";
-  el.style.height = "10px";
-  el.style.borderRadius = "50%";
-  el.style.background = "#171717";
-  el.style.border = "2px solid #fff";
-  el.style.boxShadow = "0 1px 4px rgba(0,0,0,0.3)";
-  el.style.cursor = "pointer";
-  el.style.padding = "0";
-  if (label) el.setAttribute("aria-label", label);
-  return el;
-}
-
-function createClusterMarker(count: number): HTMLButtonElement {
-  const el = document.createElement("button");
-  el.type = "button";
-  el.style.width = "32px";
-  el.style.height = "32px";
-  el.style.borderRadius = "50%";
-  el.style.background = "#171717";
-  el.style.color = "#fff";
-  el.style.border = "2px solid rgba(255,255,255,0.8)";
-  el.style.boxShadow = "0 1px 4px rgba(0,0,0,0.3)";
-  el.style.cursor = "pointer";
-  el.style.padding = "0";
-  el.style.display = "flex";
-  el.style.alignItems = "center";
-  el.style.justifyContent = "center";
-  el.style.fontSize = "11px";
-  el.style.fontWeight = "600";
-  el.style.fontFamily = "inherit";
-  el.style.letterSpacing = "0";
-  el.textContent = String(count);
-  el.setAttribute("aria-label", `${count} places`);
-  return el;
-}
-
-function buildPopupHtml(venue: Venue, citySlug: string): string {
-  return `
-    <div style="padding:10px 12px;font-family:inherit;min-width:140px">
-      <div style="font-size:13px;font-weight:600;color:#171717;letter-spacing:-0.1px">${venue.name}</div>
-      <a href="${venueUrlPath(citySlug, venue.venue_type, venue.slug)}" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#6e6e6d;text-decoration:none" onmouseover="this.style.color='#171717'" onmouseout="this.style.color='#6e6e6d'">View place →</a>
-    </div>
-  `;
-}
 
 export function CityMap({ venues, center, citySlug }: Props) {
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -110,7 +63,7 @@ export function CityMap({ venues, center, citySlug }: Props) {
             offset: 12,
             maxWidth: "220px",
             className: "gay-places-popup",
-          }).setHTML(buildPopupHtml(v, citySlugRef.current));
+          }).setHTML(buildPopupHtml(v.name, venueUrlPath(citySlugRef.current, v.venue_type, v.slug)));
 
           el.addEventListener("click", () => {
             map.flyTo({ center: [v.lng, v.lat], zoom: Math.max(map.getZoom(), 14) });
@@ -136,6 +89,9 @@ export function CityMap({ venues, center, citySlug }: Props) {
         );
 
         const renderClusters = () => {
+          // Don't re-render while a popup is open — it would destroy it
+          if (popupsRef.current.some((p) => p.isOpen())) return;
+
           clearMarkers();
 
           const zoom = Math.floor(map.getZoom());
@@ -184,11 +140,13 @@ export function CityMap({ venues, center, citySlug }: Props) {
                 offset: 12,
                 maxWidth: "220px",
                 className: "gay-places-popup",
-              }).setHTML(buildPopupHtml(v, citySlugRef.current));
+              }).setHTML(buildPopupHtml(v.name, venueUrlPath(citySlugRef.current, v.venue_type, v.slug)));
 
               el.addEventListener("click", () => {
                 map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 14) });
               });
+
+              popup.on("close", () => renderClusters());
 
               const marker = new maplibregl.Marker({ element: el })
                 .setLngLat([lng, lat])
