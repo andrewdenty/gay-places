@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
+import { Search } from "lucide-react";
 import type { City, Venue } from "@/lib/data/public";
 import { isOpenNow } from "@/components/city/opening-hours";
 import { flattenVenueTags } from "@/lib/venue-tags";
@@ -10,6 +11,7 @@ import { venueUrlPath } from "@/lib/slugs";
 import { normalizeSearch } from "@/lib/normalize-search";
 import { FilterPills } from "@/components/filters/filter-pills";
 import type { PillOption, VenueType } from "@/components/filters/filter-pills";
+import { NearMeFieldButton } from "@/components/ui/near-me-field-button";
 
 const CityMap = dynamic(
   () => import("@/components/maps/CityMap").then((m) => m.CityMap),
@@ -123,24 +125,28 @@ export function CityExplorer({ city, venues }: Props) {
         <div
           className="overflow-hidden"
           style={{
-            maxHeight: searchOpen ? "76px" : "0",
+            maxHeight: searchOpen ? "84px" : "0",
             opacity: searchOpen ? 1 : 0,
             transition: "max-height 0.22s ease, opacity 0.18s ease",
           }}
         >
-          <div className="pb-[14px] relative flex items-center gap-3">
-            <div className="relative flex flex-1 items-center">
-              <svg
-                className="absolute left-5 text-[var(--muted-foreground)] pointer-events-none"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-              >
-                <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.3" />
-                <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-              </svg>
+          <div className="pb-[14px] flex items-center gap-3">
+            <div
+              className="relative flex flex-1 items-center rounded-[80px]"
+              style={{
+                height: "56px",
+                backgroundColor: "#F7F7F5",
+                border: searchFocused ? "1px solid #E4E4E1" : "1px solid #F0F0ED",
+                paddingLeft: "16px",
+                paddingRight: "8px",
+              }}
+            >
+              <Search
+                className="shrink-0 pointer-events-none"
+                size={20}
+                strokeWidth={1.5}
+                color="#6E6E6D"
+              />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -149,18 +155,17 @@ export function CityExplorer({ city, venues }: Props) {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
                 placeholder="Search places…"
-                className="w-full rounded-full pl-12 pr-12 text-[16px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors"
+                className="flex-1 min-w-0 ml-2 bg-transparent text-[15px] outline-none transition-colors placeholder:text-[#6E6E6D]"
                 style={{
-                  height: "48px",
-                  backgroundColor: "#F7F7F5",
-                  border: searchFocused ? "1.5px solid #E4E4E1" : "1.5px solid transparent",
+                  color: "#171717",
+                  caretColor: "#171717",
                 }}
               />
-              {query && (
+              {query ? (
                 <button
                   type="button"
                   onClick={clearQuery}
-                  className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                  className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#6E6E6D] hover:text-[#171717] transition-colors mr-2"
                   aria-label="Clear search"
                 >
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
@@ -168,6 +173,8 @@ export function CityExplorer({ city, venues }: Props) {
                     <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                   </svg>
                 </button>
+              ) : (
+                <NearMeFieldButton hideTextOnMobile onClick={() => router.push("/near-me")} />
               )}
             </div>
             <button
