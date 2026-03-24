@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Locate } from "lucide-react";
 import { useGeolocation } from "@/lib/hooks/use-geolocation";
 import { NearMeExplorer } from "@/components/near-me/near-me-explorer";
 import type { Venue } from "@/lib/data/public";
@@ -79,18 +81,20 @@ export default function NearMePage() {
 
       {/* Denied / unavailable state */}
       {(status === "denied" || status === "unavailable") && (
-        <div className="py-20 flex flex-col items-center gap-4">
-          <p className="text-[17px] font-medium text-[var(--foreground)] text-center">
+        <div className="py-20 flex flex-col items-center">
+          <h2 className="h2-editorial text-[var(--foreground)] text-center">
             Want to see what&rsquo;s nearby?
-          </p>
-          <p className="text-[15px] text-[var(--muted-foreground)] text-center max-w-[320px]">
-            Turn on location in your browser settings.
+          </h2>
+          <p className="mt-[8px] text-[15px] text-[var(--muted-foreground)] text-center max-w-[320px]">
+            Turn on location in your browser settings
           </p>
           <button
             type="button"
             onClick={request}
-            className="btn-sm btn-sm-primary"
+            className="mt-[24px] inline-flex items-center gap-[6px] px-[20px] rounded-full btn-sm-primary"
+            style={{ height: "48px", fontSize: "15px" }}
           >
+            <Locate size={16} strokeWidth={1.5} />
             Request location
           </button>
         </div>
@@ -132,10 +136,20 @@ export default function NearMePage() {
       {status === "granted" && !loading && !fetchError && lat != null && lng != null && (
         <>
           {venues.length === 0 ? (
-            <div className="py-20 flex flex-col items-center gap-4">
-              <p className="text-[15px] text-[var(--muted-foreground)] text-center max-w-[320px]">
-                No places found near your location yet. We&rsquo;re adding new cities all the time.
+            <div className="py-20 flex flex-col items-center">
+              <h2 className="h2-editorial text-[var(--foreground)] text-center">
+                Looks quiet where you are.
+              </h2>
+              <p className="mt-[8px] text-[15px] text-[var(--muted-foreground)] text-center max-w-[320px]">
+                If you know of a gay place near you, add it!
               </p>
+              <Link
+                href="/suggest"
+                className="mt-[24px] inline-flex items-center gap-[6px] px-[20px] rounded-full btn-sm-secondary"
+                style={{ height: "48px", fontSize: "15px" }}
+              >
+                Submit a place
+              </Link>
             </div>
           ) : (
             <NearMeExplorer venues={venues} userLat={lat} userLng={lng} />
