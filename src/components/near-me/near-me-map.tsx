@@ -144,6 +144,9 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
         );
 
         const renderClusters = () => {
+          // Don't re-render while a popup is open — it would destroy it
+          if (popupsRef.current.some((p) => p.isOpen())) return;
+
           clearMarkers();
           const zoom = Math.floor(map.getZoom());
           const bounds = map.getBounds();
@@ -191,6 +194,8 @@ export function NearMeMap({ venues, userLat, userLng, hoveredVenueId }: Props) {
               el.addEventListener("click", () => {
                 map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 14) });
               });
+
+              popup.on("close", () => renderClusters());
 
               const marker = new maplibregl.Marker({ element: el })
                 .setLngLat([lng, lat])

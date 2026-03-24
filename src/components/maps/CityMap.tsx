@@ -89,6 +89,9 @@ export function CityMap({ venues, center, citySlug }: Props) {
         );
 
         const renderClusters = () => {
+          // Don't re-render while a popup is open — it would destroy it
+          if (popupsRef.current.some((p) => p.isOpen())) return;
+
           clearMarkers();
 
           const zoom = Math.floor(map.getZoom());
@@ -142,6 +145,8 @@ export function CityMap({ venues, center, citySlug }: Props) {
               el.addEventListener("click", () => {
                 map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 14) });
               });
+
+              popup.on("close", () => renderClusters());
 
               const marker = new maplibregl.Marker({ element: el })
                 .setLngLat([lng, lat])
