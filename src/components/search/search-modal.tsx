@@ -199,10 +199,10 @@ export function SearchModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Search area — positioned in upper third */}
-      <div className="relative z-10 flex flex-col items-center px-4 pt-2 sm:pt-[calc(15vh-8px)]">
+      <div className="relative z-10 flex flex-col items-center px-4 pt-4 sm:pt-[15vh]">
         <div className="w-full max-w-[560px]">
           {/* Search field + close button row */}
-          <div className="flex items-center gap-3 pb-2">
+          <div className="flex items-center gap-3">
             {/* Pill input */}
             <div
               className="relative flex flex-1 items-center rounded-[80px]"

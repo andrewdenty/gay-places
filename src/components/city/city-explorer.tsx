@@ -94,7 +94,7 @@ export function CityExplorer({ city, venues }: Props) {
       {/* Filters + Search section */}
       <div className="border-b-[1.5px] border-[#171717]">
         {/* Pill row */}
-        <div className="flex gap-[6px] overflow-x-auto pb-[32px] scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6">
+        <div className="flex gap-[6px] overflow-x-auto pb-[16px] scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6">
           {/* Search icon pill */}
           <button
             type="button"
@@ -130,7 +130,7 @@ export function CityExplorer({ city, venues }: Props) {
             transition: "max-height 0.22s ease, opacity 0.18s ease",
           }}
         >
-          <div className="pb-[14px] flex items-center gap-3">
+          <div className="pb-[16px] flex items-center gap-3">
             <div
               className="relative flex flex-1 items-center rounded-[80px]"
               style={{
