@@ -225,7 +225,7 @@ export function CityExplorer({ city, venues }: Props) {
               onKeyDown={(e) => e.key === "Enter" && router.push(venueUrlPath(city.slug, v.venue_type, v.slug))}
               className="block cursor-pointer"
             >
-              <article className="border-b-[1.5px] border-[#171717] py-[40px] -mx-4 px-4 sm:-mx-6 sm:px-6">
+              <article className="border-b-[1.5px] border-[#171717] py-[40px]">
                 {/* Row 1: Name + open status */}
                 <div className="flex items-start justify-between gap-3">
                   <h3
