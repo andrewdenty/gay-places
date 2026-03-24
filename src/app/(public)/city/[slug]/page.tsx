@@ -25,10 +25,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const city = await getCityBySlug(slug);
   if (!city) return {};
-  const title = city.seo_title ?? `Gay ${city.name} Guide`;
+  const title = city.seo_title || `Gay ${city.name} Guide`;
   const description =
-    city.seo_description ??
-    city.description ??
+    city.seo_description ||
+    city.description ||
     `Discover the best gay bars, clubs and queer venues in ${city.name}. Your curated guide to LGBTQ+ spaces.`;
   return {
     title,

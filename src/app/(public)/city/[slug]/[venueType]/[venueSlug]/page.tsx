@@ -60,8 +60,8 @@ export async function generateMetadata({
   const typeLabel = VENUE_TYPE_TITLE_LABEL[venue.venue_type] ?? "Gay Venue";
   const title = `${venue.name} – ${typeLabel} in ${city.name}`;
   const description =
-    venue.description_editorial ??
-    venue.description_base ??
+    venue.description_editorial ||
+    venue.description_base ||
     `${venue.name} is a gay ${venue.venue_type} in ${city.name}.`;
   const canonicalPath = venueUrlPath(slug, venue.venue_type, venueSlug);
   return {
