@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
+import { IconButton } from "@/components/ui/icon-button";
 import type { City, Venue } from "@/lib/data/public";
 import { isOpenNow } from "@/components/city/opening-hours";
 import { flattenVenueTags } from "@/lib/venue-tags";
@@ -177,17 +178,9 @@ export function CityExplorer({ city, venues }: Props) {
                 <NearMeFieldButton hideTextOnMobile onClick={() => router.push("/near-me")} />
               )}
             </div>
-            <button
-              type="button"
-              onClick={closeSearch}
-              className="shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717] transition-colors"
-              aria-label="Close search"
-            >
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-            </button>
+            <IconButton label="Close search" onClick={closeSearch}>
+              <X size={24} strokeWidth={1.5} />
+            </IconButton>
           </div>
         </div>
       </div>
