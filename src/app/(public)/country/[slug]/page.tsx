@@ -130,10 +130,10 @@ export async function generateMetadata({
   const country = await getCountryBySlug(slug);
   if (!country) return {};
   const title =
-    country.seo_title ?? `Gay ${country.name} Guide`;
+    country.seo_title || `Gay ${country.name} Guide`;
   const description =
-    country.seo_description ??
-    country.intro ??
+    country.seo_description ||
+    country.intro ||
     `Discover the best LGBTQ+ places and gay bars across ${country.name}.`;
   return {
     title,
@@ -197,6 +197,21 @@ export default async function CountryPage({
   const hasEditorial = (country.editorial ?? "").trim().length > 0;
   const hasFeaturedVenues = orderedVenues.length > 0;
 
+  const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: country.name,
+        item: `${BASE_URL}/country/${slug}`,
+      },
+    ],
+  };
+
   // Compute map center from city averages
   const mapCenter: [number, number] = cities.length > 0
     ? [
@@ -206,8 +221,13 @@ export default async function CountryPage({
     : [0, 20];
 
   return (
-    <div className="pt-8 pb-6 sm:pt-10 sm:pb-8">
-      {/* Hero */}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <div className="pt-8 pb-6 sm:pt-10 sm:pb-8">
+        {/* Hero */}
       <header className="mb-10 sm:mb-14">
         {region && (
           <div className="label-mono text-[var(--muted-foreground)] mb-1">
@@ -337,5 +357,6 @@ export default async function CountryPage({
         </div>
       </section>
     </div>
+    </>
   );
 }

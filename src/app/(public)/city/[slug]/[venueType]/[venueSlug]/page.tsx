@@ -23,6 +23,19 @@ import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs"
 // the cached HTML.
 export const revalidate = 3600;
 
+const CITY_IMAGES_BASE =
+  "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
+
+const VENUE_TYPE_TITLE_LABEL: Record<string, string> = {
+  bar: "Gay Bar",
+  club: "Gay Club",
+  restaurant: "Gay Restaurant",
+  cafe: "Gay Café",
+  sauna: "Gay Sauna",
+  event_space: "Gay Event Space",
+  other: "Gay Venue",
+};
+
 const VENUE_TYPE_SCHEMA: Record<string, string> = {
   bar: "BarOrPub",
   club: "NightClub",
@@ -44,17 +57,32 @@ export async function generateMetadata({
     getVenueBySlug(slug, venueSlug),
   ]);
   if (!city || !venue) return {};
-  const title = `${venue.name} – ${city.name}`;
+  const typeLabel = VENUE_TYPE_TITLE_LABEL[venue.venue_type] ?? "Gay Venue";
+  const title = `${venue.name} – ${typeLabel} in ${city.name}`;
   const description =
-    venue.description_editorial ??
-    venue.description_base ??
+    venue.description_editorial ||
+    venue.description_base ||
     `${venue.name} is a gay ${venue.venue_type} in ${city.name}.`;
   const canonicalPath = venueUrlPath(slug, venue.venue_type, venueSlug);
   return {
     title,
     description,
     alternates: { canonical: canonicalPath },
-    openGraph: { title, description },
+    openGraph: {
+      title,
+      description,
+      ...(city.image_path
+        ? {
+            images: [
+              {
+                url: `${CITY_IMAGES_BASE}/${city.image_path}`,
+                width: 1200,
+                height: 630,
+              },
+            ],
+          }
+        : {}),
+    },
   };
 }
 

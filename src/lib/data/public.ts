@@ -25,6 +25,8 @@ export type City = {
   center_lng: number;
   description?: string | null;
   image_path?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
 };
 
 export type Venue = {
@@ -68,7 +70,7 @@ const NEARBY_VENUE_FIELDS = "id,slug,name,venue_type,lat,lng";
 /** Minimal venue shape returned by {@link getNearbyVenues}. */
 export type NearbyVenue = Pick<Venue, "id" | "slug" | "name" | "venue_type" | "lat" | "lng">;
 
-const CITY_FIELDS_WITH_DESC = "id,slug,name,country,center_lat,center_lng,description,image_path";
+const CITY_FIELDS_WITH_DESC = "id,slug,name,country,center_lat,center_lng,description,image_path,seo_title,seo_description";
 const CITY_FIELDS_BASE = "id,slug,name,country,center_lat,center_lng";
 
 /**

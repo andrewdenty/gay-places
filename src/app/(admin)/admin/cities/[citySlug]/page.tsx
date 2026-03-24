@@ -38,7 +38,7 @@ export default async function EditCityPage({
   const [{ data: cityWithDesc, error: cityError }, { data: countries }] = await Promise.all([
     supabase
       .from("cities")
-      .select("id,slug,name,country,center_lat,center_lng,published,description,image_path")
+      .select("id,slug,name,country,center_lat,center_lng,published,description,image_path,seo_title,seo_description")
       .eq("slug", citySlug)
       .maybeSingle(),
     supabase
@@ -56,7 +56,7 @@ export default async function EditCityPage({
         .select("id,slug,name,country,center_lat,center_lng,published")
         .eq("slug", citySlug)
         .maybeSingle();
-      city = fallback ? { ...fallback, description: null, image_path: null } : null;
+      city = fallback ? { ...fallback, description: null, image_path: null, seo_title: null, seo_description: null } : null;
     } else {
       throw cityError;
     }
@@ -155,6 +155,42 @@ export default async function EditCityPage({
               rows={4}
               className={TEXTAREA}
             />
+          </div>
+
+          {/* SEO overrides */}
+          <div className="sm:col-span-2 border-t border-border pt-3 mt-1">
+            <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">SEO overrides</div>
+            <div className="grid gap-3">
+              <div>
+                <div className="mb-1 text-xs text-muted-foreground">
+                  SEO title{" "}
+                  <span className="text-[10px] opacity-60">
+                    — overrides the default &quot;Gay {city.name} Guide&quot; title tag
+                  </span>
+                </div>
+                <input
+                  name="seo_title"
+                  defaultValue={(city as { seo_title?: string | null }).seo_title ?? ""}
+                  placeholder={`Gay ${city.name} Guide`}
+                  className={INPUT}
+                />
+              </div>
+              <div>
+                <div className="mb-1 text-xs text-muted-foreground">
+                  SEO description{" "}
+                  <span className="text-[10px] opacity-60">
+                    — overrides the meta description (150–160 chars recommended)
+                  </span>
+                </div>
+                <textarea
+                  name="seo_description"
+                  defaultValue={(city as { seo_description?: string | null }).seo_description ?? ""}
+                  placeholder={`Discover the best gay bars, clubs and queer venues in ${city.name}. Your curated guide to LGBTQ+ spaces.`}
+                  rows={3}
+                  className={TEXTAREA}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="sm:col-span-2">
