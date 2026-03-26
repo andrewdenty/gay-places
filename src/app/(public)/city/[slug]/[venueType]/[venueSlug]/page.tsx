@@ -10,6 +10,7 @@ import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { VenueDescription } from "@/components/venue/venue-description";
 import { AdminVenueLink } from "@/components/venue/admin-venue-link";
+import { VenueInteractions } from "@/components/venue/VenueInteractions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
 import { env } from "@/lib/env";
@@ -132,7 +133,7 @@ export default async function VenuePage({
   }
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: photos }, nearbyVenues, publishedCountrySlugs] = await Promise.all([
+  const [{ data: photos }, nearbyVenues, publishedCountrySlugs, { data: interactionRows }] = await Promise.all([
     supabase
       .from("venue_photos")
       .select("id, storage_path")
@@ -140,7 +141,27 @@ export default async function VenuePage({
       .limit(5),
     getNearbyVenues(venue.city_id, venue.id, venue.lat, venue.lng),
     getPublishedCountrySlugs(),
+    supabase
+      .from("venue_interactions")
+      .select("been_here, recommend, tag")
+      .eq("venue_id", venue.id),
   ]);
+
+  // Aggregate interaction counts
+  const interactionCounts = {
+    beenHereCount: 0,
+    recommendCount: 0,
+    classicCount: 0,
+    trendingCount: 0,
+    underratedCount: 0,
+  };
+  for (const row of interactionRows ?? []) {
+    if (row.been_here) interactionCounts.beenHereCount++;
+    if (row.recommend) interactionCounts.recommendCount++;
+    if (row.tag === "classic") interactionCounts.classicCount++;
+    if (row.tag === "trending") interactionCounts.trendingCount++;
+    if (row.tag === "underrated") interactionCounts.underratedCount++;
+  }
 
   const permanentlyClosed = venue.closed === true;
   const open = !permanentlyClosed && isOpenNow(venue.opening_hours);
@@ -236,7 +257,7 @@ export default async function VenuePage({
       <div className="pt-8 sm:pt-10 pb-[56px]">
         <VenueViewTracker venueId={venue.id} />
 
-        {/* Breadcrumb — venue type replaces "PLACE" on the right */}
+        {/* Breadcrumb — venue type at end, open status on the right */}
         <div className="mb-6 flex items-center justify-between gap-4">
           <div className="breadcrumb text-[var(--muted-foreground)]">
             {countryPublished ? (
@@ -256,46 +277,48 @@ export default async function VenuePage({
             >
               {city.name.toUpperCase()}
             </Link>
+            <span className="mx-1">/</span>
+            <span>{venueType.toUpperCase()}</span>
           </div>
-          <span className="breadcrumb text-[var(--muted-foreground)]">
-            {venueTypeLabel.toUpperCase()}
-          </span>
+          {/* Open status — top right */}
+          {permanentlyClosed ? (
+            <span className="label-xs shrink-0 rounded-full border border-[#E63946]/30 bg-red-50 px-[8px] py-[3px] text-red-600">
+              PERMANENTLY CLOSED
+            </span>
+          ) : (
+            <div className="flex shrink-0 items-center gap-[6px]">
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+              />
+              <span className="open-status-text text-[var(--foreground)]">
+                {open ? "Open now" : "Closed"}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Section 1 — Place identity */}
-        <section className="border-b border-[var(--border)] pb-10">
-          {/* Name + open status */}
-          <div className="flex items-start justify-between gap-4">
+        <section className="pb-10">
+          {/* Name + interactions — buttons right of title on desktop, below on mobile */}
+          <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-x-4 gap-y-0">
             <h1
-              className="h1-editorial"
+              className="h1-editorial w-full sm:w-auto sm:flex-1"
               style={{ fontSize: "48px", letterSpacing: "-0.96px" }}
             >
               {venue.name}
             </h1>
-
-            {/* Open status indicator */}
-            {permanentlyClosed ? (
-              <div className="flex shrink-0 items-center gap-[6px] pt-2">
-                <span className="label-xs rounded-full border border-[#E63946]/30 bg-red-50 px-[8px] py-[3px] text-red-600">
-                  PERMANENTLY CLOSED
-                </span>
-              </div>
-            ) : (
-              <div className="flex shrink-0 items-center gap-[6px] pt-3">
-                <span
-                  className="h-2 w-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
-                />
-                <span className="open-status-text text-[var(--foreground)]">
-                  {open ? "Open now" : "Closed"}
-                </span>
-              </div>
-            )}
+            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 mb-4 sm:mb-0">
+              <VenueInteractions
+                venueId={venue.id}
+                initialCounts={interactionCounts}
+              />
+            </div>
           </div>
 
           {/* Photo gallery */}
           {photos && photos.length > 0 && (
-            <div className="mt-4">
+            <div>
               <PhotoGallery photos={photos} />
             </div>
           )}

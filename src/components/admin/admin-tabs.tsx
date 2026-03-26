@@ -11,6 +11,7 @@ const tabs = [
   { label: "Submissions", href: "/admin/submissions" },
   { label: "Research", href: "/admin/research" },
   { label: "Analytics", href: "/admin/analytics" },
+  { label: "Community", href: "/admin/community" },
 ];
 
 export function AdminTabs() {

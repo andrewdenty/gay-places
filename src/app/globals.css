@@ -14,6 +14,7 @@
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   --accent: #171717;
   --accent-foreground: #ffffff;
+  --red: #fd1549;
 }
 
 /* Force light theme — override any Tailwind dark mode defaults */
@@ -31,6 +32,7 @@
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     --accent: #171717;
     --accent-foreground: #ffffff;
+    --red: #fd1549;
   }
 }
 
