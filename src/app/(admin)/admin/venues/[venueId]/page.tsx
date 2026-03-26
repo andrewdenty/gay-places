@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { VenueTagPicker } from "@/components/venue/venue-tag-picker";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { TAG_CATEGORIES, type VenueTagCategory, type VenueTags } from "@/lib/venue-tags";
-import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto, generateBaseDescription, generateEditorialDescription } from "./actions";
+import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto } from "./actions";
 import { DeleteVenueButton } from "./delete-venue-button";
 import { AdminPhotoUpload } from "./admin-photo-upload";
 import { DescriptionGenerateForm } from "./description-generate-button";
+import { OpeningHoursEditor } from "@/components/admin/opening-hours-editor";
+import { VenueEnrichBar, TagsEnrichButton, OpeningHoursEnrichButton } from "@/components/admin/venue-enrich-panel";
 import { venueUrlPath } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
@@ -121,8 +123,13 @@ export default async function EditVenuePage({
         )}
       </div>
 
+      {/* Enrichment actions bar */}
+      <div className="mt-4">
+        <VenueEnrichBar venueId={venue.id} />
+      </div>
+
       {/* Venue details form */}
-      <Card className="mt-6 p-6">
+      <Card className="mt-4 p-6">
         <div className="text-sm font-semibold">Place details</div>
         {/*
           The main form closes after Tags. The description section sits between
@@ -224,6 +231,9 @@ export default async function EditVenuePage({
               customTagOptions={customTagOptions}
             />
           </div>
+          <div className="sm:col-span-2">
+            <TagsEnrichButton venueId={venue.id} />
+          </div>
         </form>
 
         {/*
@@ -249,8 +259,9 @@ export default async function EditVenuePage({
                   </span>
                 )}
                 <DescriptionGenerateForm
-                  action={generateBaseDescription}
                   venueId={venue.id}
+                  descriptionType="base_description"
+                  currentText={venue.description_base ?? venue.description ?? ""}
                   hasExisting={!!(venue.description_base ?? venue.description)}
                 />
               </div>
@@ -284,8 +295,9 @@ export default async function EditVenuePage({
                 </span>
               </span>
               <DescriptionGenerateForm
-                action={generateEditorialDescription}
                 venueId={venue.id}
+                descriptionType="editorial_description"
+                currentText={venue.description_editorial ?? ""}
                 hasExisting={!!venue.description_editorial}
               />
             </div>
@@ -302,14 +314,16 @@ export default async function EditVenuePage({
           {/* ── Hours ──────────────────────────────────────────────────── */}
           <SectionLabel>Opening hours</SectionLabel>
           <div className="sm:col-span-2">
-            <div className="mb-1 text-xs text-muted-foreground">JSON</div>
-            <textarea
-              form="main-form"
-              name="opening_hours"
-              defaultValue={JSON.stringify(venue.opening_hours ?? {}, null, 2)}
-              placeholder="{}"
-              rows={10}
-              className={`${TEXTAREA} font-mono text-xs`}
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">
+                Click a day&apos;s status to cycle: Open → Closed → No info
+              </p>
+              <OpeningHoursEnrichButton venueId={venue.id} />
+            </div>
+            <OpeningHoursEditor
+              initialValue={venue.opening_hours}
+              inputName="opening_hours"
+              formId="main-form"
             />
           </div>
 

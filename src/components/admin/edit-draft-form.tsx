@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { TAG_CATEGORIES, type VenueTags } from "@/lib/venue-tags";
+import { OpeningHoursEditor, type OpeningHours } from "@/components/admin/opening-hours-editor";
 
 interface DraftData {
   name: string;
@@ -48,9 +49,9 @@ export function EditDraftForm({ draftId, initialDraft, initialNotes }: Props) {
   const [venueTags, setVenueTags] = useState<VenueTags>(
     initialDraft.venue_tags ?? {},
   );
-  const [openingHours, setOpeningHours] = useState(
-    JSON.stringify(initialDraft.opening_hours ?? {}, null, 2),
-  );
+  // openingHours is updated via the OpeningHoursEditor's onChange callback.
+  // Starts as null so we can detect "untouched" and fall back to initialDraft.opening_hours on save.
+  const [openingHours, setOpeningHours] = useState<OpeningHours | null>(null);
   const [notes, setNotes] = useState(initialNotes ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,15 +73,6 @@ export function EditDraftForm({ draftId, initialDraft, initialNotes }: Props) {
     setError(null);
     setSuccess(false);
 
-    let parsedHours: unknown;
-    try {
-      parsedHours = JSON.parse(openingHours);
-    } catch {
-      setError("Opening hours is not valid JSON");
-      setBusy(false);
-      return;
-    }
-
     const body = {
       name: name.trim(),
       google_maps_url: googleMapsUrl.trim() || null,
@@ -89,7 +81,7 @@ export function EditDraftForm({ draftId, initialDraft, initialNotes }: Props) {
       summary_short: summaryShort.trim(),
       why_unique: whyUnique.trim(),
       venue_tags: venueTags,
-      opening_hours: parsedHours,
+      opening_hours: openingHours ?? initialDraft.opening_hours,
       notes,
     };
 
@@ -266,22 +258,13 @@ export function EditDraftForm({ draftId, initialDraft, initialNotes }: Props) {
 
       {/* Opening Hours */}
       <div>
-        <label
-          className="block text-sm font-medium mb-1"
-          htmlFor="edit-hours"
-        >
-          Opening hours{" "}
-          <span className="text-muted-foreground font-normal text-xs">
-            (JSON)
-          </span>
+        <label className="block text-sm font-medium mb-2" htmlFor="edit-hours">
+          Opening hours
         </label>
-        <textarea
-          id="edit-hours"
-          rows={8}
-          value={openingHours}
-          onChange={(e) => setOpeningHours(e.target.value)}
-          disabled={busy}
-          className={`${inputCls} font-mono text-xs`}
+        <OpeningHoursEditor
+          initialValue={initialDraft.opening_hours}
+          onChange={(h) => setOpeningHours(h)}
+          inputName=""
         />
       </div>
 
