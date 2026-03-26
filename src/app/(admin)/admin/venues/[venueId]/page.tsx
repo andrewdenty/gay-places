@@ -333,6 +333,7 @@ export default async function EditVenuePage({
               <OpeningHoursEnrichButton venueId={venue.id} />
             </div>
             <OpeningHoursEditor
+              key={JSON.stringify(venue.opening_hours ?? {})}
               initialValue={venue.opening_hours}
               inputName="opening_hours"
               formId="main-form"
