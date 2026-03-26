@@ -84,23 +84,17 @@ export function RecommendButton({ count, active, onToggle, tagPanelOpen }: Recom
           strokeWidth={active ? 2.5 : 1.75}
           fill={active ? "currentColor" : "none"}
           className={`transition-colors duration-150 ${
-            active ? "text-[var(--red)]" : "text-[var(--muted-foreground)]"
+            active ? "text-[var(--red)]" : "text-[var(--foreground)]"
           }`}
         />
       </span>
-      <span
-        className={`text-[13px] transition-colors duration-150 ${
-          lit ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
-        }`}
-      >
+      <span className="text-[13px] text-[var(--foreground)]">
         Recommend
       </span>
       {(count > 0 || active) && (
         <span
           ref={countRef}
-          className={`font-mono text-[13px] tabular-nums transition-colors duration-150 ${
-            lit ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
-          }`}
+          className="font-mono text-[13px] tabular-nums text-[var(--foreground)]"
           aria-live="polite"
         >
           ({count})

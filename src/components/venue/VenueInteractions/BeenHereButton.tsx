@@ -80,24 +80,16 @@ export function BeenHereButton({ count, active, onToggle }: BeenHereButtonProps)
         <ArrowUp
           size={16}
           strokeWidth={active ? 2.5 : 1.75}
-          className={`transition-colors duration-150 ${
-            lit ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
-          }`}
+          className="transition-colors duration-150 text-[var(--foreground)]"
         />
       </span>
-      <span
-        className={`text-[13px] transition-colors duration-150 ${
-          lit ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
-        }`}
-      >
+      <span className="text-[13px] text-[var(--foreground)]">
         I&apos;ve been
       </span>
       {(count > 0 || active) && (
         <span
           ref={countRef}
-          className={`font-mono text-[13px] tabular-nums transition-colors duration-150 ${
-            lit ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
-          }`}
+          className="font-mono text-[13px] tabular-nums text-[var(--foreground)]"
           aria-live="polite"
         >
           ({count})

@@ -308,7 +308,7 @@ export default async function VenuePage({
             >
               {venue.name}
             </h1>
-            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 mb-6 sm:mb-0">
+            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 mb-4 sm:mb-0">
               <VenueInteractions
                 venueId={venue.id}
                 initialCounts={interactionCounts}
