@@ -41,8 +41,8 @@ const DAYS: { key: DayKey; label: string }[] = [
   { key: "sun", label: "Sun" },
 ];
 
-// Common timezones grouped by region
-const COMMON_TIMEZONES = [
+// Common timezones grouped by region — also used in the city admin settings page.
+export const COMMON_TIMEZONES = [
   "UTC",
   // Europe
   "Europe/London",
@@ -111,9 +111,9 @@ function defaultDayValue(status: DayStatus): DayValue {
   return [{ start: "18:00", end: "02:00" }];
 }
 
-function parseIncoming(raw: unknown): OpeningHours {
+function parseIncoming(raw: unknown, defaultTimezone = "UTC"): OpeningHours {
   const defaultHours: OpeningHours = {
-    tz: "UTC",
+    tz: defaultTimezone,
     mon: null,
     tue: null,
     wed: null,
@@ -142,7 +142,8 @@ function parseIncoming(raw: unknown): OpeningHours {
   }
 
   return {
-    tz: typeof r.tz === "string" ? r.tz : "UTC",
+    // Use the stored tz if present; otherwise fall back to the city's default
+    tz: typeof r.tz === "string" && r.tz ? r.tz : defaultTimezone,
     mon: parseDay(r.mon),
     tue: parseDay(r.tue),
     wed: parseDay(r.wed),
@@ -219,6 +220,12 @@ interface Props {
    * Only relevant when inputName is provided.
    */
   formId?: string;
+  /**
+   * Timezone to use when the stored opening_hours have no tz set.
+   * Typically sourced from the city's timezone column.
+   * Falls back to "UTC" if not provided.
+   */
+  defaultTimezone?: string;
   /** Called when value changes (useful when used as controlled component) */
   onChange?: (hours: OpeningHours) => void;
   /** When true, renders as read-only (for preview modals) */
@@ -229,10 +236,11 @@ export function OpeningHoursEditor({
   initialValue,
   inputName = "opening_hours",
   formId,
+  defaultTimezone = "UTC",
   onChange,
   readOnly = false,
 }: Props) {
-  const [hours, setHours] = useState<OpeningHours>(() => parseIncoming(initialValue));
+  const [hours, setHours] = useState<OpeningHours>(() => parseIncoming(initialValue, defaultTimezone));
 
   const update = useCallback(
     (updater: (prev: OpeningHours) => OpeningHours) => {

@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isMissingColumnError } from "@/lib/data/public";
 import { updateCity, uploadCityImage, removeCityImage } from "../actions";
 import { AdminCityImageUpload } from "./admin-city-image-upload";
+import { COMMON_TIMEZONES } from "@/components/admin/opening-hours-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export default async function EditCityPage({
   const [{ data: cityWithDesc, error: cityError }, { data: countries }] = await Promise.all([
     supabase
       .from("cities")
-      .select("id,slug,name,country,center_lat,center_lng,published,description,image_path,seo_title,seo_description")
+      .select("id,slug,name,country,center_lat,center_lng,published,description,image_path,seo_title,seo_description,timezone")
       .eq("slug", citySlug)
       .maybeSingle(),
     supabase
@@ -47,8 +48,12 @@ export default async function EditCityPage({
       .order("name", { ascending: true }),
   ]);
 
-  // If the description column doesn't exist yet (migration pending), fall back to base fields.
-  let city: typeof cityWithDesc & { description?: string | null; image_path?: string | null } | null = cityWithDesc;
+  // If a column doesn't exist yet (migration pending), fall back to base fields.
+  let city: typeof cityWithDesc & {
+    description?: string | null;
+    image_path?: string | null;
+    timezone?: string | null;
+  } | null = cityWithDesc;
   if (cityError) {
     if (isMissingColumnError(cityError)) {
       const { data: fallback } = await supabase
@@ -56,7 +61,7 @@ export default async function EditCityPage({
         .select("id,slug,name,country,center_lat,center_lng,published")
         .eq("slug", citySlug)
         .maybeSingle();
-      city = fallback ? { ...fallback, description: null, image_path: null, seo_title: null, seo_description: null } : null;
+      city = fallback ? { ...fallback, description: null, image_path: null, seo_title: null, seo_description: null, timezone: null } : null;
     } else {
       throw cityError;
     }
@@ -139,6 +144,28 @@ export default async function EditCityPage({
             <option value="true">Published</option>
             <option value="false">Hidden</option>
           </select>
+
+          {/* Timezone */}
+          <div className="sm:col-span-2">
+            <div className="mb-1 text-xs text-muted-foreground">
+              Timezone{" "}
+              <span className="text-[10px] opacity-60">
+                — used as the default tz for this city&apos;s venue opening hours
+              </span>
+            </div>
+            <select
+              name="timezone"
+              defaultValue={city.timezone ?? ""}
+              className={SELECT}
+            >
+              <option value="">Select timezone…</option>
+              {COMMON_TIMEZONES.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Description */}
           <div className="sm:col-span-2">

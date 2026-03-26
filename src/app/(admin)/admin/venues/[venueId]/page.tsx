@@ -61,10 +61,10 @@ export default async function EditVenuePage({
 
   if (!venue) notFound();
 
-  const [{ data: cities }, { data: photos }, { data: allVenueTags }] = await Promise.all([
+  const [{ data: citiesRaw }, { data: photos }, { data: allVenueTags }] = await Promise.all([
     supabase
       .from("cities")
-      .select("id,name,slug")
+      .select("id,name,slug,timezone")
       .order("name", { ascending: true }),
     supabase
       .from("venue_photos")
@@ -75,7 +75,13 @@ export default async function EditVenuePage({
     supabase.from("venues").select("venue_tags").not("venue_tags", "is", null),
   ]);
 
-  const city = (cities ?? []).find((c) => c.id === venue.city_id);
+  // The timezone column may not exist yet if the migration hasn't run.
+  // Treat a missing-column error as cities without a timezone.
+  const cities = (citiesRaw ?? []) as Array<{ id: string; name: string; slug: string; timezone?: string | null }>;
+
+  const city = cities.find((c) => c.id === venue.city_id);
+  // City timezone is used as the default tz in the opening-hours editor.
+  const cityTimezone = city?.timezone ?? null;
 
   // Build per-category lists of custom tags (tags not in static TAG_CATEGORIES).
   const customTagOptions: Partial<Record<VenueTagCategory, string[]>> = {};
@@ -226,7 +232,13 @@ export default async function EditVenuePage({
           {/* ── Tags ───────────────────────────────────────────────────── */}
           <SectionLabel>Tags</SectionLabel>
           <div className="sm:col-span-2">
+            {/*
+              key forces a re-mount whenever venue_tags change (e.g. after
+              tag enrichment + router.refresh()), so the picker's internal
+              state is never stale when the admin saves the form.
+            */}
             <VenueTagPicker
+              key={JSON.stringify(venue.venue_tags ?? {})}
               initialTags={(venue.venue_tags as VenueTags) ?? {}}
               customTagOptions={customTagOptions}
             />
@@ -324,6 +336,7 @@ export default async function EditVenuePage({
               initialValue={venue.opening_hours}
               inputName="opening_hours"
               formId="main-form"
+              defaultTimezone={cityTimezone ?? "UTC"}
             />
           </div>
 
