@@ -84,7 +84,7 @@ export function BeenHereButton({ count, active, onToggle }: BeenHereButtonProps)
         />
       </span>
       <span className="text-[13px] text-[var(--foreground)]">
-        I&apos;ve been
+        Been
       </span>
       {(count > 0 || active) && (
         <span
