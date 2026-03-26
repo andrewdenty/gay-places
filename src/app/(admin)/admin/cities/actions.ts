@@ -68,10 +68,11 @@ export async function updateCity(formData: FormData) {
   const description = getText(formData, "description") || null;
   const seo_title = getText(formData, "seo_title") || null;
   const seo_description = getText(formData, "seo_description") || null;
+  const timezone = getText(formData, "timezone") || null;
 
   const { error } = await supabase
     .from("cities")
-    .update({ name, country, center_lat, center_lng, published, description, seo_title, seo_description })
+    .update({ name, country, center_lat, center_lng, published, description, seo_title, seo_description, timezone })
     .eq("id", id);
   if (error) throw error;
 }

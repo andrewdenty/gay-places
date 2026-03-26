@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { VenueTagPicker } from "@/components/venue/venue-tag-picker";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { TAG_CATEGORIES, type VenueTagCategory, type VenueTags } from "@/lib/venue-tags";
-import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto, generateBaseDescription, generateEditorialDescription } from "./actions";
+import { updateVenueDetails, uploadVenuePhoto, deleteVenuePhoto } from "./actions";
 import { DeleteVenueButton } from "./delete-venue-button";
 import { AdminPhotoUpload } from "./admin-photo-upload";
 import { DescriptionGenerateForm } from "./description-generate-button";
+import { OpeningHoursEditor } from "@/components/admin/opening-hours-editor";
+import { VenueEnrichBar, TagsEnrichButton, OpeningHoursEnrichButton } from "@/components/admin/venue-enrich-panel";
 import { venueUrlPath } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
@@ -59,10 +61,10 @@ export default async function EditVenuePage({
 
   if (!venue) notFound();
 
-  const [{ data: cities }, { data: photos }, { data: allVenueTags }] = await Promise.all([
+  const [{ data: citiesRaw }, { data: photos }, { data: allVenueTags }] = await Promise.all([
     supabase
       .from("cities")
-      .select("id,name,slug")
+      .select("id,name,slug,timezone")
       .order("name", { ascending: true }),
     supabase
       .from("venue_photos")
@@ -73,7 +75,13 @@ export default async function EditVenuePage({
     supabase.from("venues").select("venue_tags").not("venue_tags", "is", null),
   ]);
 
-  const city = (cities ?? []).find((c) => c.id === venue.city_id);
+  // The timezone column may not exist yet if the migration hasn't run.
+  // Treat a missing-column error as cities without a timezone.
+  const cities = (citiesRaw ?? []) as Array<{ id: string; name: string; slug: string; timezone?: string | null }>;
+
+  const city = cities.find((c) => c.id === venue.city_id);
+  // City timezone is used as the default tz in the opening-hours editor.
+  const cityTimezone = city?.timezone ?? null;
 
   // Build per-category lists of custom tags (tags not in static TAG_CATEGORIES).
   const customTagOptions: Partial<Record<VenueTagCategory, string[]>> = {};
@@ -121,8 +129,13 @@ export default async function EditVenuePage({
         )}
       </div>
 
+      {/* Enrichment actions bar */}
+      <div className="mt-4">
+        <VenueEnrichBar venueId={venue.id} />
+      </div>
+
       {/* Venue details form */}
-      <Card className="mt-6 p-6">
+      <Card className="mt-4 p-6">
         <div className="text-sm font-semibold">Place details</div>
         {/*
           The main form closes after Tags. The description section sits between
@@ -219,10 +232,19 @@ export default async function EditVenuePage({
           {/* ── Tags ───────────────────────────────────────────────────── */}
           <SectionLabel>Tags</SectionLabel>
           <div className="sm:col-span-2">
+            {/*
+              key forces a re-mount whenever venue_tags change (e.g. after
+              tag enrichment + router.refresh()), so the picker's internal
+              state is never stale when the admin saves the form.
+            */}
             <VenueTagPicker
+              key={JSON.stringify(venue.venue_tags ?? {})}
               initialTags={(venue.venue_tags as VenueTags) ?? {}}
               customTagOptions={customTagOptions}
             />
+          </div>
+          <div className="sm:col-span-2">
+            <TagsEnrichButton venueId={venue.id} />
           </div>
         </form>
 
@@ -249,8 +271,9 @@ export default async function EditVenuePage({
                   </span>
                 )}
                 <DescriptionGenerateForm
-                  action={generateBaseDescription}
                   venueId={venue.id}
+                  descriptionType="base_description"
+                  currentText={venue.description_base ?? venue.description ?? ""}
                   hasExisting={!!(venue.description_base ?? venue.description)}
                 />
               </div>
@@ -284,8 +307,9 @@ export default async function EditVenuePage({
                 </span>
               </span>
               <DescriptionGenerateForm
-                action={generateEditorialDescription}
                 venueId={venue.id}
+                descriptionType="editorial_description"
+                currentText={venue.description_editorial ?? ""}
                 hasExisting={!!venue.description_editorial}
               />
             </div>
@@ -302,14 +326,17 @@ export default async function EditVenuePage({
           {/* ── Hours ──────────────────────────────────────────────────── */}
           <SectionLabel>Opening hours</SectionLabel>
           <div className="sm:col-span-2">
-            <div className="mb-1 text-xs text-muted-foreground">JSON</div>
-            <textarea
-              form="main-form"
-              name="opening_hours"
-              defaultValue={JSON.stringify(venue.opening_hours ?? {}, null, 2)}
-              placeholder="{}"
-              rows={10}
-              className={`${TEXTAREA} font-mono text-xs`}
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">
+                Click a day&apos;s status to cycle: Open → Closed → No info
+              </p>
+              <OpeningHoursEnrichButton venueId={venue.id} />
+            </div>
+            <OpeningHoursEditor
+              initialValue={venue.opening_hours}
+              inputName="opening_hours"
+              formId="main-form"
+              defaultTimezone={cityTimezone ?? "UTC"}
             />
           </div>
 
