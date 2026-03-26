@@ -251,14 +251,14 @@ export default async function EditVenuePage({
                 <DescriptionGenerateForm
                   action={generateBaseDescription}
                   venueId={venue.id}
-                  hasExisting={!!venue.description_base}
+                  hasExisting={!!(venue.description_base ?? venue.description)}
                 />
               </div>
             </div>
             <textarea
               form="main-form"
               name="description_base"
-              defaultValue={venue.description_base ?? ""}
+              defaultValue={venue.description_base ?? venue.description ?? ""}
               placeholder="Not yet generated — click Generate to create one."
               rows={2}
               className={TEXTAREA}
