@@ -10,6 +10,7 @@ import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { VenueDescription } from "@/components/venue/venue-description";
 import { AdminVenueLink } from "@/components/venue/admin-venue-link";
+import { VenueInteractions } from "@/components/venue/VenueInteractions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
 import { env } from "@/lib/env";
@@ -132,7 +133,7 @@ export default async function VenuePage({
   }
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: photos }, nearbyVenues, publishedCountrySlugs] = await Promise.all([
+  const [{ data: photos }, nearbyVenues, publishedCountrySlugs, { data: interactionRows }] = await Promise.all([
     supabase
       .from("venue_photos")
       .select("id, storage_path")
@@ -140,7 +141,27 @@ export default async function VenuePage({
       .limit(5),
     getNearbyVenues(venue.city_id, venue.id, venue.lat, venue.lng),
     getPublishedCountrySlugs(),
+    supabase
+      .from("venue_interactions")
+      .select("been_here, recommend, tag")
+      .eq("venue_id", venue.id),
   ]);
+
+  // Aggregate interaction counts
+  const interactionCounts = {
+    beenHereCount: 0,
+    recommendCount: 0,
+    classicCount: 0,
+    trendingCount: 0,
+    underratedCount: 0,
+  };
+  for (const row of interactionRows ?? []) {
+    if (row.been_here) interactionCounts.beenHereCount++;
+    if (row.recommend) interactionCounts.recommendCount++;
+    if (row.tag === "classic") interactionCounts.classicCount++;
+    if (row.tag === "trending") interactionCounts.trendingCount++;
+    if (row.tag === "underrated") interactionCounts.underratedCount++;
+  }
 
   const permanentlyClosed = venue.closed === true;
   const open = !permanentlyClosed && isOpenNow(venue.opening_hours);
@@ -263,7 +284,7 @@ export default async function VenuePage({
         </div>
 
         {/* Section 1 — Place identity */}
-        <section className="border-b border-[var(--border)] pb-10">
+        <section className="pb-10">
           {/* Name + open status */}
           <div className="flex items-start justify-between gap-4">
             <h1
@@ -293,9 +314,17 @@ export default async function VenuePage({
             )}
           </div>
 
+          {/* Community interactions — 16px below title, 24px above content */}
+          <div className="mt-4 mb-6">
+            <VenueInteractions
+              venueId={venue.id}
+              initialCounts={interactionCounts}
+            />
+          </div>
+
           {/* Photo gallery */}
           {photos && photos.length > 0 && (
-            <div className="mt-4">
+            <div>
               <PhotoGallery photos={photos} />
             </div>
           )}
