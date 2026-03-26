@@ -257,7 +257,7 @@ export default async function VenuePage({
       <div className="pt-8 sm:pt-10 pb-[56px]">
         <VenueViewTracker venueId={venue.id} />
 
-        {/* Breadcrumb — venue type replaces "PLACE" on the right */}
+        {/* Breadcrumb — venue type at end, open status on the right */}
         <div className="mb-6 flex items-center justify-between gap-4">
           <div className="breadcrumb text-[var(--muted-foreground)]">
             {countryPublished ? (
@@ -277,49 +277,43 @@ export default async function VenuePage({
             >
               {city.name.toUpperCase()}
             </Link>
+            <span className="mx-1">/</span>
+            <span>{venueType.toUpperCase()}</span>
           </div>
-          <span className="breadcrumb text-[var(--muted-foreground)]">
-            {venueTypeLabel.toUpperCase()}
-          </span>
+          {/* Open status — top right */}
+          {permanentlyClosed ? (
+            <span className="label-xs shrink-0 rounded-full border border-[#E63946]/30 bg-red-50 px-[8px] py-[3px] text-red-600">
+              PERMANENTLY CLOSED
+            </span>
+          ) : (
+            <div className="flex shrink-0 items-center gap-[6px]">
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+              />
+              <span className="open-status-text text-[var(--foreground)]">
+                {open ? "Open now" : "Closed"}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Section 1 — Place identity */}
         <section className="pb-10">
-          {/* Name + open status */}
-          <div className="flex items-start justify-between gap-4">
+          {/* Name + interactions — buttons right of title on desktop, below on mobile */}
+          <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-x-4 gap-y-0">
             <h1
-              className="h1-editorial"
+              className="h1-editorial w-full sm:w-auto sm:flex-1"
               style={{ fontSize: "48px", letterSpacing: "-0.96px" }}
             >
               {venue.name}
             </h1>
-
-            {/* Open status indicator */}
-            {permanentlyClosed ? (
-              <div className="flex shrink-0 items-center gap-[6px] pt-2">
-                <span className="label-xs rounded-full border border-[#E63946]/30 bg-red-50 px-[8px] py-[3px] text-red-600">
-                  PERMANENTLY CLOSED
-                </span>
-              </div>
-            ) : (
-              <div className="flex shrink-0 items-center gap-[6px] pt-3">
-                <span
-                  className="h-2 w-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
-                />
-                <span className="open-status-text text-[var(--foreground)]">
-                  {open ? "Open now" : "Closed"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Community interactions — 16px below title, 24px above content */}
-          <div className="mt-4 mb-6">
-            <VenueInteractions
-              venueId={venue.id}
-              initialCounts={interactionCounts}
-            />
+            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 mb-6 sm:mb-0">
+              <VenueInteractions
+                venueId={venue.id}
+                initialCounts={interactionCounts}
+              />
+            </div>
           </div>
 
           {/* Photo gallery */}

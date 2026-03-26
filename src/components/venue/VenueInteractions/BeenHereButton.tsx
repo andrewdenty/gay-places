@@ -69,8 +69,6 @@ export function BeenHereButton({ count, active, onToggle }: BeenHereButtonProps)
       style={{
         boxShadow: active
           ? "0 0 0 1.5px var(--foreground)"
-          : hovered
-          ? "0 0 0 1px var(--foreground)"
           : "0 0 0 1px var(--border)",
         backgroundColor: hovered && !active ? "var(--muted)" : undefined,
         transition: "box-shadow 150ms ease, background-color 150ms ease, transform 80ms ease",
@@ -81,7 +79,7 @@ export function BeenHereButton({ count, active, onToggle }: BeenHereButtonProps)
       <span ref={iconRef} className="flex items-center">
         <ArrowUp
           size={16}
-          strokeWidth={lit ? 2.5 : 1.75}
+          strokeWidth={active ? 2.5 : 1.75}
           className={`transition-colors duration-150 ${
             lit ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
           }`}
