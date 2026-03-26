@@ -25,7 +25,7 @@ export function VenueInteractions({
     useVenueInteraction(venueId, initialCounts);
 
   return (
-    <div className="flex sm:inline-flex gap-3">
+    <div className="flex sm:inline-flex gap-2">
       <BeenHereButton
         count={counts.beenHereCount}
         active={state.beenHere}

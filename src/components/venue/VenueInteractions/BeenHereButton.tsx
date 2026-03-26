@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { ArrowUp } from "lucide-react";
 
 interface BeenHereButtonProps {
@@ -14,6 +14,7 @@ export function BeenHereButton({ count, active, onToggle }: BeenHereButtonProps)
   const iconRef = useRef<HTMLSpanElement>(null);
   const prevCount = useRef(count);
   const prevActive = useRef(active);
+  const [hovered, setHovered] = useState(false);
 
   // Spring pop on count change
   useEffect(() => {
@@ -44,24 +45,18 @@ export function BeenHereButton({ count, active, onToggle }: BeenHereButtonProps)
     prevActive.current = active;
   }, [active]);
 
+  const lit = active || hovered;
+
   return (
     <button
       type="button"
       onClick={onToggle}
-      className="flex flex-1 sm:flex-none items-center justify-center gap-2 h-[42px] sm:h-[34px] rounded-full px-4 sm:px-3"
-      style={{
-        boxShadow: active
-          ? "0 0 0 1.5px var(--foreground)"
-          : "0 0 0 1px var(--border)",
-        transition: "box-shadow 220ms ease, transform 80ms ease",
-      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); (document.activeElement as HTMLElement)?.blur?.(); }}
       onMouseDown={(e) => {
         (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.96)";
       }}
       onMouseUp={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
-      }}
-      onMouseLeave={(e) => {
         (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
       }}
       onTouchStart={(e) => {
@@ -70,21 +65,31 @@ export function BeenHereButton({ count, active, onToggle }: BeenHereButtonProps)
       onTouchEnd={(e) => {
         (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
       }}
+      className="flex flex-1 sm:flex-none items-center justify-center gap-2 h-[42px] sm:h-[34px] rounded-full px-4 sm:px-3 transition-colors duration-150"
+      style={{
+        boxShadow: active
+          ? "0 0 0 1.5px var(--foreground)"
+          : hovered
+          ? "0 0 0 1px var(--foreground)"
+          : "0 0 0 1px var(--border)",
+        backgroundColor: hovered && !active ? "var(--muted)" : undefined,
+        transition: "box-shadow 150ms ease, background-color 150ms ease, transform 80ms ease",
+      }}
       aria-pressed={active}
       aria-label={`Been here, ${count} people`}
     >
       <span ref={iconRef} className="flex items-center">
         <ArrowUp
           size={16}
-          strokeWidth={active ? 2.5 : 1.75}
-          className={`transition-colors duration-200 ${
-            active ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
+          strokeWidth={lit ? 2.5 : 1.75}
+          className={`transition-colors duration-150 ${
+            lit ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
           }`}
         />
       </span>
       <span
-        className={`text-[13px] transition-colors duration-200 ${
-          active ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
+        className={`text-[13px] transition-colors duration-150 ${
+          lit ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
         }`}
       >
         I&apos;ve been
@@ -92,8 +97,8 @@ export function BeenHereButton({ count, active, onToggle }: BeenHereButtonProps)
       {(count > 0 || active) && (
         <span
           ref={countRef}
-          className={`font-mono text-[13px] tabular-nums transition-colors duration-200 ${
-            active ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
+          className={`font-mono text-[13px] tabular-nums transition-colors duration-150 ${
+            lit ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"
           }`}
           aria-live="polite"
         >
