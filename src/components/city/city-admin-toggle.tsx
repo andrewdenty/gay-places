@@ -8,15 +8,15 @@
  * fetch, cross-fade transition between view and edit modes.
  */
 
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { CityData } from "@/components/admin/city-edit-form";
 
 // Lazy-load the edit form — never shipped to non-admin visitors.
-const CityEditForm = lazy(() =>
-  import("@/components/admin/city-edit-form").then((m) => ({
-    default: m.CityEditForm,
-  })),
+const CityEditForm = dynamic(
+  () => import("@/components/admin/city-edit-form").then((m) => m.CityEditForm),
+  { ssr: false, loading: () => <div className="py-8 text-sm text-muted-foreground">Loading editor…</div> },
 );
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -202,13 +202,11 @@ export function CityAdminToggle({ citySlug, children }: Props) {
             overflow: editMode ? undefined : "hidden",
           }}
         >
-          <Suspense fallback={<div className="py-8 text-sm text-muted-foreground">Loading editor…</div>}>
-            <CityEditForm
+          <CityEditForm
               city={editData.city}
               countryOptions={editData.countryOptions}
               inline
             />
-          </Suspense>
         </div>
       )}
 

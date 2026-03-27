@@ -13,16 +13,16 @@
  * the edit form replaces the view content with a smooth cross-fade.
  */
 
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { VenueData, CityData } from "@/components/admin/venue-edit-form";
 import type { VenueTagCategory } from "@/lib/venue-tags";
 
 // Lazy-load the edit form — never shipped to non-admin visitors.
-const VenueEditForm = lazy(() =>
-  import("@/components/admin/venue-edit-form").then((m) => ({
-    default: m.VenueEditForm,
-  })),
+const VenueEditForm = dynamic(
+  () => import("@/components/admin/venue-edit-form").then((m) => m.VenueEditForm),
+  { ssr: false, loading: () => <div className="py-8 text-sm text-muted-foreground">Loading editor…</div> },
 );
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -221,12 +221,10 @@ export function VenueAdminToggle({ venueId, children }: Props) {
             overflow: editMode ? undefined : "hidden",
           }}
         >
-          <Suspense fallback={<div className="py-8 text-sm text-muted-foreground">Loading editor…</div>}>
-            <VenueEditForm
-              {...editData}
-              inline
-            />
-          </Suspense>
+          <VenueEditForm
+            {...editData}
+            inline
+          />
         </div>
       )}
 

@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from "react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { ToastProvider } from "@/components/ui/toast";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getTopCitiesByVenueCount } from "@/lib/data/public";
 
@@ -30,6 +31,7 @@ export default async function PublicLayout({ children }: PropsWithChildren) {
   }
 
   return (
+    <ToastProvider>
     <div className="min-h-dvh flex flex-col bg-[var(--background)] text-[var(--foreground)]">
       <SiteHeader isAdmin={isAdmin} userEmail={userEmail} initialCities={initialCities} />
 
@@ -42,5 +44,6 @@ export default async function PublicLayout({ children }: PropsWithChildren) {
 
       <SiteFooter />
     </div>
+    </ToastProvider>
   );
 }
