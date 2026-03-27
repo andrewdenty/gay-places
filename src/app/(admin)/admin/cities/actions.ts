@@ -75,6 +75,18 @@ export async function updateCity(formData: FormData) {
     .update({ name, country, center_lat, center_lng, published, description, seo_title, seo_description, timezone })
     .eq("id", id);
   if (error) throw error;
+
+  revalidatePath("/admin/cities");
+  // Also revalidate the edit page in case the admin stays on it
+  const { data: updated } = await supabase
+    .from("cities")
+    .select("slug")
+    .eq("id", id)
+    .maybeSingle();
+  if (updated?.slug) {
+    revalidatePath(`/admin/cities/${updated.slug}`);
+    revalidatePath(`/city/${updated.slug}`);
+  }
 }
 
 export async function uploadCityImage(formData: FormData) {
