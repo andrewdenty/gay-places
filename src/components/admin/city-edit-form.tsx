@@ -253,17 +253,21 @@ export function CityEditForm({ city, countryOptions, inline = false, onSave }: P
           Published toggle · Save button · dirty indicator · ⌘S hint
       ──────────────────────────────────────────────────────────────────────────── */}
       <div
-        className={inline
-          ? "sticky bottom-0 z-30 mt-4 rounded-2xl border border-border bg-background/95 backdrop-blur-sm"
-          : "fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm"
+        className={
+          inline
+            ? "sticky bottom-0 z-30 mt-4 rounded-2xl border border-border bg-background/95 backdrop-blur-sm"
+            : "fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm"
         }
         role="toolbar"
         aria-label="Save controls"
       >
-        <div className={inline
-          ? "flex items-center justify-between gap-4 px-4 py-3 sm:px-5"
-          : "mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6"
-        }>
+        <div
+          className={
+            inline
+              ? "flex items-center justify-between gap-4 px-4 py-3 sm:px-5"
+              : "mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6"
+          }
+        >
           {/* Published toggle */}
           <label className="flex cursor-pointer items-center gap-2 text-sm select-none">
             <input

@@ -8,7 +8,7 @@
  * fetch, cross-fade transition between view and edit modes.
  */
 
-import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { CityData } from "@/components/admin/city-edit-form";
 
@@ -130,8 +130,6 @@ export function CityAdminToggle({ citySlug, children }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const adminChecked = useRef(false);
-
   useEffect(() => {
     setMounted(true);
     const supabase = createSupabaseBrowserClient();
@@ -141,8 +139,6 @@ export function CityAdminToggle({ citySlug, children }: Props) {
         if (data === true) setIsAdmin(true);
       } catch {
         // Silently ignore.
-      } finally {
-        adminChecked.current = true;
       }
     })();
   }, []);

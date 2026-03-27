@@ -13,7 +13,7 @@
  * the edit form replaces the view content with a smooth cross-fade.
  */
 
-import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { VenueData, CityData } from "@/components/admin/venue-edit-form";
 import type { VenueTagCategory } from "@/lib/venue-tags";
@@ -146,9 +146,6 @@ export function VenueAdminToggle({ venueId, children }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Track whether the admin status check has completed (for mount animation).
-  const adminChecked = useRef(false);
-
   // Check admin status once on mount — same pattern as AdminVenueLink.
   useEffect(() => {
     setMounted(true);
@@ -159,8 +156,6 @@ export function VenueAdminToggle({ venueId, children }: Props) {
         if (data === true) setIsAdmin(true);
       } catch {
         // Silently ignore — toggle simply won't appear.
-      } finally {
-        adminChecked.current = true;
       }
     })();
   }, []);
