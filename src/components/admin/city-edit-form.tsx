@@ -38,7 +38,7 @@ export interface CityData {
 interface Props {
   city: CityData;
   countryOptions: { name: string }[];
-  /** When true, hides standalone admin nav and uses sticky (relative) save bar. */
+  /** @deprecated inline save bar now matches admin style; prop is accepted but has no effect. */
   inline?: boolean;
   /** Called after a successful save in inline mode. */
   onSave?: () => void;
@@ -46,7 +46,7 @@ interface Props {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function CityEditForm({ city, countryOptions, inline = false, onSave }: Props) {
+export function CityEditForm({ city, countryOptions, onSave }: Props) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -253,21 +253,11 @@ export function CityEditForm({ city, countryOptions, inline = false, onSave }: P
           Published toggle · Save button · dirty indicator · ⌘S hint
       ──────────────────────────────────────────────────────────────────────────── */}
       <div
-        className={
-          inline
-            ? "sticky bottom-0 z-30 mt-4 rounded-2xl border border-border bg-background/95 backdrop-blur-sm"
-            : "fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm"
-        }
+        className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm"
         role="toolbar"
         aria-label="Save controls"
       >
-        <div
-          className={
-            inline
-              ? "flex items-center justify-between gap-4 px-4 py-3 sm:px-5"
-              : "mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6"
-          }
-        >
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           {/* Published toggle */}
           <label className="flex cursor-pointer items-center gap-2 text-sm select-none">
             <input

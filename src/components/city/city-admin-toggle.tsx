@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { CityData } from "@/components/admin/city-edit-form";
@@ -129,9 +130,11 @@ export function CityAdminToggle({ citySlug, children }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [headerSlot, setHeaderSlot] = useState<Element | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    setHeaderSlot(document.getElementById("admin-toggle-portal"));
     const supabase = createSupabaseBrowserClient();
     (async () => {
       try {
@@ -170,7 +173,14 @@ export function CityAdminToggle({ citySlug, children }: Props) {
 
   return (
     <>
-      <div className="admin-toggle-container" style={{ opacity: mounted ? 1 : 0 }}>
+      {/* Mobile: render toggle in the header slot via portal (left of search/menu) */}
+      {headerSlot && createPortal(
+        <TogglePill editMode={editMode} loading={loading} onToggle={handleToggle} />,
+        headerSlot,
+      )}
+
+      {/* Desktop: fixed top-right container, hidden on mobile */}
+      <div className="admin-toggle-container hidden sm:block">
         <TogglePill editMode={editMode} loading={loading} onToggle={handleToggle} />
       </div>
 
@@ -205,7 +215,6 @@ export function CityAdminToggle({ citySlug, children }: Props) {
           <CityEditForm
               city={editData.city}
               countryOptions={editData.countryOptions}
-              inline
             />
         </div>
       )}

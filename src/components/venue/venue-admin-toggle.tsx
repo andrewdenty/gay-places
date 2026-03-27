@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { VenueData, CityData } from "@/components/admin/venue-edit-form";
@@ -145,10 +146,12 @@ export function VenueAdminToggle({ venueId, children }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [headerSlot, setHeaderSlot] = useState<Element | null>(null);
 
   // Check admin status once on mount — same pattern as AdminVenueLink.
   useEffect(() => {
     setMounted(true);
+    setHeaderSlot(document.getElementById("admin-toggle-portal"));
     const supabase = createSupabaseBrowserClient();
     (async () => {
       try {
@@ -188,8 +191,14 @@ export function VenueAdminToggle({ venueId, children }: Props) {
 
   return (
     <>
-      {/* Floating toggle pill — fixed top-right */}
-      <div className="admin-toggle-container" style={{ opacity: mounted ? 1 : 0 }}>
+      {/* Mobile: render toggle in the header slot via portal (left of search/menu) */}
+      {headerSlot && createPortal(
+        <TogglePill editMode={editMode} loading={loading} onToggle={handleToggle} />,
+        headerSlot,
+      )}
+
+      {/* Desktop: fixed top-right container, hidden on mobile */}
+      <div className="admin-toggle-container hidden sm:block">
         <TogglePill editMode={editMode} loading={loading} onToggle={handleToggle} />
       </div>
 
@@ -223,7 +232,7 @@ export function VenueAdminToggle({ venueId, children }: Props) {
         >
           <VenueEditForm
             {...editData}
-            inline
+            inline // hides the admin prev/next nav header — save bar style is unaffected
           />
         </div>
       )}

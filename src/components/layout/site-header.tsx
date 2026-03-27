@@ -118,6 +118,8 @@ export function SiteHeader({ isAdmin = false, userEmail, initialCities }: { isAd
 
           {/* Icon buttons */}
           <div className="flex items-center gap-2">
+            {/* Admin toggle portal target — injected by VenueAdminToggle/CityAdminToggle on mobile */}
+            <span id="admin-toggle-portal" className="flex items-center sm:hidden" />
             <IconButton label="Search" onClick={() => setSearchOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 14 14" fill="none">
                 <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" />
