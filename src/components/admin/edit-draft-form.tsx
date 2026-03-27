@@ -433,9 +433,9 @@ export function EditDraftForm({
               type="button"
               onClick={handleSave}
               disabled={isPending || !name.trim()}
-              aria-label="Save changes"
+              aria-label="Save"
             >
-              {isPending ? "Saving…" : "Save changes"}
+              {isPending ? "Saving…" : "Save"}
             </Button>
             <Button
               type="button"
