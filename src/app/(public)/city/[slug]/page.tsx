@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
 import { CityExplorer } from "@/components/city/city-explorer";
+import { CityAdminToggle } from "@/components/city/city-admin-toggle";
 import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
 import { toCountrySlug } from "@/lib/slugs";
@@ -137,6 +138,7 @@ export default async function CityPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
+      <CityAdminToggle citySlug={city.slug}>
       <div className="pt-8 pb-6 sm:pt-10 sm:pb-8">
         {/* ── City header ── */}
         {cityImageUrl ? (
@@ -222,6 +224,7 @@ export default async function CityPage({
           </div>
         </section>
       </div>
+      </CityAdminToggle>
     </>
   );
 }

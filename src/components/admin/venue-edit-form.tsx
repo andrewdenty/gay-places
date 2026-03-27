@@ -83,6 +83,13 @@ interface Props {
   nextVenueName?: string | null;
   /** URL path for the public "view on site" link. */
   viewOnSitePath?: string | null;
+  /**
+   * When true, hides the standalone admin nav header (← Places, prev/next) so
+   * the form can be embedded inline on the public venue page.
+   */
+  inline?: boolean;
+  /** Called after a successful save in inline mode (e.g. to refresh view). */
+  onSave?: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -97,6 +104,8 @@ export function VenueEditForm({
   prevVenueName,
   nextVenueName,
   viewOnSitePath,
+  inline = false,
+  onSave,
 }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -187,6 +196,7 @@ export function VenueEditForm({
         await updateVenueDetails(formData);
         showToast("Saved ✓");
         setIsDirty(false);
+        onSave?.();
       } catch (e) {
         showToast(e instanceof Error ? e.message : "Save failed", "error");
       }
@@ -197,7 +207,7 @@ export function VenueEditForm({
     websiteUrl, googleMapsUrl, instagramUrl, facebookUrl,
     descriptionBase, descriptionEditorial, published, closed,
     venueTags, openingHours,
-    startTransition, showToast,
+    startTransition, showToast, onSave,
   ]);
 
   // ── Keyboard shortcut (⌘S / Ctrl+S) ──────────────────────────────────────
@@ -218,6 +228,7 @@ export function VenueEditForm({
   return (
     <>
       {/* ── Page header with prev/next nav ──────────────────────────────────── */}
+      {!inline && (
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
@@ -281,6 +292,7 @@ export function VenueEditForm({
           </Link>
         )}
       </div>
+      )}
 
       {/* ── Enrichment actions bar ──────────────────────────────────────────── */}
       <div className="mt-4">
@@ -499,11 +511,17 @@ export function VenueEditForm({
           dirty indicator, and keyboard shortcut hint.
       ──────────────────────────────────────────────────────────────────────── */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm"
+        className={inline
+          ? "sticky bottom-0 z-30 mt-4 rounded-2xl border border-border bg-background/95 backdrop-blur-sm"
+          : "fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm"
+        }
         role="toolbar"
         aria-label="Save controls"
       >
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className={inline
+          ? "flex items-center justify-between gap-4 px-4 py-3 sm:px-5"
+          : "mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6"
+        }>
           {/* Status toggles */}
           <div className="flex items-center gap-5">
             <label className="flex cursor-pointer items-center gap-2 text-sm select-none">

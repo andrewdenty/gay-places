@@ -38,11 +38,15 @@ export interface CityData {
 interface Props {
   city: CityData;
   countryOptions: { name: string }[];
+  /** When true, hides standalone admin nav and uses sticky (relative) save bar. */
+  inline?: boolean;
+  /** Called after a successful save in inline mode. */
+  onSave?: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function CityEditForm({ city, countryOptions }: Props) {
+export function CityEditForm({ city, countryOptions, inline = false, onSave }: Props) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -97,6 +101,7 @@ export function CityEditForm({ city, countryOptions }: Props) {
         await updateCity(formData);
         showToast("Saved ✓");
         setIsDirty(false);
+        onSave?.();
       } catch (e) {
         showToast(e instanceof Error ? e.message : "Save failed", "error");
       }
@@ -104,7 +109,7 @@ export function CityEditForm({ city, countryOptions }: Props) {
   }, [
     city.id, name, country, centerLat, centerLng, published,
     timezone, description, seoTitle, seoDescription,
-    startTransition, showToast,
+    startTransition, showToast, onSave,
   ]);
 
   // ── ⌘S / Ctrl+S keyboard shortcut ─────────────────────────────────────────
@@ -248,11 +253,17 @@ export function CityEditForm({ city, countryOptions }: Props) {
           Published toggle · Save button · dirty indicator · ⌘S hint
       ──────────────────────────────────────────────────────────────────────────── */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm"
+        className={inline
+          ? "sticky bottom-0 z-30 mt-4 rounded-2xl border border-border bg-background/95 backdrop-blur-sm"
+          : "fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm"
+        }
         role="toolbar"
         aria-label="Save controls"
       >
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className={inline
+          ? "flex items-center justify-between gap-4 px-4 py-3 sm:px-5"
+          : "mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6"
+        }>
           {/* Published toggle */}
           <label className="flex cursor-pointer items-center gap-2 text-sm select-none">
             <input
