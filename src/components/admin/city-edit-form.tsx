@@ -290,8 +290,7 @@ export function CityEditForm({ city, countryOptions }: Props) {
         </div>
       </div>
 
-      {/* Bottom padding to prevent content hiding behind the sticky bar */}
-      <div className="h-20" aria-hidden="true" />
+
     </>
   );
 }

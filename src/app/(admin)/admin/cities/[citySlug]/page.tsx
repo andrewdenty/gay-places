@@ -65,7 +65,7 @@ export default async function EditCityPage({
   const countryOptions = (countries ?? []) as { name: string }[];
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl pb-24">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>

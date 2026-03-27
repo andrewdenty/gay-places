@@ -544,8 +544,7 @@ export function VenueEditForm({
         </div>
       </div>
 
-      {/* Bottom padding to prevent content from hiding behind the sticky bar */}
-      <div className="h-20" aria-hidden="true" />
+
     </>
   );
 }

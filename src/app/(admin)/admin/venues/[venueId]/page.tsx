@@ -107,7 +107,7 @@ export default async function EditVenuePage({
       : null;
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl pb-24">
       {/* Main edit form (client component — handles all P0/P1 UX features) */}
       <VenueEditForm
         venue={venue}
