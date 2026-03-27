@@ -149,7 +149,7 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
         {filtered.map((v) => {
           const open = !v.closed && isOpenNow(v.opening_hours);
           const flatTags = flattenVenueTags(v.venue_tags ?? {}).slice(0, 4);
-          const description = v.description_editorial ?? v.description_base ?? v.description;
+          const description = v.description_base ?? v.description;
 
           return (
             <div
