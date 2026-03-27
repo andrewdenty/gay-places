@@ -11,6 +11,7 @@ import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { VenueDescription } from "@/components/venue/venue-description";
 import { AdminVenueLink } from "@/components/venue/admin-venue-link";
 import { VenueInteractions } from "@/components/venue/VenueInteractions";
+import { VenueAdminToggle } from "@/components/venue/venue-admin-toggle";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
 import { env } from "@/lib/env";
@@ -254,6 +255,7 @@ export default async function VenuePage({
           __html: JSON.stringify(localBusinessJsonLd),
         }}
       />
+      <VenueAdminToggle venueId={venue.id}>
       <div className="pt-8 sm:pt-10 pb-[56px]">
         <VenueViewTracker venueId={venue.id} />
 
@@ -485,6 +487,7 @@ export default async function VenuePage({
           </div>
         </VenueSectionRow>
       </div>
+      </VenueAdminToggle>
     </>
   );
 }

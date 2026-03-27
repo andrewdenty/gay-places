@@ -38,11 +38,15 @@ export interface CityData {
 interface Props {
   city: CityData;
   countryOptions: { name: string }[];
+  /** @deprecated inline save bar now matches admin style; prop is accepted but has no effect. */
+  inline?: boolean;
+  /** Called after a successful save in inline mode. */
+  onSave?: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function CityEditForm({ city, countryOptions }: Props) {
+export function CityEditForm({ city, countryOptions, onSave }: Props) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -97,6 +101,7 @@ export function CityEditForm({ city, countryOptions }: Props) {
         await updateCity(formData);
         showToast("Saved ✓");
         setIsDirty(false);
+        onSave?.();
       } catch (e) {
         showToast(e instanceof Error ? e.message : "Save failed", "error");
       }
@@ -104,7 +109,7 @@ export function CityEditForm({ city, countryOptions }: Props) {
   }, [
     city.id, name, country, centerLat, centerLng, published,
     timezone, description, seoTitle, seoDescription,
-    startTransition, showToast,
+    startTransition, showToast, onSave,
   ]);
 
   // ── ⌘S / Ctrl+S keyboard shortcut ─────────────────────────────────────────
