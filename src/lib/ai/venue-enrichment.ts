@@ -70,6 +70,8 @@ export interface PlaceDetailsProposal {
   lng?: number;
   website_url?: string;
   google_maps_url?: string;
+  instagram_url?: string;
+  facebook_url?: string;
   /** Human-readable summary of what was found / changed */
   summary: string;
   /** Which fields would be updated (non-empty) */
@@ -84,7 +86,7 @@ export async function enrichPlaceDetails(
 ): Promise<PlaceDetailsProposal> {
   const { data: venue, error } = await supabase
     .from("venues")
-    .select("name,address,lat,lng,website_url,google_maps_url,city_id,cities(name,country)")
+    .select("name,address,lat,lng,website_url,google_maps_url,instagram_url,facebook_url,city_id,cities(name,country)")
     .eq("id", venueId)
     .maybeSingle();
 
@@ -130,6 +132,43 @@ export async function enrichPlaceDetails(
   if (details.google_maps_url && details.google_maps_url !== venue.google_maps_url) {
     proposal.google_maps_url = details.google_maps_url;
     proposal.changedFields.push("Google Maps URL");
+  }
+
+  // Try to extract social media links from the venue's website
+  const websiteToScrape = details.website_url ?? venue.website_url;
+  if (websiteToScrape) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const siteRes = await fetch(websiteToScrape, {
+        signal: controller.signal,
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; GayPlaces/1.0)" },
+      }).finally(() => clearTimeout(timeout));
+
+      if (siteRes.ok) {
+        const html = await siteRes.text();
+
+        const igMatch = html.match(/https?:\/\/(?:www\.)?instagram\.com\/([A-Za-z0-9._]+)\/?/);
+        if (igMatch) {
+          const igUrl = `https://www.instagram.com/${igMatch[1]}/`;
+          if (igUrl !== venue.instagram_url) {
+            proposal.instagram_url = igUrl;
+            proposal.changedFields.push("Instagram URL");
+          }
+        }
+
+        const fbMatch = html.match(/https?:\/\/(?:www\.)?facebook\.com\/([A-Za-z0-9._\-]+)\/?/);
+        if (fbMatch && !["sharer", "share", "dialog", "plugins"].includes(fbMatch[1])) {
+          const fbUrl = `https://www.facebook.com/${fbMatch[1]}/`;
+          if (fbUrl !== venue.facebook_url) {
+            proposal.facebook_url = fbUrl;
+            proposal.changedFields.push("Facebook URL");
+          }
+        }
+      }
+    } catch {
+      // Scraping is best-effort — silently ignore errors
+    }
   }
 
   if (proposal.changedFields.length === 0) {

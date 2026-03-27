@@ -284,7 +284,19 @@ export function VenueEditForm({
 
       {/* ── Enrichment actions bar ──────────────────────────────────────────── */}
       <div className="mt-4">
-        <VenueEnrichBar venueId={venue.id} />
+        <VenueEnrichBar
+          venueId={venue.id}
+          onPlaceDetailsApplied={(fields) => {
+            if (fields.address !== undefined) setAddress(fields.address);
+            if (fields.lat !== undefined) setLat(String(fields.lat));
+            if (fields.lng !== undefined) setLng(String(fields.lng));
+            if (fields.website_url !== undefined) setWebsiteUrl(fields.website_url);
+            if (fields.google_maps_url !== undefined) setGoogleMapsUrl(fields.google_maps_url);
+            if (fields.instagram_url !== undefined) setInstagramUrl(fields.instagram_url);
+            if (fields.facebook_url !== undefined) setFacebookUrl(fields.facebook_url);
+          }}
+          onTagsApplied={(mergedTags) => setVenueTags(mergedTags)}
+        />
       </div>
 
       {/* ── Place details form ──────────────────────────────────────────────── */}
@@ -386,7 +398,7 @@ export function VenueEditForm({
             />
           </div>
           <div className="sm:col-span-2">
-            <TagsEnrichButton venueId={venue.id} />
+            <TagsEnrichButton venueId={venue.id} onApplied={(mergedTags) => setVenueTags(mergedTags)} />
           </div>
 
           {/* ── Description ──────────────────────────────────────── */}

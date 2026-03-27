@@ -9,6 +9,7 @@ import type {
   TagsProposal,
   OpeningHoursProposal,
 } from "@/lib/ai/venue-enrichment";
+import type { VenueTags } from "@/lib/venue-tags";
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -120,7 +121,23 @@ function ModalFooterButtons({
 // ---------------------------------------------------------------------------
 // Place Details Enrichment
 
-export function PlaceDetailsEnrichButton({ venueId }: { venueId: string }) {
+type PlaceDetailsAppliedFields = {
+  address?: string;
+  lat?: number;
+  lng?: number;
+  website_url?: string;
+  google_maps_url?: string;
+  instagram_url?: string;
+  facebook_url?: string;
+};
+
+export function PlaceDetailsEnrichButton({
+  venueId,
+  onApplied,
+}: {
+  venueId: string;
+  onApplied?: (fields: PlaceDetailsAppliedFields) => void;
+}) {
   const router = useRouter();
 
   const { status, proposal, start, apply, dismiss } =
@@ -143,8 +160,13 @@ export function PlaceDetailsEnrichButton({ venueId }: { venueId: string }) {
         if (p.lng !== undefined) fields.lng = p.lng;
         if (p.website_url !== undefined) fields.website_url = p.website_url;
         if (p.google_maps_url !== undefined) fields.google_maps_url = p.google_maps_url;
+        if (p.instagram_url !== undefined) fields.instagram_url = p.instagram_url;
+        if (p.facebook_url !== undefined) fields.facebook_url = p.facebook_url;
 
-        if (Object.keys(fields).length === 0) return; // nothing to apply
+        if (Object.keys(fields).length === 0) {
+          onApplied?.({});
+          return;
+        }
 
         const res = await fetch(`/api/admin/venues/${venueId}`, {
           method: "PATCH",
@@ -153,6 +175,8 @@ export function PlaceDetailsEnrichButton({ venueId }: { venueId: string }) {
         });
         const json = (await res.json()) as { ok?: boolean; error?: string };
         if (!res.ok || json.error) throw new Error(json.error ?? "Apply failed");
+
+        onApplied?.(fields as PlaceDetailsAppliedFields);
       },
       onSuccess: () => router.refresh(),
       successMessage: "Place details updated",
@@ -228,6 +252,12 @@ function PlaceDetailsPreviewModal({
           {proposal.google_maps_url !== undefined && (
             <PreviewRow label="Google Maps URL" value={proposal.google_maps_url} />
           )}
+          {proposal.instagram_url !== undefined && (
+            <PreviewRow label="Instagram URL" value={proposal.instagram_url} />
+          )}
+          {proposal.facebook_url !== undefined && (
+            <PreviewRow label="Facebook URL" value={proposal.facebook_url} />
+          )}
         </div>
       )}
     </ModalShell>
@@ -246,7 +276,13 @@ function PreviewRow({ label, value }: { label: string; value: string }) {
 // ---------------------------------------------------------------------------
 // Tags Enrichment
 
-export function TagsEnrichButton({ venueId }: { venueId: string }) {
+export function TagsEnrichButton({
+  venueId,
+  onApplied,
+}: {
+  venueId: string;
+  onApplied?: (mergedTags: VenueTags) => void;
+}) {
   const router = useRouter();
 
   const { status, proposal, start, apply, dismiss } =
@@ -271,6 +307,7 @@ export function TagsEnrichButton({ venueId }: { venueId: string }) {
         });
         const json = (await res.json()) as { ok?: boolean; error?: string };
         if (!res.ok || json.error) throw new Error(json.error ?? "Apply failed");
+        onApplied?.(p.merged_tags);
       },
       onSuccess: () => router.refresh(),
       successMessage: "Tags updated",
@@ -421,12 +458,20 @@ function HoursPreviewModal({
 // ---------------------------------------------------------------------------
 // Combined enrichment action bar (for the venue edit page header area)
 
-export function VenueEnrichBar({ venueId }: { venueId: string }) {
+export function VenueEnrichBar({
+  venueId,
+  onPlaceDetailsApplied,
+  onTagsApplied,
+}: {
+  venueId: string;
+  onPlaceDetailsApplied?: (fields: PlaceDetailsAppliedFields) => void;
+  onTagsApplied?: (mergedTags: VenueTags) => void;
+}) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-xs text-muted-foreground">Enrich:</span>
-      <PlaceDetailsEnrichButton venueId={venueId} />
-      <TagsEnrichButton venueId={venueId} />
+      <PlaceDetailsEnrichButton venueId={venueId} onApplied={onPlaceDetailsApplied} />
+      <TagsEnrichButton venueId={venueId} onApplied={onTagsApplied} />
     </div>
   );
 }

@@ -9,6 +9,8 @@ const PATCHABLE_FIELDS = new Set([
   "lng",
   "website_url",
   "google_maps_url",
+  "instagram_url",
+  "facebook_url",
   "venue_tags",
   "opening_hours",
   "description_base",
