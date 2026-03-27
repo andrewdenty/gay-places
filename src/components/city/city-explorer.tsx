@@ -191,7 +191,7 @@ export function CityExplorer({ city, venues }: Props) {
           const open = !v.closed && isOpenNow(v.opening_hours);
           // Max 4 tags, single-line display
           const flatTags = flattenVenueTags(v.venue_tags ?? {}).slice(0, 4);
-          const description = v.description_editorial ?? v.description_base ?? v.description;
+          const description = v.description_base ?? v.description;
 
           return (
             <div
