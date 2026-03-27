@@ -12,12 +12,15 @@ type Props = {
    * globally once any admin has added them to any venue and saved.
    */
   customTagOptions?: Partial<Record<VenueTagCategory, string[]>>;
+  /** Called whenever the selected tags change. */
+  onChange?: (tags: VenueTags) => void;
 };
 
 export function VenueTagPicker({
   initialTags = {},
   inputName = "venue_tags",
   customTagOptions = {},
+  onChange,
 }: Props) {
   const [selected, setSelected] = useState<VenueTags>(initialTags);
   const [expanded, setExpanded] = useState(false);
@@ -30,7 +33,9 @@ export function VenueTagPicker({
       const next = current.includes(tag)
         ? current.filter((t) => t !== tag)
         : [...current, tag];
-      return { ...prev, [category]: next };
+      const updated = { ...prev, [category]: next };
+      onChange?.(updated);
+      return updated;
     });
   }
 
@@ -40,7 +45,9 @@ export function VenueTagPicker({
     setSelected((prev) => {
       const current = prev[category] ?? [];
       if (current.includes(trimmed)) return prev;
-      return { ...prev, [category]: [...current, trimmed] };
+      const updated = { ...prev, [category]: [...current, trimmed] };
+      onChange?.(updated);
+      return updated;
     });
     setNewTagInputs((prev) => ({ ...prev, [category]: "" }));
   }

@@ -12,6 +12,8 @@ interface Props {
   descriptionType: DescriptionType;
   currentText: string;
   hasExisting: boolean;
+  /** Called with the applied text after successful AI generation + apply. */
+  onTextApplied?: (text: string) => void;
 }
 
 /**
@@ -23,6 +25,7 @@ export function DescriptionGenerateForm({
   descriptionType,
   currentText,
   hasExisting,
+  onTextApplied,
 }: Props) {
   const router = useRouter();
 
@@ -60,6 +63,7 @@ export function DescriptionGenerateForm({
         });
         const json = (await res.json()) as { ok?: boolean; error?: string };
         if (!res.ok || json.error) throw new Error(json.error ?? "Apply failed");
+        onTextApplied?.(p.text);
       },
       onSuccess: () => router.refresh(),
       successMessage: "Description applied",

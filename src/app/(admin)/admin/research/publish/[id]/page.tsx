@@ -56,18 +56,36 @@ export default async function EditDraftPage({
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
-  const { data, error } = await supabase
-    .from("ingest_drafts")
-    .select(
-      "id,status,place_id,places_payload,draft,validation_errors,notes,confidence,created_at," +
-        "ingest_candidates(id,name,city_name,country,city_slug,source_links)",
-    )
-    .eq("id", id)
-    .single();
+  const [{ data, error }, { data: allDrafts }] = await Promise.all([
+    supabase
+      .from("ingest_drafts")
+      .select(
+        "id,status,place_id,places_payload,draft,validation_errors,notes,confidence,created_at," +
+          "ingest_candidates(id,name,city_name,country,city_slug,source_links)",
+      )
+      .eq("id", id)
+      .single(),
+    // Fetch draft list for prev/next navigation (same order as the queue page)
+    supabase
+      .from("ingest_drafts")
+      .select("id,draft")
+      .not("status", "eq", "published")
+      .order("created_at", { ascending: false })
+      .limit(500),
+  ]);
 
   if (error || !data) notFound();
 
   const draft = data as unknown as IngestDraft;
+
+  // Prev / next among non-published drafts
+  const draftList = (allDrafts ?? []) as Array<{ id: string; draft: { name?: string } | null }>;
+  const currentIdx = draftList.findIndex((d) => d.id === id);
+  const prevDraft = currentIdx > 0 ? draftList[currentIdx - 1] : null;
+  const nextDraft =
+    currentIdx >= 0 && currentIdx < draftList.length - 1
+      ? draftList[currentIdx + 1]
+      : null;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -166,6 +184,10 @@ export default async function EditDraftPage({
           draftId={id}
           initialDraft={draft.draft}
           initialNotes={draft.notes}
+          prevDraftId={prevDraft?.id ?? null}
+          nextDraftId={nextDraft?.id ?? null}
+          prevDraftName={prevDraft?.draft?.name ?? null}
+          nextDraftName={nextDraft?.draft?.name ?? null}
         />
       </Card>
 
