@@ -85,7 +85,7 @@ interface PhotoUploaderProps {
       storage_path: string;
       filename: string;
     },
-  ) => Promise<void>;
+  ) => Promise<{ approved: boolean }>;
 }
 
 export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProps) {
@@ -151,14 +151,18 @@ export function PhotoUploader({ venueId, onUpdateSubmission }: PhotoUploaderProp
       }
 
       // Step 3: Record the storage path on the submission
-      await onUpdateSubmission(created.submission_id, {
+      const result = await onUpdateSubmission(created.submission_id, {
         venue_id: venueId,
         caption,
         storage_path: created.upload_path,
         filename: compressed.name,
       });
 
-      setStatus("Uploaded. Your photo is now pending moderation.");
+      setStatus(
+        result.approved
+          ? "Photo uploaded and published."
+          : "Uploaded. Your photo is now pending moderation.",
+      );
       setFile(null);
       setCaption("");
     } catch (e) {
