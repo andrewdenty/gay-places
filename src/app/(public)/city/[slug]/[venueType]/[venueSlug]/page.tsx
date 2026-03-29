@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
-import { OpeningHoursView } from "@/components/venue/opening-hours-view";
+import { OpeningHoursAccordion } from "@/components/venue/opening-hours-accordion";
 import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
 import { VenueSectionRow } from "@/components/venue/venue-section-row";
 import { PhotoGallery } from "@/components/venue/photo-gallery";
@@ -398,7 +398,7 @@ export default async function VenuePage({
           );
         })}
 
-        {/* Section 3 — Opening hours */}
+        {/* Section 3 — Opening hours (accordion) */}
         {(() => {
           const hrs = venue.opening_hours;
           if (!hrs) return null;
@@ -409,20 +409,10 @@ export default async function VenuePage({
           });
           if (!hasAnyOpen) return null;
           return (
-            <div id="opening-hours" className="scroll-mt-28 border-b border-[var(--border)] py-[24px]">
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <span className="h2-editorial-sm">Opening hours</span>
-                {openUntilLabel && (
-                  <div className="flex items-center gap-[6px]">
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-[#22C55E]" />
-                    <span className="open-status-text text-[var(--foreground)]">
-                      {openUntilLabel}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <OpeningHoursView hours={venue.opening_hours} />
-            </div>
+            <OpeningHoursAccordion
+              hours={hrs}
+              openUntilLabel={openUntilLabel}
+            />
           );
         })()}
 
