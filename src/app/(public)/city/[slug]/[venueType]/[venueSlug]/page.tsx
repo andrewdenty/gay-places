@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import { OpeningHoursView } from "@/components/venue/opening-hours-view";
+import { PopularTimesView } from "@/components/venue/popular-times-view";
+import type { PopularTimes } from "@/lib/types/popular-times";
 import { VenueViewTracker } from "@/components/analytics/venue-view-tracker";
 import { VenueSectionRow } from "@/components/venue/venue-section-row";
 import { PhotoGallery } from "@/components/venue/photo-gallery";
@@ -31,6 +33,17 @@ const CITY_IMAGES_BASE =
 
 const VENUE_PHOTOS_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/venue-photos";
+
+// TODO: Remove test data — replace with venue.popular_times from database
+const TEST_POPULAR_TIMES: PopularTimes = {
+  mon: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 15, 25, 20, 15, 10, 15, 25, 40, 55, 65, 50, 30, 10],
+  tue: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 15, 20, 18, 12, 10, 15, 30, 45, 60, 70, 55, 35, 12],
+  wed: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 18, 25, 22, 15, 12, 18, 35, 55, 72, 80, 65, 40, 15],
+  thu: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 15, 22, 20, 14, 12, 20, 40, 60, 78, 90, 75, 50, 20],
+  fri: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 12, 20, 18, 14, 12, 22, 45, 70, 88, 100, 90, 70, 35],
+  sat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 10, 18, 22, 20, 18, 25, 50, 75, 92, 100, 95, 75, 40],
+  sun: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 12, 20, 25, 30, 35, 40, 50, 55, 45, 35, 25, 15, 5],
+};
 
 const VENUE_TYPE_TITLE_LABEL: Record<string, string> = {
   bar: "Gay Bar",
@@ -425,6 +438,14 @@ export default async function VenuePage({
             </div>
           );
         })()}
+
+        {/* Section — Popular times (test data) */}
+        <div className="border-b border-[var(--border)] py-[24px]">
+          <PopularTimesView
+            popularTimes={TEST_POPULAR_TIMES}
+            timezone={venue.opening_hours?.tz}
+          />
+        </div>
 
         {/* Section 4 — Map */}
         <VenueMapWrapper
