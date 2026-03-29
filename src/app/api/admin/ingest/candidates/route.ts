@@ -90,7 +90,9 @@ export async function POST(request: Request) {
     .from("ingest_candidates")
     .insert({
       job_id: job.id,
-      status: "pending",
+      status: "approved",
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
       city_slug: citySlug,
       city_name: city.name,
       country: city.country,
