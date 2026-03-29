@@ -32,6 +32,8 @@ interface Props {
   draftId: string;
   initialDraft: DraftData;
   initialNotes: string;
+  status: string;
+  citySlug?: string | null;
   /** ID of the previous draft for quick navigation. */
   prevDraftId?: string | null;
   /** ID of the next draft for quick navigation. */
@@ -44,6 +46,8 @@ export function EditDraftForm({
   draftId,
   initialDraft,
   initialNotes,
+  status,
+  citySlug,
   prevDraftId,
   nextDraftId,
   prevDraftName,
@@ -52,6 +56,9 @@ export function EditDraftForm({
   const router = useRouter();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [publishBusy, setPublishBusy] = useState(false);
+  const [publishedVenueId, setPublishedVenueId] = useState<string | null>(null);
+  const [publishedCitySlug, setPublishedCitySlug] = useState<string | null>(null);
 
   const [name, setName] = useState(initialDraft.name ?? "");
   const [googleMapsUrl, setGoogleMapsUrl] = useState(initialDraft.google_maps_url ?? "");
@@ -175,6 +182,26 @@ export function EditDraftForm({
     summaryShort, whyUnique, venueTags, openingHours, notes,
     initialDraft.opening_hours, startTransition, showToast,
   ]);
+
+  // ── Publish ───────────────────────────────────────────────────────────────
+  const handlePublish = useCallback(async () => {
+    setPublishBusy(true);
+    try {
+      const res = await fetch(`/api/admin/ingest/drafts/${draftId}/publish`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string; venue_id?: string; city_slug?: string };
+      if (!res.ok || json.error) throw new Error(json.error ?? "Publish failed");
+      setPublishedVenueId(json.venue_id ?? null);
+      setPublishedCitySlug(json.city_slug ?? citySlug ?? null);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Publish failed";
+      showToast(msg, "error");
+    } finally {
+      setPublishBusy(false);
+    }
+  }, [draftId, citySlug, showToast]);
 
   function toggleTag(category: keyof VenueTags, tag: string) {
     setVenueTags((prev) => {
@@ -431,12 +458,37 @@ export function EditDraftForm({
             </span>
             <Button
               type="button"
+              variant="secondary"
               onClick={handleSave}
               disabled={isPending || !name.trim()}
               aria-label="Save changes"
             >
               {isPending ? "Saving…" : "Save changes"}
             </Button>
+            {publishedVenueId ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-green-700 font-medium">Published ✓</span>
+                {publishedCitySlug && (
+                  <a
+                    href={`/city/${publishedCitySlug}/venue/${publishedVenueId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    View ↗
+                  </a>
+                )}
+              </div>
+            ) : status !== "published" && status !== "dismissed" ? (
+              <Button
+                type="button"
+                onClick={handlePublish}
+                disabled={publishBusy || isPending}
+                aria-label="Publish draft"
+              >
+                {publishBusy ? "Publishing…" : "Publish"}
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="secondary"

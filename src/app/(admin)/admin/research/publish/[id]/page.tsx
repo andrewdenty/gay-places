@@ -184,6 +184,8 @@ export default async function EditDraftPage({
           draftId={id}
           initialDraft={draft.draft}
           initialNotes={draft.notes}
+          status={draft.status}
+          citySlug={draft.ingest_candidates?.city_slug ?? null}
           prevDraftId={prevDraft?.id ?? null}
           nextDraftId={nextDraft?.id ?? null}
           prevDraftName={prevDraft?.draft?.name ?? null}
