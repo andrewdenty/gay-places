@@ -8,6 +8,7 @@ import { VenueSectionRow } from "@/components/venue/venue-section-row";
 import { PhotoGallery } from "@/components/venue/photo-gallery";
 import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
+import { ShareButton } from "@/components/venue/share-button";
 import { VenueDescription } from "@/components/venue/venue-description";
 import { AdminVenueLink } from "@/components/venue/admin-venue-link";
 import { VenueInteractions } from "@/components/venue/VenueInteractions";
@@ -219,6 +220,7 @@ export default async function VenuePage({
         }
       : {}),
     ...(sameAs.length > 0 ? { sameAs } : {}),
+    ...(venue.updated_at ? { dateModified: venue.updated_at } : {}),
   };
 
   // Venue type display label
@@ -310,10 +312,15 @@ export default async function VenuePage({
             >
               {venue.name}
             </h1>
-            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 mb-4 sm:mb-0">
+            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 mb-4 sm:mb-0 flex items-center gap-2">
               <VenueInteractions
                 venueId={venue.id}
                 initialCounts={interactionCounts}
+              />
+              <ShareButton
+                venueName={venue.name}
+                cityName={city.name}
+                url={placeUrl}
               />
             </div>
           </div>
@@ -486,6 +493,20 @@ export default async function VenuePage({
             <AdminVenueLink venueId={venue.id} />
           </div>
         </VenueSectionRow>
+
+        {/* Last updated — SEO freshness signal */}
+        {venue.updated_at && (
+          <p className="mt-4 text-[11px] text-[var(--muted-foreground)]">
+            Last updated{" "}
+            <time dateTime={venue.updated_at}>
+              {new Date(venue.updated_at).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </time>
+          </p>
+        )}
       </div>
       </VenueAdminToggle>
     </>
