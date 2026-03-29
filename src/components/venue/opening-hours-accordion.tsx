@@ -115,15 +115,8 @@ export function OpeningHoursAccordion({ hours, openUntilLabel }: Props) {
           <span className="h2-editorial-sm">Opening hours</span>
         </div>
         <div className="flex items-center gap-[10px]">
-          {/* Today's summary — visible when collapsed */}
-          <div
-            className="flex items-center gap-[6px] overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]"
-            style={{
-              opacity: expanded ? 0 : 1,
-              maxWidth: expanded ? 0 : "240px",
-              marginRight: expanded ? 0 : undefined,
-            }}
-          >
+          {/* Today's summary — always visible in the header */}
+          <div className="flex items-center gap-[6px]">
             {openUntilLabel ? (
               <>
                 <span className="h-2 w-2 shrink-0 rounded-full bg-[#22C55E]" />
@@ -160,15 +153,6 @@ export function OpeningHoursAccordion({ hours, openUntilLabel }: Props) {
         }}
       >
         <div ref={contentRef}>
-          {/* Open until label — shown inside expanded content */}
-          {openUntilLabel && (
-            <div className="mb-4 flex items-center gap-[6px]">
-              <span className="h-2 w-2 shrink-0 rounded-full bg-[#22C55E]" />
-              <span className="open-status-text text-[var(--foreground)]">
-                {openUntilLabel}
-              </span>
-            </div>
-          )}
           {/* Days table */}
           <div className="flex w-full flex-col gap-[8px] pb-[24px]">
             {days.map((d, i) => {
