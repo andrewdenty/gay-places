@@ -458,6 +458,7 @@ export function EditDraftForm({
             </span>
             <Button
               type="button"
+              variant="secondary"
               onClick={handleSave}
               disabled={isPending || !name.trim()}
               aria-label="Save changes"
