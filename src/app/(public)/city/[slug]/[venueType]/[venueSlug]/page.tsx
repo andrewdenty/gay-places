@@ -409,7 +409,7 @@ export default async function VenuePage({
           });
           if (!hasAnyOpen) return null;
           return (
-            <div id="opening-hours" className="border-b border-[var(--border)] py-[24px]">
+            <div id="opening-hours" className="scroll-mt-28 border-b border-[var(--border)] py-[24px]">
               <div className="mb-4 flex items-center justify-between gap-4">
                 <span className="h2-editorial-sm">Opening hours</span>
                 {openUntilLabel && (
