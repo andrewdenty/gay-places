@@ -74,8 +74,11 @@ export async function generateMetadata({
   const venuePhotoUrl = ogPhotos?.[0]?.storage_path
     ? `${VENUE_PHOTOS_BASE}/${ogPhotos[0].storage_path}`
     : null;
+  const BASE_URL =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
   const ogImageUrl = venuePhotoUrl
-    ?? (city.image_path ? `${CITY_IMAGES_BASE}/${city.image_path}` : null);
+    ?? (city.image_path ? `${CITY_IMAGES_BASE}/${city.image_path}` : null)
+    ?? `${BASE_URL}/og-image.png`;
 
   const typeLabel = VENUE_TYPE_TITLE_LABEL[venue.venue_type] ?? "Gay Venue";
   const title = `${venue.name} – ${typeLabel} in ${city.name}`;
@@ -91,17 +94,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      ...(ogImageUrl
-        ? {
-            images: [
-              {
-                url: ogImageUrl,
-                width: 1200,
-                height: 630,
-              },
-            ],
-          }
-        : {}),
+      images: [{ url: ogImageUrl, width: 1200, height: 630 }],
     },
   };
 }
