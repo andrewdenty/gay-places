@@ -87,6 +87,7 @@ export async function generateMetadata({
     venue.description_base ||
     `${venue.name} is a gay ${venue.venue_type} in ${city.name}.`;
   const canonicalPath = venueUrlPath(slug, venue.venue_type, venueSlug);
+  const canonicalUrl = `${BASE_URL}${canonicalPath}`;
   return {
     title,
     description,
@@ -94,7 +95,15 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      images: [{ url: ogImageUrl, width: 1200, height: 630 }],
+      type: "website",
+      url: canonicalUrl,
+      images: [{ url: ogImageUrl }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImageUrl],
     },
   };
 }
