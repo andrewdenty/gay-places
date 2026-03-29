@@ -309,7 +309,7 @@ export default async function VenuePage({
               PERMANENTLY CLOSED
             </span>
           ) : (
-            <div className="flex shrink-0 items-center gap-[6px]">
+            <a href="#opening-hours" className="flex shrink-0 items-center gap-[6px]">
               <span
                 className="h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
@@ -317,7 +317,7 @@ export default async function VenuePage({
               <span className="open-status-text text-[var(--foreground)]">
                 {open ? "Open now" : "Closed"}
               </span>
-            </div>
+            </a>
           )}
         </div>
 
@@ -409,7 +409,7 @@ export default async function VenuePage({
           });
           if (!hasAnyOpen) return null;
           return (
-            <div className="border-b border-[var(--border)] py-[24px]">
+            <div id="opening-hours" className="border-b border-[var(--border)] py-[24px]">
               <div className="mb-4 flex items-center justify-between gap-4">
                 <span className="h2-editorial-sm">Opening hours</span>
                 {openUntilLabel && (
