@@ -107,7 +107,7 @@ export function OpeningHoursAccordion({ hours, openUntilLabel }: Props) {
       <button
         type="button"
         onClick={() => setExpanded((prev) => !prev)}
-        className="flex w-full cursor-pointer items-center justify-between gap-4 border-none bg-transparent py-[24px] text-left"
+        className="flex w-full cursor-pointer items-center justify-between gap-4 border-none bg-transparent py-[32px] text-left"
         aria-expanded={expanded}
         aria-controls="opening-hours-content"
       >
@@ -154,7 +154,7 @@ export function OpeningHoursAccordion({ hours, openUntilLabel }: Props) {
       >
         <div ref={contentRef}>
           {/* Days table */}
-          <div className="flex w-full flex-col gap-[8px] pb-[24px]">
+          <div className="flex w-full flex-col gap-[8px] pb-[32px]">
             {days.map((d, i) => {
               const isToday = d.key === todayKey;
               const isLast = i === days.length - 1;
