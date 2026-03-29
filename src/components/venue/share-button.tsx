@@ -43,7 +43,10 @@ export function ShareButton({ venueName, cityName, url }: ShareButtonProps) {
     <button
       type="button"
       onClick={handleShare}
-      className="flex items-center justify-center h-[34px] w-[34px] sm:h-[34px] sm:w-[34px] rounded-full border border-[var(--border)] shadow-[var(--shadow)] transition-colors duration-150 hover:bg-[var(--muted)] active:bg-[var(--border)]"
+      className="flex items-center justify-center h-[42px] w-[42px] sm:h-[34px] sm:w-[34px] rounded-full transition-colors duration-150 hover:bg-[var(--muted)] active:bg-[var(--border)]"
+      style={{
+        boxShadow: "0 0 0 1px var(--border)",
+      }}
       aria-label={copied ? "Link copied" : `Share ${venueName}`}
       title={copied ? "Link copied!" : "Share"}
     >

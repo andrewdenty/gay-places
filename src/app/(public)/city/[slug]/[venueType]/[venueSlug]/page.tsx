@@ -29,6 +29,9 @@ export const revalidate = 3600;
 const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
+const VENUE_PHOTOS_BASE =
+  "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/venue-photos";
+
 const VENUE_TYPE_TITLE_LABEL: Record<string, string> = {
   bar: "Gay Bar",
   club: "Gay Club",
@@ -55,11 +58,25 @@ export async function generateMetadata({
     return {};
   }
   const { slug, venueSlug } = await params;
+  const supabase = await createSupabaseServerClient();
   const [city, venue] = await Promise.all([
     getCityBySlug(slug),
     getVenueBySlug(slug, venueSlug),
   ]);
   if (!city || !venue) return {};
+
+  // Fetch first venue photo for OG image (iOS share sheet preview)
+  const { data: ogPhotos } = await supabase
+    .from("venue_photos")
+    .select("storage_path")
+    .eq("venue_id", venue.id)
+    .limit(1);
+  const venuePhotoUrl = ogPhotos?.[0]?.storage_path
+    ? `${VENUE_PHOTOS_BASE}/${ogPhotos[0].storage_path}`
+    : null;
+  const ogImageUrl = venuePhotoUrl
+    ?? (city.image_path ? `${CITY_IMAGES_BASE}/${city.image_path}` : null);
+
   const typeLabel = VENUE_TYPE_TITLE_LABEL[venue.venue_type] ?? "Gay Venue";
   const title = `${venue.name} – ${typeLabel} in ${city.name}`;
   const description =
@@ -74,11 +91,11 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      ...(city.image_path
+      ...(ogImageUrl
         ? {
             images: [
               {
-                url: `${CITY_IMAGES_BASE}/${city.image_path}`,
+                url: ogImageUrl,
                 width: 1200,
                 height: 630,
               },
@@ -496,7 +513,7 @@ export default async function VenuePage({
 
         {/* Last updated — SEO freshness signal */}
         {venue.updated_at && (
-          <p className="mt-4 text-[11px] text-[var(--muted-foreground)]">
+          <p className="mt-12 text-[11px] text-[var(--muted-foreground)]">
             Last updated{" "}
             <time dateTime={venue.updated_at}>
               {new Date(venue.updated_at).toLocaleDateString("en-US", {
