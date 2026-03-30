@@ -92,30 +92,31 @@ function parseJsonArray(text: string): unknown[] {
     .replace(/\s*```\s*$/, "")
     .trim();
 
-  let parsed: unknown;
+  // Try direct parse first
   try {
-    parsed = JSON.parse(stripped);
-  } catch {
-    const match = stripped.match(/\[[\s\S]*\]/);
-    if (!match) {
+    const parsed = JSON.parse(stripped);
+    if (!Array.isArray(parsed)) {
+      throw new Error(`Claude returned a JSON object, not an array`);
+    }
+    return parsed as unknown[];
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      // Try to extract a JSON array from within the response
+      const match = stripped.match(/\[[\s\S]*\]/);
+      if (match) {
+        try {
+          const parsed = JSON.parse(match[0]);
+          if (Array.isArray(parsed)) return parsed as unknown[];
+        } catch {
+          // Fall through to error below
+        }
+      }
       throw new Error(
-        `Claude returned non-JSON response. First 200 chars: ${text.slice(0, 200)}`,
+        `Claude did not return valid JSON. Response was: "${stripped.slice(0, 300)}"`,
       );
     }
-    try {
-      parsed = JSON.parse(match[0]);
-    } catch {
-      throw new Error(
-        `Failed to parse JSON array. First 200 chars: ${text.slice(0, 200)}`,
-      );
-    }
+    throw e;
   }
-
-  if (!Array.isArray(parsed)) {
-    throw new Error(`Response was not a JSON array. Got: ${typeof parsed}`);
-  }
-
-  return parsed;
 }
 
 function parseJsonObject(text: string): Record<string, unknown> {
@@ -124,30 +125,33 @@ function parseJsonObject(text: string): Record<string, unknown> {
     .replace(/\s*```\s*$/, "")
     .trim();
 
-  let parsed: unknown;
+  // Try direct parse first
   try {
-    parsed = JSON.parse(stripped);
-  } catch {
-    const match = stripped.match(/\{[\s\S]*\}/);
-    if (!match) {
+    const parsed = JSON.parse(stripped);
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      throw new Error(`Claude returned unexpected JSON type: ${typeof parsed}`);
+    }
+    return parsed as Record<string, unknown>;
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      // Try to extract a JSON object from within the response
+      const match = stripped.match(/\{[\s\S]*\}/);
+      if (match) {
+        try {
+          const parsed = JSON.parse(match[0]);
+          if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+            return parsed as Record<string, unknown>;
+          }
+        } catch {
+          // Fall through to error below
+        }
+      }
       throw new Error(
-        `Claude returned non-JSON response. First 200 chars: ${text.slice(0, 200)}`,
+        `Claude did not return valid JSON. Response was: "${stripped.slice(0, 300)}"`,
       );
     }
-    try {
-      parsed = JSON.parse(match[0]);
-    } catch {
-      throw new Error(
-        `Failed to parse JSON object. First 200 chars: ${text.slice(0, 200)}`,
-      );
-    }
+    throw e;
   }
-
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    throw new Error(`Response was not a JSON object. Got: ${typeof parsed}`);
-  }
-
-  return parsed as Record<string, unknown>;
 }
 
 function validateDiscoveredVenue(

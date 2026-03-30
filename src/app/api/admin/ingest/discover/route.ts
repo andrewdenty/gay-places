@@ -89,26 +89,33 @@ export async function POST(request: Request) {
 
   const admin = createSupabaseAdminClient();
 
-  // Auto-create city if it doesn't exist yet
-  const { data: existingCity } = await admin
-    .from("cities")
-    .select("id")
-    .eq("slug", citySlug)
-    .maybeSingle();
+  try {
+    // Auto-create city if it doesn't exist yet
+    const { data: existingCity } = await admin
+      .from("cities")
+      .select("id")
+      .eq("slug", citySlug)
+      .maybeSingle();
 
-  if (!existingCity) {
-    const coords = await geocodeCity(cityName, country);
-    if (coords) {
-      await admin.from("cities").insert({
-        slug: citySlug,
-        name: cityName,
-        country,
-        center_lat: coords.lat,
-        center_lng: coords.lng,
-        published: false,
-      });
+    if (!existingCity) {
+      const coords = await geocodeCity(cityName, country);
+      if (coords) {
+        await admin.from("cities").insert({
+          slug: citySlug,
+          name: cityName,
+          country,
+          center_lat: coords.lat,
+          center_lng: coords.lng,
+          published: false,
+        });
+      }
+      // If geocode fails, proceed — publish step will surface the missing city error
     }
-    // If geocode fails, proceed — publish step will surface the missing city error
+  } catch (e) {
+    return NextResponse.json(
+      { error: `Setup failed: ${e instanceof Error ? e.message : String(e)}` },
+      { status: 500 },
+    );
   }
 
   // Create ingest_jobs row (running)
