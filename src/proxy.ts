@@ -3,6 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 
 export async function proxy(request: NextRequest) {
+  // Normalize double slashes (e.g. /city//venue/slug → /city/venue/slug).
+  // These were indexed by Google from an old sitemap that omitted city slugs.
+  if (request.nextUrl.pathname.includes("//")) {
+    const url = request.nextUrl.clone();
+    url.pathname = request.nextUrl.pathname.replace(/\/+/g, "/");
+    return NextResponse.redirect(url, { status: 301 });
+  }
+
   if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.next();
   }

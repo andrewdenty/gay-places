@@ -398,6 +398,31 @@ export async function getVenueCoordsByCountryName(countryName: string): Promise<
   });
 }
 
+/**
+ * Looks up a venue by its slug alone, across all cities.
+ * Used by the legacy URL recovery route /v/[slug] to redirect
+ * old indexed URLs (e.g. /city//venue/slug) to their canonical path.
+ */
+export async function getVenueBySlugOnly(
+  venueSlug: string,
+): Promise<{ slug: string; venue_type: string; city_slug: string } | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("venues")
+    .select("slug,venue_type,cities!inner(slug)")
+    .eq("slug", venueSlug.toLowerCase())
+    .eq("published", true)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const row = data as unknown as { slug: string; venue_type: string; cities: { slug: string }[] };
+  return {
+    slug: row.slug,
+    venue_type: row.venue_type ?? "other",
+    city_slug: row.cities[0]?.slug ?? "",
+  };
+}
+
 /** @deprecated Use getVenueBySlug for public pages. Kept for internal/admin use. */
 export async function getVenueById(id: string): Promise<Venue | null> {
   const supabase = await createSupabaseServerClient();
