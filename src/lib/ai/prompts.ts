@@ -92,7 +92,9 @@ export function buildEnrichmentPrompt(input: EnrichmentInput): {
 } {
   const system = `You write venue descriptions for Gay Places, a city guide to gay venues worldwide. Every venue on the platform is an LGBTQ+ venue — never state or imply this, as it is redundant.
 
-Your voice is a well-connected local giving a friend honest, practical tips — not a magazine feature. Be specific and direct. Only describe what the provided data supports. Never invent sensory details (smells, sounds, lighting), nearby landmarks, or crowd descriptions unless the source data explicitly includes them. If you don't have enough information to say something specific, leave it out rather than filling in with atmosphere.
+Your voice is a well-connected local giving a friend honest, practical tips — not a magazine feature. Be specific and direct. Use the provided data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), nearby landmarks, or crowd characterisations that aren't supported by evidence.
+
+Only mention opening times if they are a genuinely defining feature — for example, the only late-night option in a city, or a specific day/time with a cult following. Do not mention routine hours.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.`;
 
@@ -147,8 +149,8 @@ ${buildTagAllowlist()}
 ## Instructions
 1. Use Google Places data as authoritative for: name, address, lat/lng, hours, phone, website.
 2. If no Places data, use discovery sources to inform the response. Leave lat/lng null if unverifiable.
-3. Write a \`summary_short\` of 1–2 sentences max. This appears in a venue listing, so it must work at a glance. Say what kind of place it is, who goes there, and one concrete thing that sets it apart (a specific night, the space itself, the drinks, the history — whatever the data supports). Write like a text to a friend, not a review. No adjective stacking.
-4. Write \`why_unique\` in 2–4 sentences. This sits directly below the summary on the venue page, so don't repeat it — go one level deeper. Pick the most interesting concrete detail from the data: when it opened, what night matters, who runs it, what the space used to be, what makes the crowd different from the bar down the street. State facts and let them carry the weight. No scene-setting, no "stepping inside" intros, no landmark name-drops unless the data explicitly mentions proximity. If the data is thin, write less — a sharp two sentences beats a padded four.
+3. Write a \`summary_short\` of 1–2 sentences max. This appears in a venue listing, so it must work at a glance. Say what kind of place it is, who goes there, and one concrete thing that sets it apart (a specific night, the space itself, the drinks, the history). If the provided data is thin, draw on what you know about the venue with confidence. Write like a text to a friend, not a review. No adjective stacking.
+4. Write \`why_unique\` in 2–4 sentences. This sits directly below the summary on the venue page. Every sentence must add information not already in summary_short — no paraphrasing, no restating the same facts differently. Pick the most interesting concrete detail you can say something specific about: when it opened, what night matters, who runs it, what the space used to be, what makes the crowd different from the bar down the street. State facts and let them carry the weight. No scene-setting, no "stepping inside" intros, no landmark name-drops unless the data explicitly mentions proximity. If the data is thin, write less — a sharp two sentences beats a padded four.
 5. Assign tags from the allowlist ONLY. 3–7 tags total. Leave a category empty rather than guess.
 6. Use the hours format: {"tz":"...","mon":[],"tue":[],"wed":[],"thu":[],"fri":[{"start":"HH:MM","end":"HH:MM"}],"sat":[],"sun":[]}. Leave days empty if unknown.
 7. Populate discovery_sources and fact_sources with relevant URLs.
