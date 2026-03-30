@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { discoverVenuesWithGemini } from "@/lib/ai/gemini";
+import { discoverVenues } from "@/lib/ai/claude";
 import { geocodeCity } from "@/lib/utils/geocode";
 
 export const maxDuration = 60;
@@ -134,8 +134,8 @@ export async function POST(request: Request) {
   const jobId = job.id as string;
 
   try {
-    // Run Gemini discovery
-    const discovered = await discoverVenuesWithGemini(cityName, country, {
+    // Run Claude discovery
+    const discovered = await discoverVenues(cityName, country, {
       max_results: maxResults,
     });
 

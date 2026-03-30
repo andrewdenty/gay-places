@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { enrichVenueWithGemini } from "@/lib/ai/gemini";
+import { enrichVenue } from "@/lib/ai/claude";
 import { searchPlace, fetchPlace } from "@/lib/api/places";
 import { env } from "@/lib/env";
 
@@ -156,8 +156,8 @@ export async function POST(request: Request) {
         }
       }
 
-      // Step 2: Gemini enrichment
-      const { draft, errors: validationErrors } = await enrichVenueWithGemini({
+      // Step 2: Claude enrichment
+      const { draft, errors: validationErrors } = await enrichVenue({
         name: candidate.name,
         venue_type: candidate.venue_type,
         city_name: candidate.city_name,
