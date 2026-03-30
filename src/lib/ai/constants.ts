@@ -59,12 +59,12 @@ export const VENUE_TYPE_VALUES = [
 /** Model + generation config per task type. */
 export const MODEL_CONFIG = {
   discovery: {
-    model: "claude-sonnet-4-6-20250514",
+    model: "claude-sonnet-4-6",
     temperature: 0.2,
     max_tokens: 8192,
   },
   enrichment: {
-    model: "claude-sonnet-4-6-20250514",
+    model: "claude-sonnet-4-6",
     temperature: 0.3,
     max_tokens: 8192,
   },
@@ -74,12 +74,12 @@ export const MODEL_CONFIG = {
     max_tokens: 512,
   },
   base_description: {
-    model: "claude-sonnet-4-6-20250514",
+    model: "claude-sonnet-4-6",
     temperature: 0.3,
     max_tokens: 300,
   },
   editorial_description: {
-    model: "claude-sonnet-4-6-20250514",
+    model: "claude-sonnet-4-6",
     temperature: 0.3,
     max_tokens: 300,
   },
