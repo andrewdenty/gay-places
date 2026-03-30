@@ -52,6 +52,7 @@ export interface VenueData {
   description: string | null;
   description_base: string | null;
   description_editorial: string | null;
+  description_context: string | null;
   description_generation_status: string | null;
   description_last_generated_at: string | null;
   published: boolean | null;
@@ -128,6 +129,9 @@ export function VenueEditForm({
   const [descriptionEditorial, setDescriptionEditorial] = useState(
     venue.description_editorial ?? ""
   );
+  const [descriptionContext, setDescriptionContext] = useState(
+    venue.description_context ?? ""
+  );
   const [published, setPublished] = useState(venue.published ?? false);
   const [closed, setClosed] = useState(venue.closed ?? false);
 
@@ -182,6 +186,7 @@ export function VenueEditForm({
     formData.set("facebook_url", facebookUrl);
     formData.set("description_base", descriptionBase);
     formData.set("description_editorial", descriptionEditorial);
+    formData.set("description_context", descriptionContext);
     if (published) formData.set("published", "on");
     if (closed) formData.set("closed", "on");
     formData.set("venue_tags", JSON.stringify(venueTags));
@@ -480,6 +485,26 @@ export function VenueEditForm({
               onChange={(e) => { setDescriptionEditorial(e.target.value); setIsDirty(true); }}
               placeholder="Write an editorial paragraph about this venue…"
               rows={4}
+              className={TEXTAREA}
+            />
+          </div>
+
+          {/* ── AI context ───────────────────────────────────────── */}
+          <div className="sm:col-span-2">
+            <div className="mb-1 text-xs text-muted-foreground">
+              <span>
+                Context for AI{" "}
+                <span className="text-muted-foreground/60">
+                  — key facts, history, or notes fed directly into description prompts
+                </span>
+              </span>
+            </div>
+            <textarea
+              name="description_context"
+              value={descriptionContext}
+              onChange={(e) => { setDescriptionContext(e.target.value); setIsDirty(true); }}
+              placeholder="e.g. Owned by Panti Bliss since 2007. Central to the marriage equality campaign. Known for Sunday drag brunches."
+              rows={3}
               className={TEXTAREA}
             />
           </div>

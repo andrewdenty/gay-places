@@ -249,6 +249,10 @@ export interface DescriptionPromptInput {
   tags: string[];
   /** The editorial description, if available — provides context for summary */
   descriptionEditorial: string | null;
+  /** Admin-provided facts/context to help the AI write better descriptions */
+  additionalContext: string | null;
+  /** Website URL — Claude may draw on what it knows from the venue's public presence */
+  websiteUrl: string | null;
 }
 
 export function buildBaseDescriptionPrompt(input: DescriptionPromptInput): {
@@ -257,6 +261,10 @@ export function buildBaseDescriptionPrompt(input: DescriptionPromptInput): {
 } {
   const system = `You write venue descriptions for Gay Places, an editorial LGBTQ+ travel guide. Every venue on the platform is an LGBTQ+ venue — never state or imply this, as it is redundant.
 
+Use the provided venue data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), crowd characterisations, or specific claims that aren't supported by evidence.
+
+Opening times are shown separately on the venue page — never mention specific hours, days open, or closing times in your description.
+
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
 Do not end with a recommendation or call to action ("worth a visit", "don't miss it", etc.).
 Write in present tense, third person. No lists, no markdown, no labels.`;
@@ -264,20 +272,19 @@ Write in present tense, third person. No lists, no markdown, no labels.`;
   const typeLabel = venueTypeLabel(input.venueType);
   const tagLine = input.tags.length > 0 ? `\nTags: ${input.tags.join(", ")}` : "";
   const addressLine = input.address ? `\nAddress: ${input.address}` : "";
-  const hoursLine = input.openingHours
-    ? `\nOpening hours: ${JSON.stringify(input.openingHours)}`
-    : "";
   const editorialLine = input.descriptionEditorial
     ? `\nEditorial context: ${input.descriptionEditorial}`
     : "";
+  const websiteLine = input.websiteUrl ? `\nWebsite: ${input.websiteUrl}` : "";
+  const contextLine = input.additionalContext
+    ? `\n\nAdmin-provided context (prioritise this for specificity):\n${input.additionalContext}`
+    : "";
 
-  const user = `Write a 1–2 sentence summary of this venue for a city listing page. It needs to work at a glance alongside other venues. Lead with what distinguishes this place — its character, history, programming, crowd, or position in the local scene. Be specific and concrete.
-
-Only state facts that are directly supported by the data below. If the data is thin, write one short sentence. A sharp single sentence beats a padded two.
+  const user = `Write a 1–2 sentence summary of this venue for a city listing page. It needs to work at a glance alongside other venues. Lead with what distinguishes this place — its character, history, programming, crowd, or position in the local scene. Be specific and concrete. A sharp single sentence beats a padded two.
 
 Name: ${input.name}
 Type: ${typeLabel}
-City: ${input.cityName}${input.country ? `, ${input.country}` : ""}${addressLine}${hoursLine}${tagLine}${editorialLine}
+City: ${input.cityName}${input.country ? `, ${input.country}` : ""}${addressLine}${tagLine}${editorialLine}${websiteLine}${contextLine}
 
 Return ONLY the summary text. No quotes, no labels, no markdown.`;
 
@@ -297,12 +304,20 @@ export interface EditorialPromptInput {
   tags: string[];
   /** The base description the reader has already seen */
   descriptionBase: string | null;
+  /** Admin-provided facts/context to help the AI write better descriptions */
+  additionalContext: string | null;
+  /** Website URL — Claude may draw on what it knows from the venue's public presence */
+  websiteUrl: string | null;
 }
 
 export function buildEditorialDescriptionPrompt(
   input: EditorialPromptInput,
 ): { system: string; user: string } {
   const system = `You write venue descriptions for Gay Places, an editorial LGBTQ+ travel guide. Every venue on the platform is an LGBTQ+ venue — never state or imply this, as it is redundant.
+
+Use the provided venue data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), crowd characterisations, or specific claims that aren't supported by evidence.
+
+Opening times are shown separately on the venue page — never mention specific hours, days open, or closing times in your description.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
 Do not end with a recommendation, summary statement, or call to action.
@@ -311,21 +326,22 @@ Write in present tense, third person. No lists, no markdown, no labels.`;
   const typeLabel = venueTypeLabel(input.venueType);
   const tagLine = input.tags.length > 0 ? `\nTags: ${input.tags.join(", ")}` : "";
   const addressLine = input.address ? `\nAddress: ${input.address}` : "";
-  const hoursLine = input.openingHours
-    ? `\nOpening hours: ${JSON.stringify(input.openingHours)}`
+  const websiteLine = input.websiteUrl ? `\nWebsite: ${input.websiteUrl}` : "";
+  const contextLine = input.additionalContext
+    ? `\n\nAdmin-provided context (prioritise this for specificity):\n${input.additionalContext}`
     : "";
 
   const summaryRef = input.descriptionBase
-    ? `The reader has already seen this summary of the venue:\n"${input.descriptionBase}"\n\nWrite a follow-on paragraph for the venue page that adds texture the summary didn't cover. Think: what is it actually like to spend time here? Useful angles include when to go, what happens on specific nights, what the crowd is like in practice, how the space feels, or how it compares to alternatives in the same city. Pick whichever angles the data supports — do not try to cover all of them.\n\nDo not repeat information from the summary above. The reader just read it. If the summary already mentions the crowd, talk about something else.`
-    : `Write a short paragraph for the venue page that tells the reader what it's actually like to spend time here. Useful angles include when to go, what happens on specific nights, what the crowd is like in practice, how the space feels, or how it compares to alternatives in the same city. Pick whichever angles the data supports — do not try to cover all of them.`;
+    ? `The reader has just read this summary — treat every fact in it as already known:\n"${input.descriptionBase}"\n\nWrite a follow-on paragraph that goes deeper. Every sentence must add information not already in the summary — no paraphrasing, no restating the same facts differently. Good angles: who founded or runs it and why that matters, its history, what a specific regular event involves, what the physical space is like, how it compares to alternatives in the same city. Pick one or two angles you can say something specific about — a sharp two sentences beats four padded ones.`
+    : `Write a short paragraph for the venue page. Useful angles: who runs it, its history, what a specific night or regular event involves, what the space is like, how it fits into the local scene. Pick the angle you can say something specific about.`;
 
   const user = `${summaryRef}
 
-Only state facts that are directly supported by the data below. If the data only supports one or two concrete observations, write one or two sentences. Do not pad. A sharp two sentences beats a vague four.
+If the provided data is thin but you have confident knowledge about this venue, draw on that. Do not pad with vague observations. A sharp two sentences beats a vague four.
 
 Name: ${input.name}
 Type: ${typeLabel}
-City: ${input.cityName}${input.country ? `, ${input.country}` : ""}${addressLine}${hoursLine}${tagLine}
+City: ${input.cityName}${input.country ? `, ${input.country}` : ""}${addressLine}${tagLine}${websiteLine}${contextLine}
 
 Return ONLY the paragraph text. No quotes, no labels, no markdown.`;
 
