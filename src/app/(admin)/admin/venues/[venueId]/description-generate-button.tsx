@@ -135,9 +135,9 @@ function DescriptionPreviewModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-2xl rounded-2xl border border-border bg-[var(--card)] shadow-xl">
+      <div className="relative z-10 flex w-full max-w-2xl flex-col rounded-2xl border border-border bg-[var(--card)] shadow-xl" style={{maxHeight: "90vh"}}>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-sm font-semibold">{title}</h2>
           <button
             type="button"
@@ -150,7 +150,7 @@ function DescriptionPreviewModal({
         </div>
 
         {/* Content: before / after */}
-        <div className="grid grid-cols-2 divide-x divide-border">
+        <div className="grid min-h-0 flex-1 grid-cols-2 divide-x divide-border overflow-y-auto">
           {/* Current */}
           <div className="px-6 py-4">
             <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -174,7 +174,7 @@ function DescriptionPreviewModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-border px-6 py-4">
+        <div className="flex shrink-0 items-center justify-end gap-3 border-t border-border px-6 py-4">
           <button
             type="button"
             onClick={onDismiss}
