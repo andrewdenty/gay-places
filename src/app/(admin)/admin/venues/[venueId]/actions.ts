@@ -35,7 +35,6 @@ export async function updateVenueDetails(formData: FormData) {
   const venue_type = getText(formData, "venue_type") || "other";
   const description_base = getText(formData, "description_base") || null;
   const description_editorial = getText(formData, "description_editorial") || null;
-  const description_context = getText(formData, "description_context") || null;
   const website_url = getText(formData, "website_url") || null;
   const google_maps_url = getText(formData, "google_maps_url") || null;
   const instagram_url = getText(formData, "instagram_url") || null;
@@ -79,7 +78,6 @@ export async function updateVenueDetails(formData: FormData) {
       venue_type,
       description_base,
       description_editorial,
-      description_context,
       ...(description_generation_status !== undefined && {
         description_generation_status,
       }),

@@ -249,8 +249,6 @@ export interface DescriptionPromptInput {
   tags: string[];
   /** The editorial description, if available — provides context for summary */
   descriptionEditorial: string | null;
-  /** Admin-provided facts/context to help the AI write better descriptions */
-  additionalContext: string | null;
   /** Website URL — Claude may draw on what it knows from the venue's public presence */
   websiteUrl: string | null;
 }
@@ -263,7 +261,7 @@ export function buildBaseDescriptionPrompt(input: DescriptionPromptInput): {
 
 Use the provided venue data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), crowd characterisations, or specific claims that aren't supported by evidence.
 
-Opening times are shown separately on the venue page — never mention specific hours, days open, or closing times in your description.
+Only mention opening times if they are a genuinely defining feature of the venue — for example, the only late-night option in a city, or a specific day or time that drives a cult following (e.g. a Thursday margarita special everyone knows about). Do not mention routine hours.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
 Do not end with a recommendation or call to action ("worth a visit", "don't miss it", etc.).
@@ -276,15 +274,12 @@ Write in present tense, third person. No lists, no markdown, no labels.`;
     ? `\nEditorial context: ${input.descriptionEditorial}`
     : "";
   const websiteLine = input.websiteUrl ? `\nWebsite: ${input.websiteUrl}` : "";
-  const contextLine = input.additionalContext
-    ? `\n\nAdmin-provided context (prioritise this for specificity):\n${input.additionalContext}`
-    : "";
 
   const user = `Write a 1–2 sentence summary of this venue for a city listing page. It needs to work at a glance alongside other venues. Lead with what distinguishes this place — its character, history, programming, crowd, or position in the local scene. Be specific and concrete. A sharp single sentence beats a padded two.
 
 Name: ${input.name}
 Type: ${typeLabel}
-City: ${input.cityName}${input.country ? `, ${input.country}` : ""}${addressLine}${tagLine}${editorialLine}${websiteLine}${contextLine}
+City: ${input.cityName}${input.country ? `, ${input.country}` : ""}${addressLine}${tagLine}${editorialLine}${websiteLine}
 
 Return ONLY the summary text. No quotes, no labels, no markdown.`;
 
@@ -304,8 +299,6 @@ export interface EditorialPromptInput {
   tags: string[];
   /** The base description the reader has already seen */
   descriptionBase: string | null;
-  /** Admin-provided facts/context to help the AI write better descriptions */
-  additionalContext: string | null;
   /** Website URL — Claude may draw on what it knows from the venue's public presence */
   websiteUrl: string | null;
 }
@@ -317,7 +310,7 @@ export function buildEditorialDescriptionPrompt(
 
 Use the provided venue data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), crowd characterisations, or specific claims that aren't supported by evidence.
 
-Opening times are shown separately on the venue page — never mention specific hours, days open, or closing times in your description.
+Only mention opening times if they are a genuinely defining feature of the venue — for example, the only late-night option in a city, or a specific day or time that drives a cult following (e.g. a Thursday margarita special everyone knows about). Do not mention routine hours.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
 Do not end with a recommendation, summary statement, or call to action.
@@ -327,9 +320,6 @@ Write in present tense, third person. No lists, no markdown, no labels.`;
   const tagLine = input.tags.length > 0 ? `\nTags: ${input.tags.join(", ")}` : "";
   const addressLine = input.address ? `\nAddress: ${input.address}` : "";
   const websiteLine = input.websiteUrl ? `\nWebsite: ${input.websiteUrl}` : "";
-  const contextLine = input.additionalContext
-    ? `\n\nAdmin-provided context (prioritise this for specificity):\n${input.additionalContext}`
-    : "";
 
   const summaryRef = input.descriptionBase
     ? `The reader has just read this summary — treat every fact in it as already known:\n"${input.descriptionBase}"\n\nWrite a follow-on paragraph that goes deeper. Every sentence must add information not already in the summary — no paraphrasing, no restating the same facts differently. Good angles: who founded or runs it and why that matters, its history, what a specific regular event involves, what the physical space is like, how it compares to alternatives in the same city. Pick one or two angles you can say something specific about — a sharp two sentences beats four padded ones.`
@@ -341,7 +331,7 @@ If the provided data is thin but you have confident knowledge about this venue, 
 
 Name: ${input.name}
 Type: ${typeLabel}
-City: ${input.cityName}${input.country ? `, ${input.country}` : ""}${addressLine}${tagLine}${websiteLine}${contextLine}
+City: ${input.cityName}${input.country ? `, ${input.country}` : ""}${addressLine}${tagLine}${websiteLine}
 
 Return ONLY the paragraph text. No quotes, no labels, no markdown.`;
 
