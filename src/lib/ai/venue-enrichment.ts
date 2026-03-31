@@ -304,7 +304,7 @@ export async function generateBaseDescriptionText(
 ): Promise<DescriptionProposal> {
   const { data: venue, error } = await supabase
     .from("venues")
-    .select("name,venue_type,venue_tags,address,opening_hours,description_editorial,website_url,city_id,cities(name,country)")
+    .select("name,venue_type,venue_tags,address,description_editorial,website_url,city_id,cities(name,country)")
     .eq("id", venueId)
     .maybeSingle();
 
@@ -323,7 +323,6 @@ export async function generateBaseDescriptionText(
     cityName: cityRow?.name ?? "",
     country: cityRow?.country ?? "",
     address: venue.address,
-    openingHours: venue.opening_hours,
     tags: flatTags,
     descriptionEditorial: venue.description_editorial,
     websiteUrl: venue.website_url ?? null,
@@ -339,7 +338,7 @@ export async function generateEditorialDescriptionText(
 ): Promise<DescriptionProposal> {
   const { data: venue, error } = await supabase
     .from("venues")
-    .select("name,venue_type,venue_tags,description_base,address,opening_hours,website_url,city_id,cities(name,country)")
+    .select("name,venue_type,venue_tags,description_base,address,website_url,city_id,cities(name,country)")
     .eq("id", venueId)
     .maybeSingle();
 
@@ -358,7 +357,6 @@ export async function generateEditorialDescriptionText(
     cityName: cityRow?.name ?? "",
     country: cityRow?.country ?? "",
     address: venue.address,
-    openingHours: venue.opening_hours,
     tags: flatTags,
     descriptionBase: venue.description_base,
     websiteUrl: venue.website_url ?? null,

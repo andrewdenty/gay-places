@@ -99,39 +99,27 @@ Only mention opening times if they are a genuinely defining feature — for exam
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.`;
 
   const placesSection = input.places
-    ? `
-## Google Places canonical data (use these as authoritative for name/address/coords/hours):
-- Name: ${input.places.name}
-- Address: ${input.places.address ?? "not available"}
-- Lat/Lng: ${input.places.lat != null ? `${input.places.lat}, ${input.places.lng}` : "not available"}
-- Phone: ${input.places.phone ?? "not available"}
-- Website: ${input.places.website_url ?? "not available"}
-- Google Maps URL: ${input.places.google_maps_url ?? "not available"}
-- Opening hours: ${input.places.opening_hours ? JSON.stringify(input.places.opening_hours) : "not available"}
-`
+    ? (() => {
+        const p = input.places;
+        const lines = ["## Google Places (authoritative for name/address/coords/hours):"];
+        lines.push(`- Name: ${p.name}`);
+        if (p.address) lines.push(`- Address: ${p.address}`);
+        if (p.lat != null) lines.push(`- Lat/Lng: ${p.lat}, ${p.lng}`);
+        if (p.phone) lines.push(`- Phone: ${p.phone}`);
+        if (p.website_url) lines.push(`- Website: ${p.website_url}`);
+        if (p.google_maps_url) lines.push(`- Maps: ${p.google_maps_url}`);
+        if (p.opening_hours) lines.push(`- Hours: ${JSON.stringify(p.opening_hours)}`);
+        return "\n" + lines.join("\n") + "\n";
+      })()
     : "\n## Google Places data: not available — do not fabricate coordinates or hours.\n";
 
-  const user = `Here are examples of the tone and specificity we want.
+  const user = `Examples of the tone and specificity we want:
 
-GOOD summary_short examples:
-- "Small cocktail bar on Rue des Archives with a regular local crowd. Known for its Thursday drag quiz and strong negronis."
-- "Techno club open Friday to Monday, mostly gay men. Dark, industrial, strict door. The Saturday night party has been running since 2011."
-- "Corner café in the Eixample with a big terrace. Popular pre-drink spot on weekends — mostly a mixed gay and lesbian crowd."
+summary_short: "Small cocktail bar on Rue des Archives with a regular local crowd. Known for its Thursday drag quiz and strong negronis."
+summary_short: "Techno club open Friday to Monday, mostly gay men. Dark, industrial, strict door. The Saturday night party has been running since 2011."
 
-BAD summary_short examples (too editorial, invents details):
-- "Tucked away on a quiet cobblestone street in the Marais, this intimate neighbourhood bar is a beloved gathering spot where locals and visitors alike come together over expertly crafted cocktails in a warmly lit space that feels like stepping into a friend's living room."
-- "A legendary after-hours institution that has been the beating heart of Berlin's queer underground for over a decade, offering a transcendent dancefloor experience in a cavernous industrial space where freedom and self-expression reign supreme."
-- "A sun-drenched corner café that has become the vibrant heart of Barcelona's Eixample gayborhood, where the aroma of freshly brewed coffee mingles with lively conversation as a stylish crowd gathers beneath iconic modernist architecture."
-
-GOOD why_unique examples:
-- "Open since 2016, it started as a wine bar and pivoted to cocktails after the first year. The Thursday drag quiz has run weekly since 2018 and pulls a mixed French-and-expat crowd — it's one of the few queer nights in the Marais that isn't geared at tourists. Seats about 40, so it fills up by 22h on weekends."
-- "Runs out of a converted industrial building in Friedrichshain — two floors, Funktion-One sound system. The door filters hard for regulars and people who know the night. Saturday's main event draws a predominantly gay male crowd into Sunday morning. No phones on the dancefloor."
-- "Been here since 2009, one of the first openly gay-oriented cafés in the neighbourhood. The terrace seats around 30 and faces south so it gets sun most of the day. Weekend afternoons it turns into a natural gathering point before people head to the bars on Carrer Consell de Cent. Kitchen closes at 18h but drinks run late."
-
-BAD why_unique examples (invents atmosphere, name-drops landmarks without data, adjective-heavy):
-- "Step inside and you'll find the kind of effortless Parisian charm that can't be manufactured. The exposed stone walls and candlelit tables create an atmosphere that's at once romantic and convivial, drawing a discerning crowd of creative professionals and longtime Marais residents who treat it as their unofficial living room."
-- "Housed in a former power station whose brutalist concrete walls seem to pulse with the collective energy of thousands of nights of liberation, this is where Berlin's queer nightlife legacy lives and breathes."
-- "Perched at the intersection of two of Eixample's most elegant boulevards, just steps from Gaudí's Casa Batlló, this beloved café has witnessed the neighbourhood's transformation into one of Europe's thriving gayborhoods."
+why_unique: "Open since 2016, it started as a wine bar and pivoted to cocktails after the first year. The Thursday drag quiz has run weekly since 2018 and pulls a mixed French-and-expat crowd — it's one of the few queer nights in the Marais that isn't geared at tourists. Seats about 40, so it fills up by 22h on weekends."
+why_unique: "Runs out of a converted industrial building in Friedrichshain — two floors, Funktion-One sound system. The door filters hard for regulars and people who know the night. Saturday's main event draws a predominantly gay male crowd into Sunday morning. No phones on the dancefloor."
 
 Your task is to enrich the details for a single venue.
 
@@ -155,33 +143,8 @@ ${buildTagAllowlist()}
 6. Use the hours format: {"tz":"...","mon":[],"tue":[],"wed":[],"thu":[],"fri":[{"start":"HH:MM","end":"HH:MM"}],"sat":[],"sun":[]}. Leave days empty if unknown.
 7. Populate discovery_sources and fact_sources with relevant URLs.
 
-Return ONLY a JSON object (no markdown, no commentary) with this exact shape:
-{
-  "name": string,
-  "venue_type": string,
-  "address": string,
-  "lat": number | null,
-  "lng": number | null,
-  "google_maps_url": string | null,
-  "website_url": string | null,
-  "instagram_url": string | null,
-  "facebook_url": string | null,
-  "phone": string | null,
-  "summary_short": string,
-  "why_unique": string,
-  "venue_tags": {
-    "crowd": string[],
-    "best_time": string[],
-    "whats_on": string[],
-    "atmosphere": string[],
-    "drinks_food": string[],
-    "music": string[]
-  },
-  "opening_hours": object,
-  "discovery_sources": string[],
-  "fact_sources": string[],
-  "notes": string
-}`;
+Return ONLY a JSON object (no markdown, no commentary) with these fields:
+name, venue_type, address, lat, lng, google_maps_url, website_url, instagram_url, facebook_url, phone, summary_short, why_unique, venue_tags {crowd, best_time, whats_on, atmosphere, drinks_food, music}, opening_hours, discovery_sources, fact_sources, notes`;
 
   return { system, user };
 }
@@ -247,7 +210,6 @@ export interface DescriptionPromptInput {
   cityName: string;
   country: string;
   address: string | null;
-  openingHours: unknown | null;
   tags: string[];
   /** The editorial description, if available — provides context for summary */
   descriptionEditorial: string | null;
@@ -297,7 +259,6 @@ export interface EditorialPromptInput {
   cityName: string;
   country: string;
   address: string | null;
-  openingHours: unknown | null;
   tags: string[];
   /** The base description the reader has already seen */
   descriptionBase: string | null;
