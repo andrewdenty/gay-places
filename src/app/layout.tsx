@@ -24,6 +24,7 @@ const instrumentSerif = Instrument_Serif({
 export const viewport: Viewport = {
   viewportFit: "cover",
   maximumScale: 1,
+  themeColor: "#fcfcfb",
 };
 
 export const metadata: Metadata = {
@@ -40,8 +41,18 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  manifest: "/manifest.json",
   icons: {
     icon: "/favicon.png",
+    apple: "/icons/icon-180.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Gay Places",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
   openGraph: {
     title: {
