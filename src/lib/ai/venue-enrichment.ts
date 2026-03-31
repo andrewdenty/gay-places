@@ -14,52 +14,14 @@ import { env } from "@/lib/env";
 import { searchPlace, fetchPlace } from "@/lib/api/places";
 import { TAG_CATEGORIES, type VenueTags } from "@/lib/venue-tags";
 import type { SupabaseClient } from "@supabase/supabase-js";
-
-// ---------------------------------------------------------------------------
-// Shared Gemini helper
-
-async function callGemini(
-  prompt: string,
-  opts: { temperature?: number; maxOutputTokens?: number } = {},
-): Promise<string> {
-  const apiKey = env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set.");
-  }
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-  const body = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: {
-      temperature: opts.temperature ?? 0.5,
-      maxOutputTokens: opts.maxOutputTokens ?? 512,
-      thinkingConfig: { thinkingBudget: 0 },
-    },
-  };
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => "");
-    throw new Error(`Gemini API returned HTTP ${response.status}: ${text.slice(0, 300)}`);
-  }
-
-  const json = (await response.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    error?: { message?: string };
-  };
-
-  if (json.error) throw new Error(`Gemini API error: ${json.error.message ?? "Unknown"}`);
-
-  const text = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
-  if (!text) throw new Error("Gemini returned an empty response");
-
-  return text;
-}
+import { callClaude } from "./client";
+import { MODEL_CONFIG } from "./constants";
+import {
+  buildTagSuggestionPrompt,
+  buildBaseDescriptionPrompt,
+  buildEditorialDescriptionPrompt,
+  venueTypeLabel,
+} from "./prompts";
 
 // ---------------------------------------------------------------------------
 // Place details enrichment
@@ -204,7 +166,7 @@ export async function enrichTags(
 ): Promise<TagsProposal> {
   const { data: venue, error } = await supabase
     .from("venues")
-    .select("name,venue_type,venue_tags,description_base,city_id,cities(name,country)")
+    .select("name,venue_type,venue_tags,description_base,description_editorial,address,opening_hours,city_id,cities(name,country)")
     .eq("id", venueId)
     .maybeSingle();
 
@@ -213,42 +175,22 @@ export async function enrichTags(
 
   const cityRow = venue.cities as unknown as { name: string; country: string } | null;
   const existingTags = (venue.venue_tags ?? {}) as VenueTags;
-
-  const tagAllowlist = TAG_CATEGORIES.map(
-    (cat) => `  "${cat.key}": [${cat.tags.map((t) => `"${t}"`).join(", ")}]`,
-  ).join("\n");
-
   const existingFlat = Object.values(existingTags)
     .flatMap((v) => (Array.isArray(v) ? v : []));
 
-  const prompt = `You are tagging a gay venue for Gay Places, a city guide. Your job is to assign relevant tags from the provided allowlist.
+  const { system, user } = buildTagSuggestionPrompt({
+    name: venue.name,
+    venueType: venue.venue_type,
+    cityName: cityRow?.name ?? "",
+    country: cityRow?.country ?? "",
+    descriptionBase: venue.description_base,
+    descriptionEditorial: venue.description_editorial,
+    address: venue.address,
+    openingHours: venue.opening_hours,
+    existingTags: existingFlat,
+  });
 
-Venue: ${venue.name}
-Type: ${venue.venue_type ?? "venue"}
-City: ${cityRow?.name ?? ""}${cityRow?.country ? `, ${cityRow.country}` : ""}
-${venue.description_base ? `Description: ${venue.description_base}` : ""}
-${existingFlat.length > 0 ? `Already tagged: ${existingFlat.join(", ")}` : "No existing tags"}
-
-Tag allowlist (ONLY suggest tags from this list):
-${tagAllowlist}
-
-Instructions:
-- Suggest 3–8 relevant tags from the allowlist that best describe this venue
-- ONLY include tags NOT already applied to the venue
-- Leave a category empty rather than guessing
-- Do NOT invent tags outside the allowlist
-
-Return ONLY a JSON object (no markdown) with this shape:
-{
-  "crowd": string[],
-  "best_time": string[],
-  "whats_on": string[],
-  "atmosphere": string[],
-  "drinks_food": string[],
-  "music": string[]
-}`;
-
-  const raw = await callGemini(prompt, { temperature: 0.3, maxOutputTokens: 512 });
+  const raw = await callClaude(user, { system, ...MODEL_CONFIG.tags });
 
   let parsed: unknown;
   try {
@@ -259,11 +201,11 @@ Return ONLY a JSON object (no markdown) with this shape:
     parsed = JSON.parse(stripped);
   } catch {
     const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("Gemini returned invalid JSON for tags");
+    if (!match) throw new Error("Claude returned invalid JSON for tags");
     parsed = JSON.parse(match[0]);
   }
 
-  if (typeof parsed !== "object" || parsed === null) throw new Error("Gemini tags response was not an object");
+  if (typeof parsed !== "object" || parsed === null) throw new Error("Tags response was not an object");
 
   const raw_tags = parsed as Record<string, unknown>;
   const tags_to_add: VenueTags = {};
@@ -362,7 +304,7 @@ export async function generateBaseDescriptionText(
 ): Promise<DescriptionProposal> {
   const { data: venue, error } = await supabase
     .from("venues")
-    .select("name,venue_type,venue_tags,city_id,cities(name,country)")
+    .select("name,venue_type,venue_tags,address,description_editorial,website_url,city_id,cities(name,country)")
     .eq("id", venueId)
     .maybeSingle();
 
@@ -375,25 +317,18 @@ export async function generateBaseDescriptionText(
     Array.isArray(v) ? (v as string[]) : [],
   );
 
-  const venueTypeLabel =
-    venue.venue_type === "club" ? "dance club"
-    : venue.venue_type === "cafe" ? "café"
-    : venue.venue_type === "event_space" ? "event space"
-    : (venue.venue_type ?? "venue");
+  const { system, user } = buildBaseDescriptionPrompt({
+    name: venue.name,
+    venueType: venue.venue_type,
+    cityName: cityRow?.name ?? "",
+    country: cityRow?.country ?? "",
+    address: venue.address,
+    tags: flatTags,
+    descriptionEditorial: venue.description_editorial,
+    websiteUrl: venue.website_url ?? null,
+  });
 
-  const tagLine = flatTags.length > 0 ? ` Known for: ${flatTags.join(", ")}.` : "";
-
-  const prompt = `You are a travel writer for Gay Places, an editorial guide to gay venues around the world. Your writing is authoritative, specific, and culturally aware — closer to Monocle or a boutique travel magazine than a nightlife directory.
-
-Write a summary of 1–3 sentences about the following venue. This appears alongside a venue listing on a city page, so it needs to work at a glance. Lead with what makes the venue worth visiting — its character, crowd, design, history, or position in the city's scene. Be specific and concrete. Do not use: vibrant, iconic, legendary, must-visit, welcoming, lively, beloved, thriving, or any phrase that could apply to any venue in any city.
-
-Venue: ${venue.name}
-Type: ${venueTypeLabel}
-City: ${cityRow?.name ?? ""}${cityRow?.country ? `, ${cityRow.country}` : ""}${tagLine}
-
-Return ONLY the summary text — no labels, no quotes, no markdown.`;
-
-  const text = await callGemini(prompt, { temperature: 0.5, maxOutputTokens: 256 });
+  const text = await callClaude(user, { system, ...MODEL_CONFIG.base_description });
   return { text };
 }
 
@@ -403,7 +338,7 @@ export async function generateEditorialDescriptionText(
 ): Promise<DescriptionProposal> {
   const { data: venue, error } = await supabase
     .from("venues")
-    .select("name,venue_type,venue_tags,description_base,city_id,cities(name,country)")
+    .select("name,venue_type,venue_tags,description_base,address,website_url,city_id,cities(name,country)")
     .eq("id", venueId)
     .maybeSingle();
 
@@ -416,25 +351,17 @@ export async function generateEditorialDescriptionText(
     Array.isArray(v) ? (v as string[]) : [],
   );
 
-  const venueTypeLabel =
-    venue.venue_type === "club" ? "dance club"
-    : venue.venue_type === "cafe" ? "café"
-    : venue.venue_type === "event_space" ? "event space"
-    : (venue.venue_type ?? "venue");
+  const { system, user } = buildEditorialDescriptionPrompt({
+    name: venue.name,
+    venueType: venue.venue_type,
+    cityName: cityRow?.name ?? "",
+    country: cityRow?.country ?? "",
+    address: venue.address,
+    tags: flatTags,
+    descriptionBase: venue.description_base,
+    websiteUrl: venue.website_url ?? null,
+  });
 
-  const tagLine = flatTags.length > 0 ? ` Known for: ${flatTags.join(", ")}.` : "";
-  const summaryLine = venue.description_base ? `\nExisting summary: ${venue.description_base}` : "";
-
-  const prompt = `You are a travel writer for Gay Places, an editorial guide to gay venues around the world. Your writing is authoritative, specific, and culturally aware — closer to Monocle or a boutique travel magazine than a nightlife directory.
-
-Write a single editorial paragraph of 3–5 sentences about the following venue. This paragraph appears on the venue page immediately after a short summary sentence, so it should go deeper — not repeat. Draw on the venue's character, crowd, programming, design, or role in the local scene. Write in prose, no lists or bullet points. Be specific and concrete. Do not use: vibrant, iconic, legendary, must-visit, welcoming, lively, beloved, thriving, or any phrase that could apply to any venue in any city.
-
-Venue: ${venue.name}
-Type: ${venueTypeLabel}
-City: ${cityRow?.name ?? ""}${cityRow?.country ? `, ${cityRow.country}` : ""}${tagLine}${summaryLine}
-
-Return ONLY the paragraph text — no labels, no quotes, no markdown.`;
-
-  const text = await callGemini(prompt, { temperature: 0.7, maxOutputTokens: 512 });
+  const text = await callClaude(user, { system, ...MODEL_CONFIG.editorial_description });
   return { text };
 }

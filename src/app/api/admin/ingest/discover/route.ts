@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { discoverVenuesWithGemini } from "@/lib/ai/gemini";
+import { discoverVenues } from "@/lib/ai/claude";
 import { geocodeCity } from "@/lib/utils/geocode";
 
 export const maxDuration = 60;
@@ -89,26 +89,33 @@ export async function POST(request: Request) {
 
   const admin = createSupabaseAdminClient();
 
-  // Auto-create city if it doesn't exist yet
-  const { data: existingCity } = await admin
-    .from("cities")
-    .select("id")
-    .eq("slug", citySlug)
-    .maybeSingle();
+  try {
+    // Auto-create city if it doesn't exist yet
+    const { data: existingCity } = await admin
+      .from("cities")
+      .select("id")
+      .eq("slug", citySlug)
+      .maybeSingle();
 
-  if (!existingCity) {
-    const coords = await geocodeCity(cityName, country);
-    if (coords) {
-      await admin.from("cities").insert({
-        slug: citySlug,
-        name: cityName,
-        country,
-        center_lat: coords.lat,
-        center_lng: coords.lng,
-        published: false,
-      });
+    if (!existingCity) {
+      const coords = await geocodeCity(cityName, country);
+      if (coords) {
+        await admin.from("cities").insert({
+          slug: citySlug,
+          name: cityName,
+          country,
+          center_lat: coords.lat,
+          center_lng: coords.lng,
+          published: false,
+        });
+      }
+      // If geocode fails, proceed — publish step will surface the missing city error
     }
-    // If geocode fails, proceed — publish step will surface the missing city error
+  } catch (e) {
+    return NextResponse.json(
+      { error: `Setup failed: ${e instanceof Error ? e.message : String(e)}` },
+      { status: 500 },
+    );
   }
 
   // Create ingest_jobs row (running)
@@ -134,8 +141,8 @@ export async function POST(request: Request) {
   const jobId = job.id as string;
 
   try {
-    // Run Gemini discovery
-    const discovered = await discoverVenuesWithGemini(cityName, country, {
+    // Run Claude discovery
+    const discovered = await discoverVenues(cityName, country, {
       max_results: maxResults,
     });
 

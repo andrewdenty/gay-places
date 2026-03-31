@@ -4,7 +4,7 @@ export const env = {
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   // Server-only: never expose via NEXT_PUBLIC_
-  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   GOOGLE_PLACES_API_KEY: process.env.GOOGLE_PLACES_API_KEY,
 };
 
