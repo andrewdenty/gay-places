@@ -1,13 +1,12 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  getTopCitiesWithImages,
-  getCitiesWithVenueCounts,
-  getPublishedCountrySlugs,
-} from "@/lib/data/public";
-import { RegionBrowser } from "@/components/city/region-browser";
+import { getTopCitiesWithImages } from "@/lib/data/public";
+import { AllGuidesSection, AllGuidesSkeleton } from "./_components/all-guides-section";
 import { HeroSearch } from "@/components/home/hero-search";
 import { env } from "@/lib/env";
+
+export const revalidate = 3600;
 
 const STORAGE_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
@@ -33,11 +32,7 @@ const websiteJsonLd = {
 export default async function LandingPage() {
   const hasSupa = !!(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
-  const [featuredCities, allCities, publishedCountrySlugs] = await Promise.all([
-    hasSupa ? getTopCitiesWithImages(8).catch(() => []) : [],
-    hasSupa ? getCitiesWithVenueCounts().catch(() => []) : [],
-    hasSupa ? getPublishedCountrySlugs().catch(() => new Set<string>()) : new Set<string>(),
-  ]);
+  const featuredCities = await (hasSupa ? getTopCitiesWithImages(8).catch(() => []) : Promise.resolve([]));
 
   return (
     <>
@@ -170,22 +165,9 @@ export default async function LandingPage() {
           </span>
         </div>
 
-        {allCities.length > 0 ? (
-          <RegionBrowser cities={allCities} publishedCountrySlugs={publishedCountrySlugs} />
-        ) : (
-          <div className="-mx-4 sm:-mx-6">
-            {["Asia", "Europe", "Africa", "The Americas", "Oceania"].map((region) => (
-              <div
-                key={region}
-                className="flex items-center justify-between border-b border-[var(--border)] px-4 sm:px-6 py-6"
-              >
-                <span className="text-[15px] font-semibold text-[var(--foreground)]">
-                  {region}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <Suspense fallback={<AllGuidesSkeleton />}>
+          <AllGuidesSection />
+        </Suspense>
       </section>
     </div>
     </>
