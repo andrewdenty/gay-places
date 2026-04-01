@@ -255,16 +255,13 @@ export function NavDrawer({
 
 // Shown only on iOS when not already installed as a PWA
 function GetTheAppItem({ onClose }: { onClose: () => void }) {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
+  // Lazy initializer runs once on the client — no effect or deferred setState needed
+  const [show] = useState(() => {
+    if (typeof navigator === "undefined") return false;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isStandalone = (navigator as Navigator & { standalone?: boolean }).standalone === true;
-    const shouldShow = isIOS && !isStandalone;
-    // Defer to avoid synchronous setState in effect (lint rule)
-    const t = setTimeout(() => setShow(shouldShow), 0);
-    return () => clearTimeout(t);
-  }, []);
+    return isIOS && !isStandalone;
+  });
 
   if (!show) return null;
 

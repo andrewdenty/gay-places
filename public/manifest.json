@@ -3,7 +3,7 @@
   "short_name": "Gay Places",
   "description": "A quietly curated guide to gay bars, clubs and queer spaces around the world.",
   "start_url": "/",
-  "display": "standalone",
+  "display": "minimal-ui",
   "background_color": "#fcfcfb",
   "theme_color": "#fcfcfb",
   "orientation": "portrait-primary",

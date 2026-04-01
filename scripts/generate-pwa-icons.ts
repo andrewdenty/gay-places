@@ -1,10 +1,32 @@
 /**
  * Generates PWA icon PNGs from the rainbow-logo.svg source.
+ * All icons have a comfortable inset — the logo fills ~62% of the canvas
+ * with the app background colour (#fcfcfb) behind it, matching the look of
+ * well-designed app icons (e.g. Claude).
  * Run with: npm run generate-icons
  */
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
+
+// Logo fills this fraction of the canvas; the rest is padding on each side
+const LOGO_FILL = 0.62;
+
+async function makeIcon(svgPath: string, canvasSize: number): Promise<Buffer> {
+  const logoSize = Math.round(canvasSize * LOGO_FILL);
+  const logoBuffer = await sharp(svgPath).resize(logoSize, logoSize).png().toBuffer();
+  return sharp({
+    create: {
+      width: canvasSize,
+      height: canvasSize,
+      channels: 4,
+      background: { r: 252, g: 252, b: 251, alpha: 1 }, // #fcfcfb
+    },
+  })
+    .composite([{ input: logoBuffer, gravity: "center" }])
+    .png()
+    .toBuffer();
+}
 
 async function main() {
   const svgPath = path.join(process.cwd(), "public", "rainbow-logo.svg");
@@ -19,32 +41,34 @@ async function main() {
     { name: "icon-1024.png", size: 1024 },
   ];
 
-  for (const { name, size } of sizes) {
-    await sharp(svgPath).resize(size, size).png().toFile(path.join(outputDir, name));
-    console.log(`✓ Generated ${name} (${size}×${size})`);
-  }
+  // Generate all standard icons in parallel
+  await Promise.all(
+    sizes.map(async ({ name, size }) => {
+      const buf = await makeIcon(svgPath, size);
+      await sharp(buf).toFile(path.join(outputDir, name));
+      console.log(`✓ ${name} (${size}×${size})`);
+    })
+  );
 
-  // Maskable icon — 20% safe-zone padding on each side (icon fills 60% of canvas)
-  // Required for Android adaptive icons to avoid clipping
+  // Maskable icon needs a slightly larger safe zone (20% each side) for
+  // Android adaptive icon clipping — keep it separate so the fill differs
   const maskableSize = 512;
-  const padding = Math.round(maskableSize * 0.2);
-  const innerSize = maskableSize - padding * 2; // ~307px
-
-  const innerBuffer = await sharp(svgPath).resize(innerSize, innerSize).png().toBuffer();
-
+  const maskableFill = 0.6; // 20% padding each side
+  const logoSize = Math.round(maskableSize * maskableFill);
+  const logoBuffer = await sharp(svgPath).resize(logoSize, logoSize).png().toBuffer();
   await sharp({
     create: {
       width: maskableSize,
       height: maskableSize,
       channels: 4,
-      background: { r: 252, g: 252, b: 251, alpha: 1 }, // #fcfcfb
+      background: { r: 252, g: 252, b: 251, alpha: 1 },
     },
   })
-    .composite([{ input: innerBuffer, gravity: "center" }])
+    .composite([{ input: logoBuffer, gravity: "center" }])
     .png()
     .toFile(path.join(outputDir, "icon-512-maskable.png"));
 
-  console.log(`✓ Generated icon-512-maskable.png (${maskableSize}×${maskableSize}, maskable)`);
+  console.log(`✓ icon-512-maskable.png (${maskableSize}×${maskableSize}, maskable)`);
   console.log("\nAll icons generated in public/icons/");
 }
 
