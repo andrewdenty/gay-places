@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { X, Search, ArrowRight } from "lucide-react";
+import { X, Search, ArrowRight, Download } from "lucide-react";
 import { SearchModal } from "@/components/search/search-modal";
 import { NearMeFieldButton } from "@/components/ui/near-me-field-button";
 
@@ -191,6 +191,9 @@ export function NavDrawer({
                 </Link>
               </div>
 
+              {/* Get the App — only shown when not already installed */}
+              <GetTheAppItem onClose={onClose} />
+
               {/* Account */}
               {userEmail ? (
                 <div className="flex flex-col gap-4">
@@ -247,5 +250,35 @@ export function NavDrawer({
         onClose={() => { setSearchOpen(false); onClose(); }}
       />
     </>
+  );
+}
+
+// Shown only on iOS when not already installed as a PWA
+function GetTheAppItem({ onClose }: { onClose: () => void }) {
+  // Lazy initializer runs once on the client — no effect or deferred setState needed
+  const [show] = useState(() => {
+    if (typeof navigator === "undefined") return false;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone = (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    return isIOS && !isStandalone;
+  });
+
+  if (!show) return null;
+
+  return (
+    <div className="flex items-center justify-between">
+      <span className="font-mono text-[10px] uppercase" style={{ letterSpacing: "1.2px", color: "#171717" }}>
+        Get the App
+      </span>
+      <Link
+        href="/install"
+        className="flex items-center gap-1.5 rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5]"
+        style={{ borderColor: "#E4E4E1", color: "#171717" }}
+        onClick={onClose}
+      >
+        <Download size={13} strokeWidth={1.5} />
+        Add to Home Screen
+      </Link>
+    </div>
   );
 }

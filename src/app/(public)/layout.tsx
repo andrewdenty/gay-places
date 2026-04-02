@@ -32,18 +32,17 @@ export default async function PublicLayout({ children }: PropsWithChildren) {
 
   return (
     <ToastProvider>
-    <div className="min-h-dvh flex flex-col bg-[var(--background)] text-[var(--foreground)]">
-      <SiteHeader isAdmin={isAdmin} userEmail={userEmail} initialCities={initialCities} />
+      <div className="min-h-dvh flex flex-col bg-[var(--background)] text-[var(--foreground)]">
+        <SiteHeader isAdmin={isAdmin} userEmail={userEmail} initialCities={initialCities} />
 
-      {/* Main content */}
-      <main className="flex-1">
-        <div className="mx-auto w-full max-w-[720px] px-4 sm:px-6">
-          {children}
-        </div>
-      </main>
+        <main className="flex-1">
+          <div className="mx-auto w-full max-w-[720px] px-4 sm:px-6">
+            {children}
+          </div>
+        </main>
 
-      <SiteFooter />
-    </div>
+        <SiteFooter />
+      </div>
     </ToastProvider>
   );
 }
