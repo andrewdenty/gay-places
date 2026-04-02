@@ -148,7 +148,7 @@ export default async function CityPage({
             <div className="relative bg-[#f7f7f5] aspect-square overflow-hidden mb-10 sm:order-2 sm:mt-10 sm:mb-0">
               <Image
                 src={cityImageUrl}
-                alt={city.name}
+                alt={`Gay bars, clubs and queer spaces in ${city.name}`}
                 fill
                 className="object-cover"
                 priority

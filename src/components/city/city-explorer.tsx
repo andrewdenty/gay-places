@@ -22,6 +22,7 @@ const CityMap = dynamic(
 type Props = {
   city: City;
   venues: Venue[];
+  initialType?: VenueType;
 };
 
 const allPills: PillOption[] = [
@@ -33,11 +34,11 @@ const allPills: PillOption[] = [
   { label: "Open Now", kind: "open" },
 ];
 
-export function CityExplorer({ city, venues }: Props) {
+export function CityExplorer({ city, venues, initialType }: Props) {
   const router = useRouter();
 
   const [query, setQuery] = useState("");
-  const [type, setType] = useState<VenueType>("all");
+  const [type, setType] = useState<VenueType>(initialType ?? "all");
   const [openNow, setOpenNow] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);

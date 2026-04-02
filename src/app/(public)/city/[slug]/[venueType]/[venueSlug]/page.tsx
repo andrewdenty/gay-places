@@ -18,7 +18,7 @@ import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlug
 import { env } from "@/lib/env";
 import { isOpenNow, getOpenUntilLabel } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
-import type { OpeningHoursRange } from "@/lib/types/opening-hours";
+import type { OpeningHours, OpeningHoursRange } from "@/lib/types/opening-hours";
 import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs";
 
 // Allow ISR: revalidate this page every hour. The is_admin check has been moved
@@ -41,6 +41,33 @@ const VENUE_TYPE_TITLE_LABEL: Record<string, string> = {
   event_space: "Gay Event Space",
   other: "Gay Venue",
 };
+
+const DAY_NAMES: Record<string, string> = {
+  mon: "Monday",
+  tue: "Tuesday",
+  wed: "Wednesday",
+  thu: "Thursday",
+  fri: "Friday",
+  sat: "Saturday",
+  sun: "Sunday",
+};
+
+function buildOpeningHoursSpec(hours: OpeningHours) {
+  const specs = [];
+  for (const [key, name] of Object.entries(DAY_NAMES)) {
+    const ranges = (hours as Record<string, unknown>)[key];
+    if (!Array.isArray(ranges) || ranges.length === 0) continue;
+    for (const range of ranges as OpeningHoursRange[]) {
+      specs.push({
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: name,
+        opens: range.start,
+        closes: range.end,
+      });
+    }
+  }
+  return specs;
+}
 
 const VENUE_TYPE_SCHEMA: Record<string, string> = {
   bar: "BarOrPub",
@@ -240,6 +267,9 @@ export default async function VenuePage({
       : {}),
     ...(sameAs.length > 0 ? { sameAs } : {}),
     ...(venue.updated_at ? { dateModified: venue.updated_at } : {}),
+    ...(venue.opening_hours
+      ? { openingHoursSpecification: buildOpeningHoursSpec(venue.opening_hours) }
+      : {}),
   };
 
   // Venue type display label
@@ -347,7 +377,7 @@ export default async function VenuePage({
           {/* Photo gallery */}
           {photos && photos.length > 0 && (
             <div>
-              <PhotoGallery photos={photos} />
+              <PhotoGallery photos={photos} venueName={venue.name} />
             </div>
           )}
 

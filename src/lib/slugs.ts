@@ -44,6 +44,24 @@ export function venueTypeToUrlSegment(venueType: string): string {
 }
 
 /**
+ * Maps a public URL segment back to the internal venue_type value.
+ * Returns null for unrecognised segments.
+ * e.g. "event-space" → "event_space", "place" → "other"
+ */
+export function urlSegmentToVenueType(segment: string): string | null {
+  const mapping: Record<string, string> = {
+    bar: "bar",
+    club: "club",
+    restaurant: "restaurant",
+    cafe: "cafe",
+    sauna: "sauna",
+    "event-space": "event_space",
+    place: "other",
+  };
+  return mapping[segment] ?? null;
+}
+
+/**
  * Builds the canonical URL path for a place (venue).
  * e.g. venueUrlPath("amsterdam", "club", "club-nyx") → "/city/amsterdam/club/club-nyx"
  */
