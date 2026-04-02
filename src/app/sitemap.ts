@@ -4,7 +4,7 @@ import {
   getPublishedCountrySlugs,
   getAllPublishedVenuesForSitemap,
 } from "@/lib/data/public";
-import { venueUrlPath } from "@/lib/slugs";
+import { venueUrlPath, venueTypeToUrlSegment } from "@/lib/slugs";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
@@ -50,5 +50,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  return [...staticRoutes, ...countryRoutes, ...cityRoutes, ...venueRoutes];
+  // One page per unique (city, venue_type) pair — e.g. /city/leipzig/bar
+  const uniqueCityTypes = new Set<string>();
+  for (const venue of venues) {
+    if (venue.city_slug) {
+      uniqueCityTypes.add(`${venue.city_slug}::${venue.venue_type}`);
+    }
+  }
+  const venueTypeRoutes: MetadataRoute.Sitemap = Array.from(uniqueCityTypes).map((key) => {
+    const [citySlug, venueType] = key.split("::");
+    return {
+      url: `${BASE_URL}/city/${citySlug}/${venueTypeToUrlSegment(venueType)}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    };
+  });
+
+  return [...staticRoutes, ...countryRoutes, ...cityRoutes, ...venueTypeRoutes, ...venueRoutes];
 }

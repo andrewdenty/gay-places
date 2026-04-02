@@ -7,6 +7,11 @@ type Photo = {
   storage_path: string;
 };
 
+type Props = {
+  photos: Photo[];
+  venueName: string;
+};
+
 const STORAGE_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/venue-photos";
 
@@ -14,7 +19,7 @@ function photoUrl(storagePath: string) {
   return `${STORAGE_BASE}/${storagePath}`;
 }
 
-export function PhotoGallery({ photos }: { photos: Photo[] }) {
+export function PhotoGallery({ photos, venueName }: Props) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const open = (index: number) => setLightboxIndex(index);
@@ -66,7 +71,7 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={photoUrl(photo.storage_path)}
-              alt=""
+              alt={`${venueName} photo ${i + 1}`}
               loading="lazy"
               className="h-full w-full object-cover transition-opacity hover:opacity-80"
             />
@@ -120,7 +125,7 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={photoUrl(photos[lightboxIndex].storage_path)}
-              alt=""
+              alt={`${venueName} photo ${lightboxIndex + 1}`}
               className="max-h-[90vh] max-w-[90vw] object-contain"
             />
           </div>
