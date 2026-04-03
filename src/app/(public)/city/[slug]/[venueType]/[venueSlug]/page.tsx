@@ -25,21 +25,7 @@ import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs"
 // component (AdminVenueLink) so no user-specific data is baked into the cached HTML.
 export const revalidate = 86400;
 
-export async function generateStaticParams() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return [];
-  }
-  const { getAllPublishedVenuesForSitemap } = await import("@/lib/data/public");
-  const { venueTypeToUrlSegment } = await import("@/lib/slugs");
-  const venues = await getAllPublishedVenuesForSitemap().catch(() => []);
-  return venues
-    .filter((v) => v.city_slug && v.slug)
-    .map((v) => ({
-      slug: v.city_slug,
-      venueType: venueTypeToUrlSegment(v.venue_type),
-      venueSlug: v.slug,
-    }));
-}
+
 
 const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";

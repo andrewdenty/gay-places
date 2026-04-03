@@ -11,15 +11,6 @@ import { toCountrySlug } from "@/lib/slugs";
 
 export const revalidate = 86400;
 
-export async function generateStaticParams() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return [];
-  }
-  const { getCities } = await import("@/lib/data/public");
-  const cities = await getCities().catch(() => []);
-  return cities.map((city) => ({ slug: city.slug }));
-}
-
 const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
