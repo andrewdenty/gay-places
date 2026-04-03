@@ -16,7 +16,13 @@ import { env } from "@/lib/env";
 import type { Venue } from "@/lib/data/public";
 import { venueUrlPath } from "@/lib/slugs";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
+
+export async function generateStaticParams() {
+  const { getPublishedCountrySlugs } = await import("@/lib/data/public");
+  const slugs = await getPublishedCountrySlugs().catch(() => new Set<string>());
+  return Array.from(slugs).map((slug) => ({ slug }));
+}
 
 // Derives region from country name — mirrors RegionBrowser logic
 const COUNTRY_REGION: Record<string, string> = {

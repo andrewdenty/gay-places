@@ -9,7 +9,23 @@ import { env } from "@/lib/env";
 import { toCountrySlug, urlSegmentToVenueType } from "@/lib/slugs";
 import type { VenueType } from "@/components/filters/filter-pills";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
+
+export async function generateStaticParams() {
+  const { getAllPublishedVenuesForSitemap } = await import("@/lib/data/public");
+  const { venueTypeToUrlSegment } = await import("@/lib/slugs");
+  const venues = await getAllPublishedVenuesForSitemap().catch(() => []);
+  const seen = new Set<string>();
+  const params: { slug: string; venueType: string }[] = [];
+  for (const v of venues) {
+    if (!v.city_slug) continue;
+    const key = `${v.city_slug}::${v.venue_type}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    params.push({ slug: v.city_slug, venueType: venueTypeToUrlSegment(v.venue_type) });
+  }
+  return params;
+}
 
 const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
