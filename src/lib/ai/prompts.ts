@@ -94,21 +94,21 @@ export function buildEnrichmentPrompt(input: EnrichmentInput): {
 
 Your voice is a well-connected local giving a friend honest, practical tips — not a magazine feature. Be specific and direct. Use the provided data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), nearby landmarks, or crowd characterisations that aren't supported by evidence.
 
-Only mention opening times if they are a genuinely defining feature — for example, the only late-night option in a city, or a specific day/time with a cult following. Do not mention routine hours.
+Do NOT mention opening hours, closing times, or daily schedules in summary_short or why_unique. Hours belong in the structured opening_hours JSON field only. No exceptions — not even for late-night venues or unusual schedules.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.`;
 
   const placesSection = input.places
     ? (() => {
         const p = input.places;
-        const lines = ["## Google Places (authoritative for name/address/coords/hours):"];
+        const lines = ["## Google Places (authoritative for name/address/coords):"];
         lines.push(`- Name: ${p.name}`);
         if (p.address) lines.push(`- Address: ${p.address}`);
         if (p.lat != null) lines.push(`- Lat/Lng: ${p.lat}, ${p.lng}`);
         if (p.phone) lines.push(`- Phone: ${p.phone}`);
         if (p.website_url) lines.push(`- Website: ${p.website_url}`);
         if (p.google_maps_url) lines.push(`- Maps: ${p.google_maps_url}`);
-        if (p.opening_hours) lines.push(`- Hours: ${JSON.stringify(p.opening_hours)}`);
+        if (p.opening_hours) lines.push(`\n## Opening hours (for structured opening_hours field ONLY — do not reference in descriptions):\n${JSON.stringify(p.opening_hours)}`);
         return "\n" + lines.join("\n") + "\n";
       })()
     : "\n## Google Places data: not available — do not fabricate coordinates or hours.\n";
@@ -116,10 +116,10 @@ BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.`;
   const user = `Examples of the tone and specificity we want:
 
 summary_short: "Small cocktail bar on Rue des Archives with a regular local crowd. Known for its Thursday drag quiz and strong negronis."
-summary_short: "Techno club open Friday to Monday, mostly gay men. Dark, industrial, strict door. The Saturday night party has been running since 2011."
+summary_short: "Techno club, mostly gay men. Dark, industrial, strict door. The Saturday night party has been running since 2011."
 
-why_unique: "Open since 2016, it started as a wine bar and pivoted to cocktails after the first year. The Thursday drag quiz has run weekly since 2018 and pulls a mixed French-and-expat crowd — it's one of the few queer nights in the Marais that isn't geared at tourists. Seats about 40, so it fills up by 22h on weekends."
-why_unique: "Runs out of a converted industrial building in Friedrichshain — two floors, Funktion-One sound system. The door filters hard for regulars and people who know the night. Saturday's main event draws a predominantly gay male crowd into Sunday morning. No phones on the dancefloor."
+why_unique: "Open since 2016, it started as a wine bar and pivoted to cocktails after the first year. The Thursday drag quiz has run weekly since 2018 and pulls a mixed French-and-expat crowd — it's one of the few queer nights in the Marais that isn't geared at tourists. Seats about 40."
+why_unique: "Runs out of a converted industrial building in Friedrichshain — two floors, Funktion-One sound system. The door filters hard for regulars and people who know the night. Saturday's main event draws a predominantly gay male crowd. No phones on the dancefloor."
 
 Your task is to enrich the details for a single venue.
 
@@ -225,7 +225,7 @@ export function buildBaseDescriptionPrompt(input: DescriptionPromptInput): {
 
 Use the provided venue data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), crowd characterisations, or specific claims that aren't supported by evidence.
 
-Only mention opening times if they are a genuinely defining feature of the venue — for example, the only late-night option in a city, or a specific day or time that drives a cult following (e.g. a Thursday margarita special everyone knows about). Do not mention routine hours.
+Do NOT mention opening hours, closing times, or daily schedules in the description. Hours are shown separately on the page. No exceptions — not even for late-night venues or unusual schedules.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
 Do not end with a recommendation or call to action ("worth a visit", "don't miss it", etc.).
@@ -273,7 +273,7 @@ export function buildEditorialDescriptionPrompt(
 
 Use the provided venue data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), crowd characterisations, or specific claims that aren't supported by evidence.
 
-Only mention opening times if they are a genuinely defining feature of the venue — for example, the only late-night option in a city, or a specific day or time that drives a cult following (e.g. a Thursday margarita special everyone knows about). Do not mention routine hours.
+Do NOT mention opening hours, closing times, or daily schedules in the description. Hours are shown separately on the page. No exceptions — not even for late-night venues or unusual schedules.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
 Do not end with a recommendation, summary statement, or call to action.
