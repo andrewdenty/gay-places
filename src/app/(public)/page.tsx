@@ -1,12 +1,17 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getTopCitiesWithImages } from "@/lib/data/public";
 import { AllGuidesSection, AllGuidesSkeleton } from "./_components/all-guides-section";
 import { HeroSearch } from "@/components/home/hero-search";
 import { env } from "@/lib/env";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const STORAGE_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
