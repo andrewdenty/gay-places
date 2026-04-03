@@ -32,7 +32,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 5000);
+    }, type === "error" ? 12000 : 5000);
   }, []);
 
   const dismiss = useCallback((id: number) => {
@@ -94,7 +94,7 @@ function ToastItem({
         transition: "opacity 0.25s ease, transform 0.25s ease",
         pointerEvents: "auto",
       }}
-      className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm shadow-md min-w-[220px] max-w-xs ${
+      className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm shadow-md min-w-[220px] max-w-md ${
         isError
           ? "border-red-200 bg-red-50 text-red-800"
           : "border-[var(--border)] bg-[var(--card)] text-[var(--foreground)]"
@@ -140,7 +140,7 @@ function ToastItem({
         </svg>
       )}
 
-      <span className="flex-1 leading-snug">{toast.message}</span>
+      <span className="flex-1 leading-snug break-words">{toast.message}</span>
 
       {/* Dismiss */}
       <button
