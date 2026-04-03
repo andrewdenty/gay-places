@@ -19,6 +19,9 @@ import { venueUrlPath } from "@/lib/slugs";
 export const revalidate = 86400;
 
 export async function generateStaticParams() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return [];
+  }
   const { getPublishedCountrySlugs } = await import("@/lib/data/public");
   const slugs = await getPublishedCountrySlugs().catch(() => new Set<string>());
   return Array.from(slugs).map((slug) => ({ slug }));
