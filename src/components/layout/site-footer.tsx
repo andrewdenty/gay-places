@@ -86,6 +86,7 @@ export function SiteFooter() {
 
   return (
     <footer
+      data-nosnippet
       className="bg-[#171717]"
       style={{
         minHeight: 360,
