@@ -42,6 +42,7 @@ export function SiteHeader({ isAdmin = false, userEmail, initialCities }: { isAd
   return (
     <>
       <header
+        data-nosnippet
         className="sticky top-0 z-20 border-b border-[var(--border)]"
         style={{
           paddingTop: `calc(env(safe-area-inset-top) + ${scrolled ? 8 : 12}px)`,

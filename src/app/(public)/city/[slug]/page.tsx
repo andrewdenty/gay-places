@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
 import { toCountrySlug } from "@/lib/slugs";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
@@ -148,7 +148,7 @@ export default async function CityPage({
             <div className="relative bg-[#f7f7f5] aspect-square overflow-hidden mb-10 sm:order-2 sm:mt-10 sm:mb-0">
               <Image
                 src={cityImageUrl}
-                alt={city.name}
+                alt={`Gay bars, clubs and queer spaces in ${city.name}`}
                 fill
                 className="object-cover"
                 priority

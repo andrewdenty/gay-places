@@ -41,9 +41,6 @@ export const metadata: Metadata = {
   },
   description:
     "A quietly curated guide to gay bars, clubs and queer spaces around the world. Explore city guides and distinctive venues chosen for atmosphere, character and cultural relevance.",
-  alternates: {
-    canonical: "/",
-  },
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.png",

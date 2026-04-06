@@ -87,6 +87,7 @@ export function NavDrawer({
 
       {/* Drawer panel */}
       <div
+        data-nosnippet
         className="fixed right-0 top-0 z-50 flex h-full w-full sm:max-w-[400px] flex-col"
         style={{
           backgroundColor: "#FCFCFB",

@@ -69,7 +69,7 @@ export const MODEL_CONFIG = {
     max_tokens: 8192,
   },
   tags: {
-    model: "claude-haiku-4-5-20250514",
+    model: "claude-haiku-4-5-20251001",
     temperature: 0.3,
     max_tokens: 512,
   },

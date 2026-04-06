@@ -348,19 +348,20 @@ type VenueSitemapRow = { slug: string; venue_type: string; cities: { slug: strin
  * venues → cities.
  */
 export async function getAllPublishedVenuesForSitemap(): Promise<
-  { slug: string; city_slug: string; venue_type: string }[]
+  { slug: string; city_slug: string; venue_type: string; updated_at?: string }[]
 > {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("venues")
-    .select("slug,venue_type,cities!inner(slug)")
+    .select("slug,venue_type,updated_at,cities!inner(slug)")
     .eq("published", true);
   if (error) throw error;
-  return ((data as unknown) as VenueSitemapRow[] ?? [])
+  return ((data as unknown) as (VenueSitemapRow & { updated_at?: string })[] ?? [])
     .map((row) => ({
       slug: row.slug,
       venue_type: row.venue_type ?? "other",
       city_slug: row.cities[0]?.slug ?? "",
+      updated_at: row.updated_at,
     }))
     .filter((v) => v.city_slug);
 }

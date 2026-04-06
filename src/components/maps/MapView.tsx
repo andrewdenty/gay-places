@@ -1,5 +1,6 @@
 "use client";
 
+import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
 
