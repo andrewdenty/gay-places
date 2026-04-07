@@ -101,25 +101,27 @@ BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.`;
   const placesSection = input.places
     ? (() => {
         const p = input.places;
-        const lines = ["## Google Places (authoritative for name/address/coords/hours):"];
+        const lines = ["## Google Places (authoritative for name/address/coords):"];
         lines.push(`- Name: ${p.name}`);
         if (p.address) lines.push(`- Address: ${p.address}`);
         if (p.lat != null) lines.push(`- Lat/Lng: ${p.lat}, ${p.lng}`);
         if (p.phone) lines.push(`- Phone: ${p.phone}`);
         if (p.website_url) lines.push(`- Website: ${p.website_url}`);
         if (p.google_maps_url) lines.push(`- Maps: ${p.google_maps_url}`);
-        if (p.opening_hours) lines.push(`- Hours: ${JSON.stringify(p.opening_hours)}`);
-        return "\n" + lines.join("\n") + "\n";
+        const hoursSection = p.opening_hours
+          ? `\n## Opening hours (for structured opening_hours field only — do not mention in descriptions):\n${JSON.stringify(p.opening_hours)}\n`
+          : "";
+        return "\n" + lines.join("\n") + "\n" + hoursSection;
       })()
-    : "\n## Google Places data: not available — do not fabricate coordinates or hours.\n";
+    : "\n## Google Places data: not available — do not fabricate coordinates.\n";
 
   const user = `Examples of the tone and specificity we want:
 
 summary_short: "Small cocktail bar on Rue des Archives with a regular local crowd. Known for its Thursday drag quiz and strong negronis."
-summary_short: "Techno club open Friday to Monday, mostly gay men. Dark, industrial, strict door. The Saturday night party has been running since 2011."
+summary_short: "Techno club in Friedrichshain, mostly gay men. Dark, industrial, strict door. The Saturday night party has been running since 2011."
 
-why_unique: "Open since 2016, it started as a wine bar and pivoted to cocktails after the first year. The Thursday drag quiz has run weekly since 2018 and pulls a mixed French-and-expat crowd — it's one of the few queer nights in the Marais that isn't geared at tourists. Seats about 40, so it fills up by 22h on weekends."
-why_unique: "Runs out of a converted industrial building in Friedrichshain — two floors, Funktion-One sound system. The door filters hard for regulars and people who know the night. Saturday's main event draws a predominantly gay male crowd into Sunday morning. No phones on the dancefloor."
+why_unique: "Open since 2016, it started as a wine bar and pivoted to cocktails after the first year. The Thursday drag quiz has run weekly since 2018 and pulls a mixed French-and-expat crowd — it's one of the few queer nights in the Marais that isn't geared at tourists. Seats about 40."
+why_unique: "Runs out of a converted industrial building in Friedrichshain — two floors, Funktion-One sound system. The door filters hard for regulars and people who know the night. Saturday's main event draws a predominantly gay male crowd. No phones on the dancefloor."
 
 Your task is to enrich the details for a single venue.
 
@@ -135,7 +137,7 @@ ${placesSection}
 ${buildTagAllowlist()}
 
 ## Instructions
-1. Use Google Places data as authoritative for: name, address, lat/lng, hours, phone, website.
+1. Use Google Places data as authoritative for: name, address, lat/lng, phone, website. Use the hours data only to populate the structured opening_hours field — do not reference hours in any description field.
 2. If no Places data, use discovery sources to inform the response. Leave lat/lng null if unverifiable.
 3. Write a \`summary_short\` of 1–2 sentences max. This appears in a venue listing, so it must work at a glance. Say what kind of place it is, who goes there, and one concrete thing that sets it apart (a specific night, the space itself, the drinks, the history). If the provided data is thin, draw on what you know about the venue with confidence. Write like a text to a friend, not a review. No adjective stacking.
 4. Write \`why_unique\` in 2–4 sentences. This sits directly below the summary on the venue page. Every sentence must add information not already in summary_short — no paraphrasing, no restating the same facts differently. Pick the most interesting concrete detail you can say something specific about: when it opened, what night matters, who runs it, what the space used to be, what makes the crowd different from the bar down the street. State facts and let them carry the weight. No scene-setting, no "stepping inside" intros, no landmark name-drops unless the data explicitly mentions proximity. If the data is thin, write less — a sharp two sentences beats a padded four.
