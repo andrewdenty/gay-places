@@ -44,7 +44,8 @@ export type Venue = {
     | "cafe"
     | "sauna"
     | "event_space"
-    | "other";
+    | "other"
+    | "cruising";
   /** @deprecated Use description_editorial or description_base instead. */
   description: string;
   /** Auto-generated base description (deterministic or AI draft). */

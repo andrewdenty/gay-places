@@ -9,7 +9,8 @@ type VenueType =
   | "cafe"
   | "sauna"
   | "event_space"
-  | "other";
+  | "other"
+  | "cruising";
 
 const VALID_VENUE_TYPES = new Set<string>([
   "bar",
@@ -19,6 +20,7 @@ const VALID_VENUE_TYPES = new Set<string>([
   "sauna",
   "event_space",
   "other",
+  "cruising",
 ]);
 
 function toVenueType(v: unknown): VenueType {

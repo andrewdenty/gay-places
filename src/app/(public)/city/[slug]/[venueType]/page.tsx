@@ -22,6 +22,7 @@ const VENUE_TYPE_PLURAL: Record<string, string> = {
   sauna: "Saunas",
   event_space: "Event Spaces",
   other: "Places",
+  cruising: "Cruising Venues",
 };
 
 export async function generateMetadata({

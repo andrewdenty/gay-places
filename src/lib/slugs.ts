@@ -39,6 +39,7 @@ export function venueTypeToUrlSegment(venueType: string): string {
     sauna: "sauna",
     event_space: "event-space",
     other: "place",
+    cruising: "cruising",
   };
   return mapping[venueType] ?? "place";
 }
@@ -57,6 +58,7 @@ export function urlSegmentToVenueType(segment: string): string | null {
     sauna: "sauna",
     "event-space": "event_space",
     place: "other",
+    cruising: "cruising",
   };
   return mapping[segment] ?? null;
 }
