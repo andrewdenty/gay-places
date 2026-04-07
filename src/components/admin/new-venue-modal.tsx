@@ -74,6 +74,7 @@ export function NewVenueModal({ cities }: { cities: City[] }) {
             <option value="cafe">Café</option>
             <option value="sauna">Sauna</option>
             <option value="event_space">Event space</option>
+            <option value="cruising">Cruising</option>
             <option value="other">Other</option>
           </select>
           <input

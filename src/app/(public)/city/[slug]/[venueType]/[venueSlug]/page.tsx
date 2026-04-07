@@ -41,6 +41,7 @@ const VENUE_TYPE_TITLE_LABEL: Record<string, string> = {
   sauna: "Gay Sauna",
   event_space: "Gay Event Space",
   other: "Gay Venue",
+  cruising: "Gay Cruising Venue",
 };
 
 const DAY_NAMES: Record<string, string> = {
@@ -332,7 +333,12 @@ export default async function VenuePage({
               {city.name.toUpperCase()}
             </Link>
             <span className="mx-1">/</span>
-            <span>{venueType.toUpperCase()}</span>
+            <Link
+              href={`/city/${city.slug}/${venueType}`}
+              className="hover:text-[var(--foreground)] transition-colors"
+            >
+              {venueType.toUpperCase()}
+            </Link>
           </div>
           {/* Open status — top right */}
           {permanentlyClosed ? (

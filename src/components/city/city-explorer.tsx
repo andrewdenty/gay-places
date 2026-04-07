@@ -32,6 +32,7 @@ const allPills: PillOption[] = [
   { label: "Clubs", kind: "type", value: "club" },
   { label: "Saunas", kind: "type", value: "sauna" },
   { label: "Cafés", kind: "type", value: "cafe" },
+  { label: "Cruising", kind: "type", value: "cruising" },
   { label: "Open Now", kind: "open" },
 ];
 
