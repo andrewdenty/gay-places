@@ -219,7 +219,8 @@ export async function POST(
 
     if (draftUpdateErr) throw draftUpdateErr;
 
-    return NextResponse.json({ ok: true, venue_id: newVenue.id, city_slug: candidate.city_slug });
+    const venueType = toVenueType(draft.venue_type);
+    return NextResponse.json({ ok: true, venue_id: newVenue.id, city_slug: candidate.city_slug, venue_slug: slug, venue_type: venueType });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Publish failed";
     return NextResponse.json({ error: message }, { status: 400 });

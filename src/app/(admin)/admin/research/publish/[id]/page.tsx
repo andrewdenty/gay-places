@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { EditDraftForm } from "@/components/admin/edit-draft-form";
+import { uploadVenuePhoto } from "@/app/(admin)/admin/venues/[venueId]/actions";
 import type { VenueTags } from "@/lib/venue-tags";
 
 export const dynamic = "force-dynamic";
@@ -190,6 +191,7 @@ export default async function EditDraftPage({
           nextDraftId={nextDraft?.id ?? null}
           prevDraftName={prevDraft?.draft?.name ?? null}
           nextDraftName={nextDraft?.draft?.name ?? null}
+          uploadPhotoAction={uploadVenuePhoto}
         />
       </Card>
 
