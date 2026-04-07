@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
@@ -195,13 +196,10 @@ export function CityExplorer({ city, venues, initialType }: Props) {
           const description = v.description_base ?? v.description;
 
           return (
-            <div
+            <Link
               key={v.slug}
-              role="link"
-              tabIndex={0}
-              onClick={() => router.push(venueUrlPath(city.slug, v.venue_type, v.slug))}
-              onKeyDown={(e) => e.key === "Enter" && router.push(venueUrlPath(city.slug, v.venue_type, v.slug))}
-              className="block cursor-pointer"
+              href={venueUrlPath(city.slug, v.venue_type, v.slug)}
+              className="block"
             >
               <article className="border-b-[1.5px] border-[#171717] py-[40px]">
                 {/* Row 1: Name + open status */}
@@ -260,7 +258,7 @@ export function CityExplorer({ city, venues, initialType }: Props) {
                   </p>
                 )}
               </article>
-            </div>
+            </Link>
           );
         })}
       </div>

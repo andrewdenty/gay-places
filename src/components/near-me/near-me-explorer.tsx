@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { FilterPills } from "@/components/filters/filter-pills";
 import type { PillOption, VenueType } from "@/components/filters/filter-pills";
@@ -43,7 +43,6 @@ const MAX_LIST = 10;
 const MAX_RADIUS_KM = 20;
 
 export function NearMeExplorer({ venues, userLat, userLng }: Props) {
-  const router = useRouter();
   const [type, setType] = useState<VenueType>("all");
   const [openNow, setOpenNow] = useState(false);
   const [hoveredVenueId, setHoveredVenueId] = useState<string | null>(null);
@@ -152,17 +151,12 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
           const description = v.description_base ?? v.description;
 
           return (
-            <div
+            <Link
               key={v.id}
-              role="link"
-              tabIndex={0}
-              onClick={() => router.push(venueUrlPath(v.city_slug, v.venue_type, v.slug))}
-              onKeyDown={(e) =>
-                e.key === "Enter" && router.push(venueUrlPath(v.city_slug, v.venue_type, v.slug))
-              }
+              href={venueUrlPath(v.city_slug, v.venue_type, v.slug)}
               onMouseEnter={() => setHoveredVenueId(v.id)}
               onMouseLeave={() => setHoveredVenueId(null)}
-              className="block cursor-pointer"
+              className="block"
             >
               <article className="border-b-[1.5px] border-[#171717] py-[40px] mx-[-8px] px-[8px]">
                 {/* Row 1: Name + open status */}
@@ -244,7 +238,7 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
                   </a>
                 </div>
               </article>
-            </div>
+            </Link>
           );
         })}
       </div>
