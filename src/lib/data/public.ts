@@ -210,10 +210,29 @@ export async function getVenuesByCitySlug(slug: string): Promise<Venue[]> {
     .from("venues")
     .select(VENUE_FIELDS)
     .eq("city_id", city.id)
-    .eq("published", true)
-    .order("name", { ascending: true });
+    .eq("published", true);
   if (error) throw error;
-  return (data ?? []) as Venue[];
+  const venues = (data ?? []) as Venue[];
+  if (venues.length === 0) return venues;
+
+  // Fetch pre-aggregated popularity scores (one row per venue, not per session).
+  // The view uses idx_venue_interactions_venue and only returns venues with at
+  // least one interaction — absent venues default to score 0 in the sort below.
+  const venueIds = venues.map((v) => v.id);
+  const { data: scores } = await supabase
+    .from("venue_popularity_scores")
+    .select("venue_id,score")
+    .in("venue_id", venueIds);
+
+  const scoreMap: Record<string, number> = {};
+  for (const row of scores ?? []) {
+    scoreMap[row.venue_id] = Number(row.score);
+  }
+
+  return venues.sort((a, b) => {
+    const diff = (scoreMap[b.id] ?? 0) - (scoreMap[a.id] ?? 0);
+    return diff !== 0 ? diff : a.name.localeCompare(b.name);
+  });
 }
 
 export async function getVenueBySlug(
