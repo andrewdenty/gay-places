@@ -7,6 +7,8 @@ import { TAG_CATEGORIES, type VenueTags } from "@/lib/venue-tags";
 import { OpeningHoursEditor, type OpeningHours } from "@/components/admin/opening-hours-editor";
 import { LatLngPicker } from "@/components/admin/lat-lng-picker";
 import { useToast } from "@/components/ui/toast";
+import { venueUrlPath } from "@/lib/slugs";
+import { AdminPhotoUpload } from "@/app/(admin)/admin/venues/[venueId]/admin-photo-upload";
 
 interface DraftData {
   name: string;
@@ -40,6 +42,7 @@ interface Props {
   nextDraftId?: string | null;
   prevDraftName?: string | null;
   nextDraftName?: string | null;
+  uploadPhotoAction?: (formData: FormData) => Promise<void>;
 }
 
 export function EditDraftForm({
@@ -52,6 +55,7 @@ export function EditDraftForm({
   nextDraftId,
   prevDraftName,
   nextDraftName,
+  uploadPhotoAction,
 }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -59,11 +63,14 @@ export function EditDraftForm({
   const [publishBusy, setPublishBusy] = useState(false);
   const [publishedVenueId, setPublishedVenueId] = useState<string | null>(null);
   const [publishedCitySlug, setPublishedCitySlug] = useState<string | null>(null);
+  const [publishedVenueSlug, setPublishedVenueSlug] = useState<string | null>(null);
+  const [publishedVenueType, setPublishedVenueType] = useState<string | null>(null);
 
   const [name, setName] = useState(initialDraft.name ?? "");
   const [googleMapsUrl, setGoogleMapsUrl] = useState(initialDraft.google_maps_url ?? "");
   const [websiteUrl, setWebsiteUrl] = useState(initialDraft.website_url ?? "");
   const [instagramUrl, setInstagramUrl] = useState(initialDraft.instagram_url ?? "");
+  const [facebookUrl, setFacebookUrl] = useState(initialDraft.facebook_url ?? "");
   const [lat, setLat] = useState(String(initialDraft.lat ?? ""));
   const [lng, setLng] = useState(String(initialDraft.lng ?? ""));
   const [summaryShort, setSummaryShort] = useState(initialDraft.summary_short ?? "");
@@ -83,6 +90,7 @@ export function EditDraftForm({
     googleMapsUrl: initialDraft.google_maps_url ?? "",
     websiteUrl: initialDraft.website_url ?? "",
     instagramUrl: initialDraft.instagram_url ?? "",
+    facebookUrl: initialDraft.facebook_url ?? "",
     lat: String(initialDraft.lat ?? ""),
     lng: String(initialDraft.lng ?? ""),
     summaryShort: initialDraft.summary_short ?? "",
@@ -97,6 +105,7 @@ export function EditDraftForm({
       googleMapsUrl !== init.googleMapsUrl ||
       websiteUrl !== init.websiteUrl ||
       instagramUrl !== init.instagramUrl ||
+      facebookUrl !== init.facebookUrl ||
       lat !== init.lat ||
       lng !== init.lng ||
       summaryShort !== init.summaryShort ||
@@ -104,7 +113,7 @@ export function EditDraftForm({
       notes !== init.notes ||
       openingHours !== null;
     setIsDirty(dirty);
-  }, [name, googleMapsUrl, websiteUrl, instagramUrl, lat, lng, summaryShort, whyUnique, notes, openingHours]);
+  }, [name, googleMapsUrl, websiteUrl, instagramUrl, facebookUrl, lat, lng, summaryShort, whyUnique, notes, openingHours]);
 
   // ── Unsaved changes guard ─────────────────────────────────────────────────
   useEffect(() => {
@@ -138,6 +147,7 @@ export function EditDraftForm({
       google_maps_url: googleMapsUrl.trim() || null,
       website_url: websiteUrl.trim() || null,
       instagram_url: instagramUrl.trim() || null,
+      facebook_url: facebookUrl.trim() || null,
       lat: lat ? Number(lat) : null,
       lng: lng ? Number(lng) : null,
       summary_short: summaryShort.trim(),
@@ -165,6 +175,7 @@ export function EditDraftForm({
           googleMapsUrl: googleMapsUrl.trim(),
           websiteUrl: websiteUrl.trim(),
           instagramUrl: instagramUrl.trim(),
+          facebookUrl: facebookUrl.trim(),
           lat,
           lng,
           summaryShort: summaryShort.trim(),
@@ -178,7 +189,7 @@ export function EditDraftForm({
       }
     });
   }, [
-    draftId, name, googleMapsUrl, websiteUrl, instagramUrl, lat, lng,
+    draftId, name, googleMapsUrl, websiteUrl, instagramUrl, facebookUrl, lat, lng,
     summaryShort, whyUnique, venueTags, openingHours, notes,
     initialDraft.opening_hours, startTransition, showToast,
   ]);
@@ -191,10 +202,12 @@ export function EditDraftForm({
         method: "POST",
         headers: { "content-type": "application/json" },
       });
-      const json = (await res.json()) as { ok?: boolean; error?: string; venue_id?: string; city_slug?: string };
+      const json = (await res.json()) as { ok?: boolean; error?: string; venue_id?: string; city_slug?: string; venue_slug?: string; venue_type?: string };
       if (!res.ok || json.error) throw new Error(json.error ?? "Publish failed");
       setPublishedVenueId(json.venue_id ?? null);
       setPublishedCitySlug(json.city_slug ?? citySlug ?? null);
+      setPublishedVenueSlug(json.venue_slug ?? null);
+      setPublishedVenueType(json.venue_type ?? null);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Publish failed";
       showToast(msg, "error");
@@ -325,6 +338,21 @@ export function EditDraftForm({
           />
         </div>
 
+        {/* Facebook URL */}
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="edit-facebook">
+            Facebook URL
+          </label>
+          <input
+            id="edit-facebook"
+            type="url"
+            value={facebookUrl}
+            onChange={(e) => { setFacebookUrl(e.target.value); setIsDirty(true); }}
+            disabled={isPending}
+            className={inputCls}
+          />
+        </div>
+
         {/* Summary */}
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="edit-summary">
@@ -435,6 +463,14 @@ export function EditDraftForm({
         <div className="h-16" aria-hidden="true" />
       </form>
 
+      {/* ── Post-publish photo upload ─────────────────────────────────────────── */}
+      {publishedVenueId && uploadPhotoAction && (
+        <div className="mt-6 rounded-lg border border-border p-4">
+          <p className="text-sm font-medium mb-3">Photos</p>
+          <AdminPhotoUpload venueId={publishedVenueId} uploadAction={uploadPhotoAction} />
+        </div>
+      )}
+
       {/* ── Sticky bottom bar ──────────────────────────────────────────────────
           Always-visible Save button + dirty indicator + keyboard shortcut hint.
       ──────────────────────────────────────────────────────────────────────── */}
@@ -468,9 +504,9 @@ export function EditDraftForm({
             {publishedVenueId ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-green-700 font-medium">Published ✓</span>
-                {publishedCitySlug && (
+                {publishedCitySlug && publishedVenueType && publishedVenueSlug && (
                   <a
-                    href={`/city/${publishedCitySlug}/venue/${publishedVenueId}`}
+                    href={venueUrlPath(publishedCitySlug, publishedVenueType, publishedVenueSlug)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-blue-600 hover:underline"
