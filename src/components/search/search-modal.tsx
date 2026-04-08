@@ -30,6 +30,13 @@ type VenueResult = {
   city_name: string;
 };
 
+type ArticleResult = {
+  title: string;
+  slug: string;
+  excerpt: string;
+  cities: string[];
+};
+
 const venueTypeLabel: Record<string, string> = {
   bar: "Bar",
   club: "Club",
@@ -53,6 +60,7 @@ export function SearchModal({
   const [countries, setCountries] = useState<CountryResult[]>([]);
   const [cities, setCities] = useState<CityResult[]>([]);
   const [venues, setVenues] = useState<VenueResult[]>([]);
+  const [articles, setArticles] = useState<ArticleResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -76,6 +84,7 @@ export function SearchModal({
       setCountries([]);
       setCities([]);
       setVenues([]);
+      setArticles([]);
     }
   }, [isOpen]);
 
@@ -108,6 +117,7 @@ export function SearchModal({
       ...countries.map((country) => `/country/${toCountrySlug(country.name)}`),
       ...cities.map((city) => `/city/${city.slug}`),
       ...venues.map((venue) => venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)),
+      ...articles.map((article) => `/blog/${article.slug}`),
     ];
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -132,7 +142,7 @@ export function SearchModal({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isOpen, onClose, countries, cities, venues, navigate]);
+  }, [isOpen, onClose, countries, cities, venues, articles, navigate]);
 
   // Prevent body scroll
   useEffect(() => {
@@ -153,6 +163,7 @@ export function SearchModal({
       setCountries([]);
       setCities([]);
       setVenues([]);
+      setArticles([]);
       setLoading(false);
       return;
     }
@@ -164,14 +175,17 @@ export function SearchModal({
         const newCountries: CountryResult[] = data.countries ?? [];
         const newCities: CityResult[] = data.cities ?? [];
         const newVenues: VenueResult[] = data.venues ?? [];
+        const newArticles: ArticleResult[] = data.articles ?? [];
         setCountries(newCountries);
         setCities(newCities);
         setVenues(newVenues);
+        setArticles(newArticles);
         // Prefetch top result destinations for near-instant navigation
         const hrefs = [
           ...newCountries.slice(0, 2).map((c) => `/country/${toCountrySlug(c.name)}`),
           ...newCities.slice(0, 3).map((c) => `/city/${c.slug}`),
           ...newVenues.slice(0, 3).map((v) => venueUrlPath(v.city_slug, v.venue_type, v.slug)),
+          ...newArticles.slice(0, 2).map((a) => `/blog/${a.slug}`),
         ];
         hrefs.forEach((href) => router.prefetch(href));
       } finally {
@@ -181,7 +195,7 @@ export function SearchModal({
     return () => clearTimeout(t);
   }, [query, router]);
 
-  const hasResults = countries.length > 0 || cities.length > 0 || venues.length > 0;
+  const hasResults = countries.length > 0 || cities.length > 0 || venues.length > 0 || articles.length > 0;
   const hasQuery = query.trim().length > 0;
 
   if (!isOpen) return null;
@@ -361,6 +375,44 @@ export function SearchModal({
                             {venueTypeLabel[venue.venue_type] ?? "Place"}
                             <span className="mx-1.5">·</span>
                             {venue.city_name}
+                          </div>
+                        </div>
+                        <ArrowRight size={20} strokeWidth={1.5} className="shrink-0 text-[var(--muted-foreground)]" />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {articles.length > 0 && (
+                <div>
+                  <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[#E4E4E1]">
+                    Articles
+                  </div>
+                  {articles.map((article, i) => {
+                    const articleIndex = countries.length + cities.length + venues.length + i;
+                    const href = `/blog/${article.slug}`;
+                    return (
+                      <button
+                        key={article.slug}
+                        type="button"
+                        onClick={() => navigate(href)}
+                        onMouseEnter={() => router.prefetch(href)}
+                        aria-current={selectedIndex === articleIndex ? true : undefined}
+                        className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === articleIndex ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
+                      >
+                        <div className="flex flex-col gap-1">
+                          <div className="text-[15px] font-semibold text-[var(--foreground)]">
+                            {article.title}
+                          </div>
+                          <div className="tag-mono text-[var(--muted-foreground)]">
+                            Article
+                            {article.cities.length > 0 && (
+                              <>
+                                <span className="mx-1.5">·</span>
+                                {article.cities.map((c) => c.replace(/-/g, " ")).join(", ")}
+                              </>
+                            )}
                           </div>
                         </div>
                         <ArrowRight size={20} strokeWidth={1.5} className="shrink-0 text-[var(--muted-foreground)]" />
