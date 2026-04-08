@@ -28,7 +28,7 @@ const mdxComponents = {
   ),
   a: (props: React.ComponentProps<"a">) => (
     <a
-      className="text-[var(--foreground)] underline underline-offset-2 decoration-[var(--border)] hover:decoration-[var(--foreground)] transition-colors"
+      className="text-[var(--foreground)] underline underline-offset-2 decoration-[var(--foreground)] transition-colors"
       {...props}
     />
   ),

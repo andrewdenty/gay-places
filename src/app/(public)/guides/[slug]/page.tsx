@@ -213,7 +213,7 @@ export default async function ArticlePage({
         <ArticleBody source={content} />
 
         {/* Footer divider */}
-        <hr className="mt-12 mb-8 border-[var(--border)]" />
+        <hr className="mt-12 mb-8 border-0 border-t-[1.5px] border-[#171717]" />
 
         {/* Back to guides */}
         <Link

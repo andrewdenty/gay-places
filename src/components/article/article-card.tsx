@@ -32,7 +32,7 @@ export function ArticleCard({
       )}
 
       <div className="flex flex-col gap-2">
-        <h3 className="text-[15px] font-semibold text-[var(--foreground)] leading-[1.4]">
+        <h3 className="h2-editorial text-[var(--foreground)]">
           {article.title}
         </h3>
         <p className="text-[14px] text-[var(--muted-foreground)] leading-[1.5] line-clamp-2">
