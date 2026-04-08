@@ -16,8 +16,8 @@ export function ArticleCard({
 }) {
   return (
     <Link
-      href={`/blog/${article.slug}`}
-      className="group flex flex-col gap-4 py-6 border-b border-[var(--border)] transition-opacity hover:opacity-80"
+      href={`/guides/${article.slug}`}
+      className="group flex flex-col gap-4 py-[40px] border-b-[1.5px] border-[#171717] transition-opacity hover:opacity-80"
     >
       {article.coverImage && !compact && (
         <div className="relative aspect-[3/2] overflow-hidden bg-[#f7f7f5]">
@@ -32,9 +32,9 @@ export function ArticleCard({
       )}
 
       <div className="flex flex-col gap-2">
-        <h2 className="text-[15px] font-semibold text-[var(--foreground)] leading-[1.4]">
+        <h3 className="text-[15px] font-semibold text-[var(--foreground)] leading-[1.4]">
           {article.title}
-        </h2>
+        </h3>
         <p className="text-[14px] text-[var(--muted-foreground)] leading-[1.5] line-clamp-2">
           {article.excerpt}
         </p>

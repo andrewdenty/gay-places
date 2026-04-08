@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { getArticleBySlug, getAllArticleSlugs } from "@/lib/articles";
 import { ArticleBody } from "@/components/article/article-body";
+import { venueUrlPath } from "@/lib/slugs";
 
 export const revalidate = 86400;
 
@@ -30,7 +32,7 @@ export async function generateMetadata({
   return {
     title: `${title} — Gay Places`,
     description,
-    alternates: { canonical: `/blog/${slug}` },
+    alternates: { canonical: `/guides/${slug}` },
     openGraph: {
       title,
       description,
@@ -77,14 +79,14 @@ export default async function ArticlePage({
       {
         "@type": "ListItem",
         position: 2,
-        name: "Blog",
-        item: `${BASE_URL}/blog`,
+        name: "Guides",
+        item: `${BASE_URL}/guides`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: meta.title,
-        item: `${BASE_URL}/blog/${slug}`,
+        item: `${BASE_URL}/guides/${slug}`,
       },
     ],
   };
@@ -105,7 +107,7 @@ export default async function ArticlePage({
     ...(meta.coverImage ? { image: meta.coverImage } : {}),
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${BASE_URL}/blog/${slug}`,
+      "@id": `${BASE_URL}/guides/${slug}`,
     },
   };
 
@@ -139,10 +141,10 @@ export default async function ArticlePage({
             <li className="breadcrumb">›</li>
             <li>
               <Link
-                href="/blog"
+                href="/guides"
                 className="breadcrumb hover:text-[var(--foreground)] transition-colors"
               >
-                Blog
+                Guides
               </Link>
             </li>
           </ol>
@@ -188,6 +190,20 @@ export default async function ArticlePage({
               ))}
             </>
           )}
+          {meta.venueLinks && meta.venueLinks.length > 0 && (
+            <>
+              <span className="tag-mono text-[var(--muted-foreground)]">·</span>
+              {meta.venueLinks.map((venue) => (
+                <Link
+                  key={venue.slug}
+                  href={venueUrlPath(venue.city, venue.type, venue.slug)}
+                  className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
+                >
+                  {venue.slug.replace(/-/g, " ")}
+                </Link>
+              ))}
+            </>
+          )}
         </div>
 
         {/* Divider */}
@@ -199,12 +215,13 @@ export default async function ArticlePage({
         {/* Footer divider */}
         <hr className="mt-12 mb-8 border-[var(--border)]" />
 
-        {/* Back to blog */}
+        {/* Back to guides */}
         <Link
-          href="/blog"
-          className="text-[15px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+          href="/guides"
+          className="inline-flex items-center gap-2 text-[15px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
         >
-          ← All articles
+          <ArrowLeft size={16} strokeWidth={1.5} />
+          All guides
         </Link>
       </article>
     </>

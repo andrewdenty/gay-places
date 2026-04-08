@@ -10,17 +10,17 @@ export function CityArticles({ articles }: { articles: ArticleMeta[] }) {
     <section className="mt-10 mb-2">
       <div className="flex items-center justify-between mb-2">
         <span className="label-mono text-[var(--foreground)]">
-          From the Blog
+          From the Guides
         </span>
         <Link
-          href="/blog"
+          href="/guides"
           className="flex items-center gap-1 text-[13px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
         >
-          All articles
+          All guides
           <ArrowRight size={14} strokeWidth={1.5} />
         </Link>
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col border-t-[1.5px] border-[#171717]">
         {articles.slice(0, 3).map((article) => (
           <ArticleCard key={article.slug} article={article} compact />
         ))}

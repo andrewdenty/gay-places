@@ -73,18 +73,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     };
   });
 
-  // Blog routes
+  // Guides routes
   const articles = getAllArticles();
 
   const blogRoutes: MetadataRoute.Sitemap = [
     {
-      url: `${BASE_URL}/blog`,
+      url: `${BASE_URL}/guides`,
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.75,
     },
     ...articles.map((article) => ({
-      url: `${BASE_URL}/blog/${article.slug}`,
+      url: `${BASE_URL}/guides/${article.slug}`,
       lastModified: article.updatedAt ?? article.publishedAt ?? now,
       changeFrequency: "monthly" as const,
       priority: 0.7,

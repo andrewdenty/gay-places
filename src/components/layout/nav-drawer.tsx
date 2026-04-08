@@ -177,10 +177,10 @@ export function NavDrawer({
                 <ArrowRight size={16} strokeWidth={1.5} color="#171717" className="mr-2" />
               </Link>
 
-              {/* Blog */}
-              <Link href="/blog" onClick={onClose} className="flex items-center justify-between">
+              {/* Guides */}
+              <Link href="/guides" onClick={onClose} className="flex items-center justify-between">
                 <span className="font-mono text-[10px] uppercase" style={{ letterSpacing: "1.2px", color: "#000000" }}>
-                  Blog
+                  Guides
                 </span>
                 <ArrowRight size={16} strokeWidth={1.5} color="#171717" className="mr-2" />
               </Link>
