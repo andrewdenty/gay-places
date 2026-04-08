@@ -207,7 +207,7 @@ export default async function ArticlePage({
         </div>
 
         {/* Divider */}
-        <hr className="my-8 border-[var(--border)]" />
+        <hr className="my-8 border-0 border-t-[1.5px] border-[#171717]" />
 
         {/* Article body */}
         <ArticleBody source={content} />
