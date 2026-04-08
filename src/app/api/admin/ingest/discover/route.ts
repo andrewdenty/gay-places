@@ -87,7 +87,15 @@ export async function POST(request: Request) {
       ? Math.min(body.max_results, 50)
       : 20;
 
-  const admin = createSupabaseAdminClient();
+  let admin: ReturnType<typeof createSupabaseAdminClient>;
+  try {
+    admin = createSupabaseAdminClient();
+  } catch (e) {
+    return NextResponse.json(
+      { error: `Server configuration error: ${e instanceof Error ? e.message : String(e)}` },
+      { status: 500 },
+    );
+  }
 
   try {
     // Auto-create city if it doesn't exist yet
@@ -119,21 +127,30 @@ export async function POST(request: Request) {
   }
 
   // Create ingest_jobs row (running)
-  const { data: job, error: jobInsertErr } = await admin
-    .from("ingest_jobs")
-    .insert({
-      type: "discovery",
-      status: "running",
-      params: { city_name: cityName, country, city_slug: citySlug, max_results: maxResults },
-      stats: {},
-      created_by: user.id,
-    })
-    .select("id")
-    .single();
+  let job: { id: string };
+  try {
+    const { data, error: jobInsertErr } = await admin
+      .from("ingest_jobs")
+      .insert({
+        type: "discovery",
+        status: "running",
+        params: { city_name: cityName, country, city_slug: citySlug, max_results: maxResults },
+        stats: {},
+        created_by: user.id,
+      })
+      .select("id")
+      .single();
 
-  if (jobInsertErr) {
+    if (jobInsertErr) {
+      return NextResponse.json(
+        { error: `Failed to create job: ${jobInsertErr.message}` },
+        { status: 500 },
+      );
+    }
+    job = data as { id: string };
+  } catch (e) {
     return NextResponse.json(
-      { error: `Failed to create job: ${jobInsertErr.message}` },
+      { error: `Failed to create job: ${e instanceof Error ? e.message : String(e)}` },
       { status: 500 },
     );
   }
@@ -184,14 +201,18 @@ export async function POST(request: Request) {
     };
 
     // Update job to succeeded
-    await admin
-      .from("ingest_jobs")
-      .update({
-        status: "succeeded",
-        stats,
-        finished_at: new Date().toISOString(),
-      })
-      .eq("id", jobId);
+    try {
+      await admin
+        .from("ingest_jobs")
+        .update({
+          status: "succeeded",
+          stats,
+          finished_at: new Date().toISOString(),
+        })
+        .eq("id", jobId);
+    } catch (updateErr) {
+      console.error("Failed to update job status to succeeded:", updateErr);
+    }
 
     return NextResponse.json({
       ok: true,
@@ -203,14 +224,18 @@ export async function POST(request: Request) {
     const message = e instanceof Error ? e.message : "Discovery failed";
 
     // Update job to failed
-    await admin
-      .from("ingest_jobs")
-      .update({
-        status: "failed",
-        error: message,
-        finished_at: new Date().toISOString(),
-      })
-      .eq("id", jobId);
+    try {
+      await admin
+        .from("ingest_jobs")
+        .update({
+          status: "failed",
+          error: message,
+          finished_at: new Date().toISOString(),
+        })
+        .eq("id", jobId);
+    } catch (updateErr) {
+      console.error("Failed to update job status to failed:", updateErr);
+    }
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
