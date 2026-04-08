@@ -128,27 +128,17 @@ export default async function ArticlePage({
 
       <article className="pt-8 pb-6 sm:pt-10 sm:pb-8">
         {/* Breadcrumb */}
-        <nav className="mb-6">
-          <ol className="flex items-center gap-1.5 text-[var(--muted-foreground)]">
-            <li>
-              <Link
-                href="/"
-                className="breadcrumb hover:text-[var(--foreground)] transition-colors"
-              >
-                Home
-              </Link>
-            </li>
-            <li className="breadcrumb">›</li>
-            <li>
-              <Link
-                href="/guides"
-                className="breadcrumb hover:text-[var(--foreground)] transition-colors"
-              >
-                Guides
-              </Link>
-            </li>
-          </ol>
-        </nav>
+        <div className="mb-6">
+          <div className="breadcrumb text-[var(--muted-foreground)]">
+            <Link href="/" className="hover:text-[var(--foreground)] transition-colors">
+              Home
+            </Link>
+            <span className="mx-1">/</span>
+            <Link href="/guides" className="hover:text-[var(--foreground)] transition-colors">
+              Guides
+            </Link>
+          </div>
+        </div>
 
         {/* Cover image */}
         {meta.coverImage && (
