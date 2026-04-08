@@ -50,7 +50,13 @@ export function RunIngestDiscovery({ onComplete }: Props) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
-      const json = (await res.json()) as DiscoveryResult;
+      let json: DiscoveryResult;
+      try {
+        json = (await res.json()) as DiscoveryResult;
+      } catch {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || "Discovery failed (unexpected server response)");
+      }
       if (!res.ok || json.error) {
         throw new Error(json.error ?? "Discovery failed");
       }

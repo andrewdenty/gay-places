@@ -184,14 +184,18 @@ export async function POST(request: Request) {
     };
 
     // Update job to succeeded
-    await admin
-      .from("ingest_jobs")
-      .update({
-        status: "succeeded",
-        stats,
-        finished_at: new Date().toISOString(),
-      })
-      .eq("id", jobId);
+    try {
+      await admin
+        .from("ingest_jobs")
+        .update({
+          status: "succeeded",
+          stats,
+          finished_at: new Date().toISOString(),
+        })
+        .eq("id", jobId);
+    } catch (updateErr) {
+      console.error("Failed to update job status to succeeded:", updateErr);
+    }
 
     return NextResponse.json({
       ok: true,
@@ -203,14 +207,18 @@ export async function POST(request: Request) {
     const message = e instanceof Error ? e.message : "Discovery failed";
 
     // Update job to failed
-    await admin
-      .from("ingest_jobs")
-      .update({
-        status: "failed",
-        error: message,
-        finished_at: new Date().toISOString(),
-      })
-      .eq("id", jobId);
+    try {
+      await admin
+        .from("ingest_jobs")
+        .update({
+          status: "failed",
+          error: message,
+          finished_at: new Date().toISOString(),
+        })
+        .eq("id", jobId);
+    } catch (updateErr) {
+      console.error("Failed to update job status to failed:", updateErr);
+    }
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
