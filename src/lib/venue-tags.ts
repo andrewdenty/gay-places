@@ -19,6 +19,7 @@ export const TAG_CATEGORIES: {
     tags: [
       "Mixed Crowd",
       "Mostly Men",
+      "Men Only",
       "Leather",
       "Bears",
       "Touristy",
