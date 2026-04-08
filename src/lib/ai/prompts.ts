@@ -170,7 +170,13 @@ export function buildTagSuggestionPrompt(input: TagPromptInput): {
   system: string;
   user: string;
 } {
-  const system = `You are tagging gay venues for Gay Places, a city guide. Your job is to assign relevant tags from the provided allowlist. Only use tags from the list — never invent new ones.`;
+  const system = `You are tagging gay venues for Gay Places, a city guide. Your job is to assign relevant tags from the provided allowlist. Only use tags from the list — never invent new ones.
+
+IMPORTANT DISTINCTION FOR CROWD TAGS:
+- "Men Only": Exclusively male venues (e.g., cruising clubs, saunas, play spaces with men-only policies). Use this for venues with explicit men-only access policies.
+- "Mostly Men": Mixed-gender venues where the crowd happens to be predominantly male. Do NOT use this tag — instead prefer more specific tags like "Bears", "Leather", "Gay Men's Crowd", "Cruisy Crowd", or other descriptive tags that better characterize the venue.
+
+DO NOT suggest "Mostly Men" under any circumstances. If a venue is predominantly male but mixed-gender, use a more specific tag from the allowlist.`;
 
   const user = `Venue: ${input.name}
 Type: ${venueTypeLabel(input.venueType)}
@@ -189,6 +195,7 @@ Instructions:
 - ONLY include tags NOT already applied to the venue
 - Leave a category empty rather than guessing
 - Do NOT invent tags outside the allowlist
+- NEVER suggest "Mostly Men" — use "Men Only" for male-only venues, or other specific crowd tags ("Bears", "Leather", "Gay Men's Crowd", etc.) for venues with predominantly male but mixed crowds
 
 Return ONLY a JSON object (no markdown) with this shape:
 {
