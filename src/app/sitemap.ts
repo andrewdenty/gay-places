@@ -4,6 +4,7 @@ import {
   getPublishedCountrySlugs,
   getAllPublishedVenuesForSitemap,
 } from "@/lib/data/public";
+import { getAllArticles } from "@/lib/articles";
 import { venueUrlPath, venueTypeToUrlSegment } from "@/lib/slugs";
 
 const BASE_URL =
@@ -72,5 +73,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     };
   });
 
-  return [...staticRoutes, ...countryRoutes, ...cityRoutes, ...venueTypeRoutes, ...venueRoutes];
+  // Blog routes
+  const articles = getAllArticles();
+
+  const blogRoutes: MetadataRoute.Sitemap = [
+    {
+      url: `${BASE_URL}/blog`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    },
+    ...articles.map((article) => ({
+      url: `${BASE_URL}/blog/${article.slug}`,
+      lastModified: article.updatedAt ?? article.publishedAt ?? now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+  ];
+
+  return [...staticRoutes, ...countryRoutes, ...cityRoutes, ...venueTypeRoutes, ...venueRoutes, ...blogRoutes];
 }

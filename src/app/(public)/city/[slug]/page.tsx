@@ -3,8 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getArticlesByCitySlug } from "@/lib/articles";
 import { CityExplorer } from "@/components/city/city-explorer";
 import { CityAdminToggle } from "@/components/city/city-admin-toggle";
+import { CityArticles } from "@/components/article/city-articles";
 import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
 import { toCountrySlug } from "@/lib/slugs";
@@ -205,6 +207,9 @@ export default async function CityPage({
         )}
 
         <CityExplorer city={city} venues={venues} />
+
+        {/* ── Blog articles for this city ── */}
+        <CityArticles articles={getArticlesByCitySlug(slug)} />
 
         {/* ── Editorial moment ── */}
         <section className="py-10 mt-8">
