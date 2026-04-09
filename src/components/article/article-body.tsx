@@ -10,7 +10,7 @@ const mdxComponents = {
   ArticleImage,
   h2: (props: React.ComponentProps<"h2">) => (
     <h2
-      className="h2-editorial-sm mt-10 mb-4 text-[var(--foreground)]"
+      className="mt-10 mb-4 text-[32px] leading-[1.2] tracking-[-0.64px] font-normal font-serif text-[var(--foreground)]"
       {...props}
     />
   ),
@@ -22,7 +22,7 @@ const mdxComponents = {
   ),
   p: (props: React.ComponentProps<"p">) => (
     <p
-      className="my-4 text-[15px] leading-[1.7] text-[var(--foreground)]"
+      className="my-4 text-[17px] leading-[1.7] text-[var(--foreground)]"
       {...props}
     />
   ),

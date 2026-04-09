@@ -158,44 +158,39 @@ export default async function ArticlePage({
           )}
 
           {/* Text block — second on mobile, first on desktop */}
-          <div className="flex flex-col sm:order-1">
-            {/* Kicker: author + date left, tags float right on desktop */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+          <div className="flex flex-col items-center text-center sm:order-1">
+            {/* Author + date above headline */}
+            <div className="flex items-center gap-3 mb-3">
               <span className="label-mono text-[var(--muted-foreground)]">{meta.author}</span>
               <span className="label-mono text-[var(--muted-foreground)]" aria-hidden="true">—</span>
               <span className="label-mono text-[var(--muted-foreground)]">{formatDate(meta.publishedAt)}</span>
-              {(meta.cities.length > 0 || (meta.venueLinks && meta.venueLinks.length > 0)) && (
-                <div className="flex items-center gap-2 flex-wrap sm:ml-auto">
-                  {meta.cities.map((city) => (
-                    <Link
-                      key={city}
-                      href={`/city/${city}`}
-                      className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
-                    >
-                      {city.replace(/-/g, " ")}
-                    </Link>
-                  ))}
-                  {meta.venueLinks?.map((venue) => (
-                    <Link
-                      key={venue.slug}
-                      href={venueUrlPath(venue.city, venue.type, venue.slug)}
-                      className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
-                    >
-                      {venue.slug.replace(/-/g, " ")}
-                    </Link>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Headline */}
             <h1 className="h1-editorial sm:max-w-[560px]">{meta.title}</h1>
 
-            {/* Standfirst / deck */}
-            {meta.excerpt && (
-              <p className="mt-4 text-[17px] text-[var(--muted-foreground)] leading-[1.6] max-w-[560px]">
-                {meta.excerpt}
-              </p>
+            {/* Tags below headline */}
+            {(meta.cities.length > 0 || (meta.venueLinks && meta.venueLinks.length > 0)) && (
+              <div className="flex items-center justify-center gap-2 flex-wrap mt-4">
+                {meta.cities.map((city) => (
+                  <Link
+                    key={city}
+                    href={`/city/${city}`}
+                    className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
+                  >
+                    {city.replace(/-/g, " ")}
+                  </Link>
+                ))}
+                {meta.venueLinks?.map((venue) => (
+                  <Link
+                    key={venue.slug}
+                    href={venueUrlPath(venue.city, venue.type, venue.slug)}
+                    className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
+                  >
+                    {venue.slug.replace(/-/g, " ")}
+                  </Link>
+                ))}
+              </div>
             )}
           </div>
         </header>
