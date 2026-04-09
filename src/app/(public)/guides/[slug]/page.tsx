@@ -208,13 +208,15 @@ export default async function ArticlePage({
           <ArticleFeaturedVenues venueLinks={meta.venueLinks} />
         )}
 
-        {/* Footer divider */}
-        <hr className="mt-12 mb-8 border-0 border-t-[1.5px] border-[#171717]" />
+        {/* Footer divider — omitted when featured venues are shown; their last card's border-b already divides */}
+        {(!meta.venueLinks || meta.venueLinks.length === 0) && (
+          <hr className="mt-12 border-0 border-t-[1.5px] border-[#171717]" />
+        )}
 
         {/* Back to guides */}
         <Link
           href="/guides"
-          className="inline-flex items-center gap-2 text-[15px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+          className="mt-8 inline-flex items-center gap-2 text-[15px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
         >
           <ArrowLeft size={16} strokeWidth={1.5} />
           All guides
