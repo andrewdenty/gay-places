@@ -129,8 +129,8 @@ export default async function ArticlePage({
 
       <article className="pt-8 pb-6 sm:pt-10 sm:pb-8">
         {/* Breadcrumb */}
-        <div className="mb-6">
-          <div className="breadcrumb text-[var(--muted-foreground)]">
+        <div className="mb-8">
+          <div className="breadcrumb text-[var(--muted-foreground)] text-center">
             <Link href="/" className="hover:text-[var(--foreground)] transition-colors">
               Home
             </Link>
@@ -171,7 +171,7 @@ export default async function ArticlePage({
 
             {/* Tags below headline */}
             {(meta.cities.length > 0 || (meta.venueLinks && meta.venueLinks.length > 0)) && (
-              <div className="flex items-center justify-center gap-2 flex-wrap mt-4">
+              <div className="flex items-center justify-center gap-2 flex-wrap mt-8">
                 {meta.cities.map((city) => (
                   <Link
                     key={city}
