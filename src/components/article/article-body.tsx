@@ -22,7 +22,7 @@ const mdxComponents = {
   ),
   p: (props: React.ComponentProps<"p">) => (
     <p
-      className="my-4 text-[15px] leading-[1.7] text-[var(--foreground)]"
+      className="my-4 text-[16px] leading-[1.85] text-[var(--foreground)]"
       {...props}
     />
   ),
@@ -49,7 +49,7 @@ const mdxComponents = {
   ),
   blockquote: (props: React.ComponentProps<"blockquote">) => (
     <blockquote
-      className="my-6 border-l-2 border-[var(--border)] pl-5 text-[15px] leading-[1.7] text-[var(--muted-foreground)] italic"
+      className="my-8 border-l-[3px] border-[var(--foreground)] pl-6 text-[18px] leading-[1.6] text-[var(--foreground)] italic font-serif"
       {...props}
     />
   ),

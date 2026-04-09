@@ -141,64 +141,72 @@ export default async function ArticlePage({
           </div>
         </div>
 
-        {/* Cover image */}
-        {meta.coverImage && (
-          <div className="relative aspect-[2/1] overflow-hidden bg-[#f7f7f5] mb-8">
-            <Image
-              src={meta.coverImage}
-              alt={meta.title}
-              fill
-              className="object-cover"
-              priority
-              sizes="(max-width: 640px) 100vw, 720px"
-            />
+        {/* Hero header — mobile: image → text, desktop: text → image */}
+        <header className="mb-10 sm:mb-14 flex flex-col">
+          {/* Cover image — first on mobile (natural order), second on desktop */}
+          {meta.coverImage && (
+            <div className="relative aspect-[3/2] sm:aspect-[2/1] overflow-hidden bg-[#f7f7f5] mb-8 sm:order-2 sm:mt-10 sm:mb-0">
+              <Image
+                src={meta.coverImage}
+                alt={meta.title}
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 640px) 100vw, 720px"
+              />
+            </div>
+          )}
+
+          {/* Text block — second on mobile, first on desktop */}
+          <div className="flex flex-col sm:order-1">
+            {/* Section kicker */}
+            <div className="label-mono text-[var(--muted-foreground)] mb-3">Guides</div>
+
+            {/* Headline */}
+            <h1 className="h1-editorial">{meta.title}</h1>
+
+            {/* Standfirst / deck */}
+            {meta.excerpt && (
+              <p className="mt-4 text-[17px] text-[var(--muted-foreground)] leading-[1.6] max-w-[560px]">
+                {meta.excerpt}
+              </p>
+            )}
+
+            {/* Byline */}
+            <div className="mt-5 flex items-center gap-3 flex-wrap">
+              <span className="label-mono text-[var(--muted-foreground)]">{meta.author}</span>
+              <span className="label-mono text-[var(--muted-foreground)]" aria-hidden="true">—</span>
+              <span className="label-mono text-[var(--muted-foreground)]">{formatDate(meta.publishedAt)}</span>
+            </div>
+
+            {/* City + venue pill tags */}
+            {(meta.cities.length > 0 || (meta.venueLinks && meta.venueLinks.length > 0)) && (
+              <div className="mt-3 flex items-center gap-2 flex-wrap">
+                {meta.cities.map((city) => (
+                  <Link
+                    key={city}
+                    href={`/city/${city}`}
+                    className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
+                  >
+                    {city.replace(/-/g, " ")}
+                  </Link>
+                ))}
+                {meta.venueLinks?.map((venue) => (
+                  <Link
+                    key={venue.slug}
+                    href={venueUrlPath(venue.city, venue.type, venue.slug)}
+                    className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
+                  >
+                    {venue.slug.replace(/-/g, " ")}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </header>
 
-        {/* Title */}
-        <h1 className="h1-editorial">{meta.title}</h1>
-
-        {/* Meta line */}
-        <div className="mt-3 flex items-center gap-2 flex-wrap">
-          <span className="tag-mono text-[var(--muted-foreground)]">
-            By {meta.author}
-          </span>
-          <span className="tag-mono text-[var(--muted-foreground)]">·</span>
-          <span className="tag-mono text-[var(--muted-foreground)]">
-            {formatDate(meta.publishedAt)}
-          </span>
-          {meta.cities.length > 0 && (
-            <>
-              <span className="tag-mono text-[var(--muted-foreground)]">·</span>
-              {meta.cities.map((city) => (
-                <Link
-                  key={city}
-                  href={`/city/${city}`}
-                  className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
-                >
-                  {city.replace(/-/g, " ")}
-                </Link>
-              ))}
-            </>
-          )}
-          {meta.venueLinks && meta.venueLinks.length > 0 && (
-            <>
-              <span className="tag-mono text-[var(--muted-foreground)]">·</span>
-              {meta.venueLinks.map((venue) => (
-                <Link
-                  key={venue.slug}
-                  href={venueUrlPath(venue.city, venue.type, venue.slug)}
-                  className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
-                >
-                  {venue.slug.replace(/-/g, " ")}
-                </Link>
-              ))}
-            </>
-          )}
-        </div>
-
-        {/* Divider */}
-        <hr className="my-8 border-0 border-t-[1.5px] border-[#171717]" />
+        {/* Divider — hairline, reserves heavy black rules for featured venues */}
+        <hr className="my-8 border-0 border-t border-[var(--border)]" />
 
         {/* Article body */}
         <ArticleBody source={content} />
