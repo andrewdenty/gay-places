@@ -22,7 +22,7 @@ const mdxComponents = {
   ),
   p: (props: React.ComponentProps<"p">) => (
     <p
-      className="my-4 text-[16px] leading-[1.85] text-[var(--foreground)]"
+      className="my-4 text-[15px] leading-[1.7] text-[var(--foreground)]"
       {...props}
     />
   ),
