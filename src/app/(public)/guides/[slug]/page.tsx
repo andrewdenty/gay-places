@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { getArticleBySlug, getAllArticleSlugs } from "@/lib/articles";
 import { ArticleBody } from "@/components/article/article-body";
+import { ArticleFeaturedVenues } from "@/components/article/article-featured-venues";
 import { venueUrlPath } from "@/lib/slugs";
 
 export const revalidate = 86400;
@@ -201,6 +202,11 @@ export default async function ArticlePage({
 
         {/* Article body */}
         <ArticleBody source={content} />
+
+        {/* Featured venues */}
+        {meta.venueLinks && meta.venueLinks.length > 0 && (
+          <ArticleFeaturedVenues venueLinks={meta.venueLinks} />
+        )}
 
         {/* Footer divider */}
         <hr className="mt-12 mb-8 border-0 border-t-[1.5px] border-[#171717]" />
