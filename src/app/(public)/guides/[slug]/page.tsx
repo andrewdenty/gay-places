@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { getArticleBySlug, getAllArticleSlugs } from "@/lib/articles";
 import { ArticleBody } from "@/components/article/article-body";
@@ -129,7 +128,7 @@ export default async function ArticlePage({
 
       <article className="pt-8 pb-6 sm:pt-10 sm:pb-8">
         {/* Breadcrumb */}
-        <div className="mb-8">
+        <div className="mb-8 sm:mb-10">
           <div className="breadcrumb text-[var(--muted-foreground)] text-center">
             <Link href="/" className="hover:text-[var(--foreground)] transition-colors">
               Home
@@ -159,19 +158,19 @@ export default async function ArticlePage({
 
           {/* Text block — second on mobile, first on desktop */}
           <div className="flex flex-col items-center text-center sm:order-1">
-            {/* Author + date above headline */}
-            <div className="flex items-center gap-3 mb-3">
+            {/* Headline */}
+            <h1 className="h1-editorial sm:max-w-[560px]">{meta.title}</h1>
+
+            {/* Author + date below headline */}
+            <div className="flex items-center gap-3 mt-4">
               <span className="label-mono text-[var(--muted-foreground)]">{meta.author}</span>
               <span className="label-mono text-[var(--muted-foreground)]" aria-hidden="true">—</span>
               <span className="label-mono text-[var(--muted-foreground)]">{formatDate(meta.publishedAt)}</span>
             </div>
 
-            {/* Headline */}
-            <h1 className="h1-editorial sm:max-w-[560px]">{meta.title}</h1>
-
-            {/* Tags below headline */}
+            {/* Tags below author/date */}
             {(meta.cities.length > 0 || (meta.venueLinks && meta.venueLinks.length > 0)) && (
-              <div className="flex items-center justify-center gap-2 flex-wrap mt-8">
+              <div className="flex items-center justify-center gap-2 flex-wrap mt-10 mb-2">
                 {meta.cities.map((city) => (
                   <Link
                     key={city}
@@ -203,19 +202,7 @@ export default async function ArticlePage({
           <ArticleFeaturedVenues venueLinks={meta.venueLinks} />
         )}
 
-        {/* Footer divider — omitted when featured venues are shown; their last card's border-b already divides */}
-        {(!meta.venueLinks || meta.venueLinks.length === 0) && (
-          <hr className="mt-12 border-0 border-t-[1.5px] border-[#171717]" />
-        )}
-
-        {/* Back to guides */}
-        <Link
-          href="/guides"
-          className="mt-8 inline-flex items-center gap-2 text-[15px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-        >
-          <ArrowLeft size={16} strokeWidth={1.5} />
-          All guides
-        </Link>
+        <div className="h-8" />
       </article>
     </>
   );
