@@ -10,7 +10,7 @@ export function VenueGuides({ articles }: { articles: ArticleMeta[] }) {
       <span className="h2-editorial">Guide</span>
 
       {/* Article cards */}
-      {articles.map((article, i) => (
+      {articles.slice(0, 5).map((article, i) => (
         <div key={article.slug} style={{ marginTop: i === 0 ? "20px" : "16px" }}>
           <GuideCard article={article} />
         </div>

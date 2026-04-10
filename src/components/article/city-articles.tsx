@@ -33,7 +33,7 @@ export function CityArticles({ articles }: { articles: ArticleMeta[] }) {
 
       {/* Guide rows */}
       <div>
-        {articles.slice(0, 3).map((article) => (
+        {articles.slice(0, 5).map((article) => (
           <div
             key={article.slug}
             className="py-6 border-b-[1.5px] border-[var(--foreground)]"

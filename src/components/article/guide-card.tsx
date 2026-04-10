@@ -11,7 +11,7 @@ export function GuideCard({ article }: { article: ArticleMeta }) {
   return (
     <Link
       href={`/guides/${article.slug}`}
-      className="group flex gap-4 hover:opacity-70 transition-opacity"
+      className="group flex gap-4"
     >
       {/* Text */}
       <div className="flex flex-col justify-center gap-[10px] min-w-0 flex-1">
