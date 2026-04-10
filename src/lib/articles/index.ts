@@ -45,7 +45,7 @@ export function getAllArticles(): ArticleMeta[] {
 export function getArticleBySlug(
   slug: string,
 ): { meta: ArticleMeta; content: string } | null {
-  const filePath = path.join(ARTICLES_DIR, `${slug}.mdx`);
+  const filePath = path.join(ARTICLES_DIR, \`\${slug}.mdx\`);
   if (!fs.existsSync(filePath)) return null;
 
   const raw = fs.readFileSync(filePath, "utf8");
