@@ -77,6 +77,10 @@ export function getArticlesByCitySlug(citySlug: string): ArticleMeta[] {
   return getAllArticles().filter((a) => a.cities.includes(citySlug));
 }
 
+export function getArticlesByCountrySlug(countrySlug: string): ArticleMeta[] {
+  return getAllArticles().filter((a) => a.countries.includes(countrySlug));
+}
+
 export function getArticlesByVenueSlug(venueSlug: string): ArticleMeta[] {
   return getAllArticles().filter(
     (a) =>

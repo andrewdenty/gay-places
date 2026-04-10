@@ -24,6 +24,54 @@ import {
 } from "./prompts";
 
 // ---------------------------------------------------------------------------
+// Social URL extraction
+
+const IG_BLOCKLIST = new Set([
+  "p", "reel", "reels", "tv", "stories", "explore", "direct",
+  "accounts", "login", "about", "ar", "challenge", "oauth",
+]);
+
+const FB_BLOCKLIST = new Set([
+  "sharer", "share", "dialog", "plugins", "tr", "login", "login.php",
+  "policies", "help", "legal", "groups", "events", "permalink.php",
+  "photo.php", "video.php", "hashtag", "notes", "marketplace", "ads",
+  "business", "watch", "gaming", "about", "pages", "flx", "rsrc.php",
+]);
+
+/**
+ * Scan HTML for Instagram and Facebook profile URLs.
+ *
+ * Uses the global `/g` flag to iterate all matches rather than stopping at
+ * the first occurrence — which is typically a tracking pixel, SDK embed, or
+ * share button rather than the venue's own profile link.  Each match is
+ * checked against a blocklist of known non-profile path segments.
+ */
+function extractSocialUrls(html: string): { instagram: string | null; facebook: string | null } {
+  const igPattern = /https?:\/\/(?:www\.)?instagram\.com\/([A-Za-z0-9._]+)/g;
+  let igUrl: string | null = null;
+  let m: RegExpExecArray | null;
+  while ((m = igPattern.exec(html)) !== null) {
+    const slug = m[1].toLowerCase();
+    if (!IG_BLOCKLIST.has(slug) && slug.length >= 2) {
+      igUrl = `https://www.instagram.com/${m[1]}/`;
+      break;
+    }
+  }
+
+  const fbPattern = /https?:\/\/(?:www\.)?facebook\.com\/([A-Za-z0-9._-]+)/g;
+  let fbUrl: string | null = null;
+  while ((m = fbPattern.exec(html)) !== null) {
+    const slug = m[1].toLowerCase();
+    if (!FB_BLOCKLIST.has(slug) && slug.length >= 2) {
+      fbUrl = `https://www.facebook.com/${m[1]}/`;
+      break;
+    }
+  }
+
+  return { instagram: igUrl, facebook: fbUrl };
+}
+
+// ---------------------------------------------------------------------------
 // Place details enrichment
 
 export interface PlaceDetailsProposal {
@@ -109,23 +157,15 @@ export async function enrichPlaceDetails(
 
       if (siteRes.ok) {
         const html = await siteRes.text();
+        const { instagram, facebook } = extractSocialUrls(html);
 
-        const igMatch = html.match(/https?:\/\/(?:www\.)?instagram\.com\/([A-Za-z0-9._]+)\/?/);
-        if (igMatch) {
-          const igUrl = `https://www.instagram.com/${igMatch[1]}/`;
-          if (igUrl !== venue.instagram_url) {
-            proposal.instagram_url = igUrl;
-            proposal.changedFields.push("Instagram URL");
-          }
+        if (instagram && instagram !== venue.instagram_url) {
+          proposal.instagram_url = instagram;
+          proposal.changedFields.push("Instagram URL");
         }
-
-        const fbMatch = html.match(/https?:\/\/(?:www\.)?facebook\.com\/([A-Za-z0-9._\-]+)\/?/);
-        if (fbMatch && !["sharer", "share", "dialog", "plugins"].includes(fbMatch[1])) {
-          const fbUrl = `https://www.facebook.com/${fbMatch[1]}/`;
-          if (fbUrl !== venue.facebook_url) {
-            proposal.facebook_url = fbUrl;
-            proposal.changedFields.push("Facebook URL");
-          }
+        if (facebook && facebook !== venue.facebook_url) {
+          proposal.facebook_url = facebook;
+          proposal.changedFields.push("Facebook URL");
         }
       }
     } catch {

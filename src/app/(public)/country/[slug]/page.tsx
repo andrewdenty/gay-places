@@ -15,6 +15,8 @@ import { Tag } from "@/components/ui/tag";
 import { env } from "@/lib/env";
 import type { Venue } from "@/lib/data/public";
 import { venueUrlPath } from "@/lib/slugs";
+import { getArticlesByCountrySlug } from "@/lib/articles";
+import { CityArticles } from "@/components/article/city-articles";
 
 export const revalidate = 86400;
 
@@ -301,6 +303,9 @@ export default async function CountryPage({
           </p>
         )}
       </section>
+
+      {/* Guides */}
+      <CityArticles articles={getArticlesByCountrySlug(slug)} />
 
       {/* Featured venues */}
       {hasFeaturedVenues && (

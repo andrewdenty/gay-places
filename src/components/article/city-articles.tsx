@@ -1,28 +1,45 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { ArticleMeta } from "@/lib/articles/types";
-import { ArticleCard } from "./article-card";
+import { GuideCard } from "./guide-card";
 
 export function CityArticles({ articles }: { articles: ArticleMeta[] }) {
   if (articles.length === 0) return null;
 
   return (
     <section className="mt-10 mb-2">
-      <div className="flex items-center justify-between mb-2">
-        <span className="label-mono text-[var(--foreground)]">
+      {/* Section header */}
+      <div className="flex items-end justify-between pb-2 border-b-[1.5px] border-[var(--foreground)]">
+        <h2
+          className="text-[var(--foreground)]"
+          style={{
+            fontFamily: "var(--font-instrument-serif), Georgia, serif",
+            fontSize: "30px",
+            lineHeight: 1.2,
+            letterSpacing: "-0.6px",
+            fontWeight: 400,
+          }}
+        >
           From the Guides
-        </span>
+        </h2>
         <Link
           href="/guides"
-          className="flex items-center gap-1 text-[13px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+          className="flex items-center gap-1 text-[13px] text-[var(--foreground)] leading-[1.4] pb-0.5 hover:opacity-70 transition-opacity"
         >
           All guides
-          <ArrowRight size={14} strokeWidth={1.5} />
+          <ArrowRight size={13} strokeWidth={1.5} />
         </Link>
       </div>
-      <div className="flex flex-col border-t-[1.5px] border-[#171717]">
-        {articles.slice(0, 3).map((article) => (
-          <ArticleCard key={article.slug} article={article} compact />
+
+      {/* Guide rows */}
+      <div>
+        {articles.slice(0, 5).map((article) => (
+          <div
+            key={article.slug}
+            className="py-6 border-b-[1.5px] border-[var(--foreground)]"
+          >
+            <GuideCard article={article} />
+          </div>
         ))}
       </div>
     </section>
