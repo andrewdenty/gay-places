@@ -150,7 +150,7 @@ export default async function LandingPage() {
       </section>
 
       {/* ── All Guides ── */}
-      <section id="all-guides" className="py-14">
+      <section id="destinations" className="py-14">
         {/* Section header */}
         <div className="flex items-end justify-between pb-2 border-b-[1.5px] border-[var(--foreground)] mb-4">
           <h2
@@ -163,7 +163,7 @@ export default async function LandingPage() {
               fontWeight: 400,
             }}
           >
-            All Guides
+            Destinations
           </h2>
           <span className="text-[13px] text-[var(--foreground)] leading-[1.4] pb-0.5">
             By region and country

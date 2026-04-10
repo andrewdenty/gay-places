@@ -36,6 +36,16 @@ const nextConfig: NextConfig = {
         destination: "/suggest",
         permanent: true,
       },
+      {
+        source: "/blog",
+        destination: "/guides",
+        permanent: true,
+      },
+      {
+        source: "/blog/:slug",
+        destination: "/guides/:slug",
+        permanent: true,
+      },
     ];
   },
   async rewrites() {

@@ -130,7 +130,7 @@ export async function generateMetadata({
   const country = await getCountryBySlug(slug);
   if (!country) return {};
   const title =
-    country.seo_title || `Gay ${country.name} Guide`;
+    country.seo_title || `Gay ${country.name}`;
   const description =
     country.seo_description ||
     country.intro ||
