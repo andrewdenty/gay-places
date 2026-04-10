@@ -117,7 +117,7 @@ export function SearchModal({
       ...countries.map((country) => `/country/${toCountrySlug(country.name)}`),
       ...cities.map((city) => `/city/${city.slug}`),
       ...venues.map((venue) => venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)),
-      ...articles.map((article) => `/blog/${article.slug}`),
+      ...articles.map((article) => `/guides/${article.slug}`),
     ];
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -391,7 +391,7 @@ export function SearchModal({
                   </div>
                   {articles.map((article, i) => {
                     const articleIndex = countries.length + cities.length + venues.length + i;
-                    const href = `/blog/${article.slug}`;
+                    const href = `/guides/${article.slug}`;
                     return (
                       <button
                         key={article.slug}

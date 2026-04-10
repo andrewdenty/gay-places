@@ -15,6 +15,8 @@ import { Tag } from "@/components/ui/tag";
 import { env } from "@/lib/env";
 import type { Venue } from "@/lib/data/public";
 import { venueUrlPath } from "@/lib/slugs";
+import { getArticlesByCountrySlug } from "@/lib/articles";
+import { CityArticles } from "@/components/article/city-articles";
 
 export const revalidate = 86400;
 
@@ -130,7 +132,7 @@ export async function generateMetadata({
   const country = await getCountryBySlug(slug);
   if (!country) return {};
   const title =
-    country.seo_title || `Gay ${country.name} Guide`;
+    country.seo_title || `Gay ${country.name}`;
   const description =
     country.seo_description ||
     country.intro ||
@@ -301,6 +303,9 @@ export default async function CountryPage({
           </p>
         )}
       </section>
+
+      {/* Guides */}
+      <CityArticles articles={getArticlesByCountrySlug(slug)} />
 
       {/* Featured venues */}
       {hasFeaturedVenues && (

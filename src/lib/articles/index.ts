@@ -21,6 +21,7 @@ function parseArticle(filename: string): ArticleMeta | null {
     cities: data.cities ?? [],
     countries: data.countries ?? [],
     venues: data.venues ?? [],
+    venueLinks: data.venueLinks,
     seoTitle: data.seoTitle,
     seoDescription: data.seoDescription,
     published: data.published ?? false,
@@ -61,6 +62,7 @@ export function getArticleBySlug(
     cities: data.cities ?? [],
     countries: data.countries ?? [],
     venues: data.venues ?? [],
+    venueLinks: data.venueLinks,
     seoTitle: data.seoTitle,
     seoDescription: data.seoDescription,
     published: data.published ?? false,
@@ -73,6 +75,18 @@ export function getArticleBySlug(
 
 export function getArticlesByCitySlug(citySlug: string): ArticleMeta[] {
   return getAllArticles().filter((a) => a.cities.includes(citySlug));
+}
+
+export function getArticlesByCountrySlug(countrySlug: string): ArticleMeta[] {
+  return getAllArticles().filter((a) => a.countries.includes(countrySlug));
+}
+
+export function getArticlesByVenueSlug(venueSlug: string): ArticleMeta[] {
+  return getAllArticles().filter(
+    (a) =>
+      a.venueLinks?.some((l) => l.slug === venueSlug) ||
+      a.venues.includes(venueSlug)
+  );
 }
 
 export function getAllArticleSlugs(): string[] {

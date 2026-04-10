@@ -10,7 +10,7 @@ const mdxComponents = {
   ArticleImage,
   h2: (props: React.ComponentProps<"h2">) => (
     <h2
-      className="h2-editorial-sm mt-10 mb-4 text-[var(--foreground)]"
+      className="mt-10 mb-4 text-[32px] leading-[1.2] tracking-[-0.64px] font-normal font-serif text-[var(--foreground)]"
       {...props}
     />
   ),
@@ -28,7 +28,7 @@ const mdxComponents = {
   ),
   a: (props: React.ComponentProps<"a">) => (
     <a
-      className="text-[var(--foreground)] underline underline-offset-2 decoration-[var(--border)] hover:decoration-[var(--foreground)] transition-colors"
+      className="text-[var(--foreground)] underline underline-offset-2 decoration-[var(--foreground)] transition-colors"
       {...props}
     />
   ),
@@ -49,7 +49,7 @@ const mdxComponents = {
   ),
   blockquote: (props: React.ComponentProps<"blockquote">) => (
     <blockquote
-      className="my-6 border-l-2 border-[var(--border)] pl-5 text-[15px] leading-[1.7] text-[var(--muted-foreground)] italic"
+      className="my-8 border-l-[3px] border-[var(--foreground)] pl-6 text-[18px] leading-[1.6] text-[var(--foreground)] italic font-serif"
       {...props}
     />
   ),

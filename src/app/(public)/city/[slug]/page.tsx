@@ -28,7 +28,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const city = await getCityBySlug(slug);
   if (!city) return {};
-  const title = city.seo_title || `Gay ${city.name} Guide`;
+  const title = city.seo_title || `Gay ${city.name}`;
   const description =
     city.seo_description ||
     city.description ||

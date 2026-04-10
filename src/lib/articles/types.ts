@@ -1,3 +1,9 @@
+export type VenueLink = {
+  slug: string;
+  city: string;
+  type: string;
+};
+
 export type ArticleMeta = {
   title: string;
   slug: string;
@@ -9,6 +15,7 @@ export type ArticleMeta = {
   cities: string[];
   countries: string[];
   venues: string[];
+  venueLinks?: VenueLink[];
   seoTitle?: string;
   seoDescription?: string;
   published: boolean;
