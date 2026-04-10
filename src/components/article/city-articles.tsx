@@ -42,10 +42,10 @@ export function CityArticles({ articles }: { articles: ArticleMeta[] }) {
           <Link
             key={article.slug}
             href={`/guides/${article.slug}`}
-            className="group flex items-center justify-between border-b-[1.5px] border-[var(--foreground)] py-4 overflow-hidden"
+            className="group flex items-center justify-between border-b-[1.5px] border-[var(--foreground)] py-6 overflow-hidden"
           >
             {/* Text */}
-            <div className="flex flex-col gap-1 flex-1 min-w-0 mr-4">
+            <div className="flex flex-col gap-2 flex-1 min-w-0 mr-4">
               <span className="text-[17px] font-semibold text-[var(--foreground)] leading-[1.4] group-hover:opacity-70 transition-opacity">
                 {article.title}
               </span>
@@ -63,15 +63,15 @@ export function CityArticles({ articles }: { articles: ArticleMeta[] }) {
             </div>
 
             {/* Cover image */}
-            <div className="shrink-0 size-20 overflow-hidden bg-[var(--muted)]">
+            <div className="shrink-0 size-20 sm:size-28 overflow-hidden bg-[var(--muted)]">
               {article.coverImage && (
                 <Image
                   src={article.coverImage}
                   alt={article.title}
-                  width={80}
-                  height={80}
+                  width={112}
+                  height={112}
                   className="size-full object-cover"
-                  sizes="80px"
+                  sizes="(max-width: 640px) 80px, 112px"
                 />
               )}
             </div>
