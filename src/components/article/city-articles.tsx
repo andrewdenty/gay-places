@@ -14,7 +14,7 @@ export function CityArticles({ articles }: { articles: ArticleMeta[] }) {
   return (
     <section className="mt-10 mb-2">
       {/* Section header — mirrors Featured Cities layout */}
-      <div className="flex items-end justify-between pb-2 border-b-[1.5px] border-[var(--foreground)] mb-4">
+      <div className="flex items-end justify-between pb-2 border-b-[1.5px] border-[var(--foreground)]">
         <h2
           className="text-[var(--foreground)]"
           style={{
@@ -42,7 +42,7 @@ export function CityArticles({ articles }: { articles: ArticleMeta[] }) {
           <Link
             key={article.slug}
             href={`/guides/${article.slug}`}
-            className="group flex items-center justify-between border-b-[1.5px] border-[var(--foreground)] py-3 overflow-hidden"
+            className="group flex items-center justify-between border-b-[1.5px] border-[var(--foreground)] py-4 overflow-hidden"
           >
             {/* Text */}
             <div className="flex flex-col gap-1 flex-1 min-w-0 mr-4">
