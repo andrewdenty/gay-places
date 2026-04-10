@@ -72,6 +72,46 @@ export interface EnrichedVenueDraft {
 }
 
 // ---------------------------------------------------------------------------
+// Social URL extraction
+
+const IG_BLOCKLIST = new Set([
+  "p", "reel", "reels", "tv", "stories", "explore", "direct",
+  "accounts", "login", "about", "ar", "challenge", "oauth",
+]);
+
+const FB_BLOCKLIST = new Set([
+  "sharer", "share", "dialog", "plugins", "tr", "login", "login.php",
+  "policies", "help", "legal", "groups", "events", "permalink.php",
+  "photo.php", "video.php", "hashtag", "notes", "marketplace", "ads",
+  "business", "watch", "gaming", "about", "pages", "flx", "rsrc.php",
+]);
+
+function extractSocialUrls(html: string): { instagram: string | null; facebook: string | null } {
+  const igPattern = /https?:\/\/(?:www\.)?instagram\.com\/([A-Za-z0-9._]+)/g;
+  let igUrl: string | null = null;
+  let m: RegExpExecArray | null;
+  while ((m = igPattern.exec(html)) !== null) {
+    const slug = m[1].toLowerCase();
+    if (!IG_BLOCKLIST.has(slug) && slug.length >= 2) {
+      igUrl = `https://www.instagram.com/${m[1]}/`;
+      break;
+    }
+  }
+
+  const fbPattern = /https?:\/\/(?:www\.)?facebook\.com\/([A-Za-z0-9._-]+)/g;
+  let fbUrl: string | null = null;
+  while ((m = fbPattern.exec(html)) !== null) {
+    const slug = m[1].toLowerCase();
+    if (!FB_BLOCKLIST.has(slug) && slug.length >= 2) {
+      fbUrl = `https://www.facebook.com/${m[1]}/`;
+      break;
+    }
+  }
+
+  return { instagram: igUrl, facebook: fbUrl };
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 
 function normaliseVenueType(raw: string): string {
@@ -394,5 +434,30 @@ export async function enrichVenue(
   });
 
   const rawParsed = parseJsonObject(text);
-  return validateEnrichedDraft(rawParsed);
+  const result = validateEnrichedDraft(rawParsed);
+
+  // Supplement social URLs by scraping the venue's website — more reliable
+  // than Claude's inferred values. Best-effort: silently ignore any errors.
+  const websiteUrl = input.places?.website_url;
+  if (websiteUrl) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const siteRes = await fetch(websiteUrl, {
+        signal: controller.signal,
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; GayPlaces/1.0)" },
+      }).finally(() => clearTimeout(timeout));
+
+      if (siteRes.ok) {
+        const html = await siteRes.text();
+        const { instagram, facebook } = extractSocialUrls(html);
+        if (instagram) result.draft.instagram_url = instagram;
+        if (facebook) result.draft.facebook_url = facebook;
+      }
+    } catch {
+      // Scraping is best-effort — silently ignore errors
+    }
+  }
+
+  return result;
 }

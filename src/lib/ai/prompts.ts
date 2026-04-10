@@ -96,6 +96,12 @@ Your voice is a well-connected local giving a friend honest, practical tips — 
 
 Only mention opening times if they are a genuinely defining feature — for example, the only late-night option in a city, or a specific day/time with a cult following. Do not mention routine hours.
 
+IMPORTANT DISTINCTION FOR CROWD TAGS:
+- "Men Only": Exclusively male venues (e.g., cruising clubs, saunas, play spaces with men-only policies). Use this for venues with explicit men-only access policies.
+- "Mostly Men": Mixed-gender venues where the crowd happens to be predominantly male. Do NOT use this tag — instead prefer more specific tags like "Bears", "Leather", "Gay Men's Crowd", "Cruisy Crowd", or other descriptive tags that better characterize the venue.
+
+DO NOT suggest "Mostly Men" under any circumstances.
+
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.`;
 
   const placesSection = input.places
@@ -141,7 +147,7 @@ ${buildTagAllowlist()}
 2. If no Places data, use discovery sources to inform the response. Leave lat/lng null if unverifiable.
 3. Write a \`summary_short\` of 1–2 sentences max. This appears in a venue listing, so it must work at a glance. Say what kind of place it is, who goes there, and one concrete thing that sets it apart (a specific night, the space itself, the drinks, the history). If the provided data is thin, draw on what you know about the venue with confidence. Write like a text to a friend, not a review. No adjective stacking.
 4. Write \`why_unique\` in 2–4 sentences. This sits directly below the summary on the venue page. Every sentence must add information not already in summary_short — no paraphrasing, no restating the same facts differently. Pick the most interesting concrete detail you can say something specific about: when it opened, what night matters, who runs it, what the space used to be, what makes the crowd different from the bar down the street. State facts and let them carry the weight. No scene-setting, no "stepping inside" intros, no landmark name-drops unless the data explicitly mentions proximity. If the data is thin, write less — a sharp two sentences beats a padded four.
-5. Assign tags from the allowlist ONLY. 3–7 tags total. Leave a category empty rather than guess.
+5. Assign tags from the allowlist ONLY. 3–7 tags total. Leave a category empty rather than guess. NEVER suggest "Mostly Men" — use "Men Only" for male-only venues, or specific crowd tags ("Bears", "Leather", "Gay Men's Crowd", etc.) for venues with predominantly male but mixed-gender crowds.
 6. Use the hours format: {"tz":"...","mon":[],"tue":[],"wed":[],"thu":[],"fri":[{"start":"HH:MM","end":"HH:MM"}],"sat":[],"sun":[]}. Leave days empty if unknown.
 7. Populate discovery_sources and fact_sources with relevant URLs.
 
