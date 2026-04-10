@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { discoverVenues } from "@/lib/ai/claude";
 import { geocodeCity } from "@/lib/utils/geocode";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function deriveSlug(cityName: string): string {
   return cityName
