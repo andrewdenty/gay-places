@@ -40,23 +40,25 @@ export function VenueGuides({ articles }: { articles: ArticleMeta[] }) {
               {article.title}
             </h3>
 
-            {/* Excerpt — hidden on mobile */}
+            {/* Excerpt — hidden on mobile; wrapper uses block to avoid overriding line-clamp's display */}
             {article.excerpt && (
-              <p className="hidden sm:block text-[13px] leading-[1.4] text-[var(--foreground)] line-clamp-2">
-                {article.excerpt}
-              </p>
+              <div className="hidden sm:block">
+                <p className="text-[13px] leading-[1.4] text-[var(--foreground)] line-clamp-2">
+                  {article.excerpt}
+                </p>
+              </div>
             )}
           </div>
 
           {/* Cover image — square thumbnail, right-aligned; larger on desktop */}
-          <div className="relative w-[88px] h-[88px] sm:w-[108px] sm:h-[108px] shrink-0 overflow-hidden bg-[#f0f0ed]">
+          <div className="relative w-[88px] h-[88px] sm:w-[120px] sm:h-[120px] shrink-0 overflow-hidden bg-[#f0f0ed]">
             {article.coverImage && (
               <Image
                 src={article.coverImage}
                 alt={article.title}
                 fill
                 className="object-cover"
-                sizes="(min-width: 640px) 108px, 88px"
+                sizes="(min-width: 640px) 120px, 88px"
               />
             )}
           </div>
