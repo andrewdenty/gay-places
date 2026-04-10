@@ -15,6 +15,8 @@ import { VenueInteractions } from "@/components/venue/VenueInteractions";
 import { VenueAdminToggle } from "@/components/venue/venue-admin-toggle";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getArticlesByVenueSlug } from "@/lib/articles";
+import { VenueGuides } from "@/components/article/venue-guides";
 import { env } from "@/lib/env";
 import { isOpenNow, getOpenUntilLabel } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
@@ -212,6 +214,8 @@ export default async function VenuePage({
     if (row.tag === "trending") interactionCounts.trendingCount++;
     if (row.tag === "underrated") interactionCounts.underratedCount++;
   }
+
+  const venueArticles = getArticlesByVenueSlug(venueSlug);
 
   const permanentlyClosed = venue.closed === true;
   const open = !permanentlyClosed && isOpenNow(venue.opening_hours);
@@ -527,7 +531,10 @@ export default async function VenuePage({
           </VenueSectionRow>
         )}
 
-        {/* Section 8 — Contribute */}
+        {/* Section 8 — Guides featuring this venue */}
+        <VenueGuides articles={venueArticles} />
+
+        {/* Section 9 — Contribute */}
         <VenueSectionRow label="Contribute" bordered={false}>
           <div className="flex flex-wrap items-center justify-end gap-[8px]">
             <Link href={`/venues/${venue.id}/suggest-edit`} className="btn-sm btn-sm-secondary">
