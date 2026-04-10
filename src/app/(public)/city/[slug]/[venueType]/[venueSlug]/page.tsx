@@ -457,7 +457,10 @@ export default async function VenuePage({
           );
         })()}
 
-        {/* Section 4 — Map */}
+        {/* Section 4 — Guides featuring this venue */}
+        <VenueGuides articles={venueArticles} />
+
+        {/* Section 5 — Map */}
         <VenueMapWrapper
           lat={venue.lat}
           lng={venue.lng}
@@ -465,7 +468,7 @@ export default async function VenuePage({
           googleMapsUrl={venue.google_maps_url}
         />
 
-        {/* Section 5 — Website */}
+        {/* Section 7 — Website */}
         {venue.website_url && websiteLabel && (
           <VenueSectionRow label="Website">
             <a
@@ -530,9 +533,6 @@ export default async function VenuePage({
             </div>
           </VenueSectionRow>
         )}
-
-        {/* Section 8 — Guides featuring this venue */}
-        <VenueGuides articles={venueArticles} />
 
         {/* Section 9 — Contribute */}
         <VenueSectionRow label="Contribute" bordered={false}>
