@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getAllArticles } from "@/lib/articles";
 
 type SearchResult = {
   countries: { name: string; venueCount: number }[];
@@ -16,6 +17,22 @@ function normalizeQ(s: string): string {
     .trim();
 }
 
+function searchArticles(nq: string) {
+  return getAllArticles()
+    .filter((a) => {
+      const nTitle = normalizeQ(a.title);
+      const nExcerpt = normalizeQ(a.excerpt);
+      return nTitle.includes(nq) || nExcerpt.includes(nq);
+    })
+    .slice(0, 3)
+    .map((a) => ({
+      title: a.title,
+      slug: a.slug,
+      excerpt: a.excerpt,
+      cities: a.cities,
+    }));
+}
+
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q")?.trim();
   if (!q || q.length < 1) {
@@ -29,10 +46,12 @@ export async function GET(request: NextRequest) {
 
   if (!error) {
     const result = data as SearchResult;
+    const nq = normalizeQ(q);
     return NextResponse.json({
       countries: result.countries ?? [],
       cities: result.cities ?? [],
       venues: result.venues ?? [],
+      articles: searchArticles(nq),
     });
   }
 
@@ -95,5 +114,5 @@ export async function GET(request: NextRequest) {
     };
   });
 
-  return NextResponse.json({ countries, cities, venues });
+  return NextResponse.json({ countries, cities, venues, articles: searchArticles(nq) });
 }
