@@ -33,12 +33,12 @@ type Props = {
 
 const allPills: PillOption[] = [
   { label: "Show all", kind: "type", value: "all" },
+  { label: "Open Now", kind: "open" },
   ...VENUE_TYPES.map((vt) => ({
     label: vt.filterLabel,
     kind: "type" as const,
     value: vt.value,
   })),
-  { label: "Open Now", kind: "open" },
 ];
 
 const MAX_LIST = 10;
