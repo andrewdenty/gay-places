@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { RainbowLogo } from "@/components/ui/rainbow-logo";
+import { useRouter } from "next/navigation";
+import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
 import { CityAutocomplete } from "./city-autocomplete";
 import type { VenueTypeValue } from "@/lib/venue-types";
@@ -23,12 +24,16 @@ type FormState = {
 type Step = "name" | "city" | "type" | "links" | "success";
 
 const SUGGEST_VENUE_OPTIONS: { value: VenueTypeValue; label: string; emoji: string }[] = [
-  { value: "bar", label: "Bar", emoji: "🍸" },
-  { value: "club", label: "Club", emoji: "🪩" },
-  { value: "restaurant", label: "Restaurant", emoji: "🍽️" },
-  { value: "cafe", label: "Café", emoji: "☕" },
-  { value: "sauna", label: "Sauna", emoji: "🔥" },
-  { value: "other", label: "Other", emoji: "✨" },
+  { value: "bar",         label: "Bar",         emoji: "🍸" },
+  { value: "club",        label: "Club",        emoji: "🪩" },
+  { value: "restaurant",  label: "Restaurant",  emoji: "🍽️" },
+  { value: "cafe",        label: "Café",        emoji: "☕" },
+  { value: "sauna",       label: "Sauna",       emoji: "🔥" },
+  { value: "event_space", label: "Event space", emoji: "🎪" },
+  { value: "cruising",    label: "Cruising",    emoji: "😈" },
+  { value: "hotel",       label: "Hotel",       emoji: "🏨" },
+  { value: "shop",        label: "Shop",        emoji: "🛍️" },
+  { value: "other",       label: "Other",       emoji: "✨" },
 ];
 
 const STEP_ORDER: Step[] = ["name", "city", "type", "links", "success"];
@@ -50,7 +55,7 @@ function normaliseInstagram(raw: string): string {
 function StepHeading({ children }: { children: React.ReactNode }) {
   return (
     <h1
-      className="mt-2 text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
+      className="text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
       style={{
         fontFamily: 'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
       }}
@@ -82,6 +87,7 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function SuggestFlow() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>("name");
   const [form, setForm] = useState<FormState>({
     name: "",
@@ -100,6 +106,7 @@ export function SuggestFlow() {
   const instagramRef = useRef<HTMLInputElement>(null);
 
   const stepIndex = STEP_ORDER.indexOf(step);
+  const showHeader = step !== "success";
 
   // Focus the active input when step changes
   useEffect(() => {
@@ -175,50 +182,26 @@ export function SuggestFlow() {
     }
   }
 
-  // ── Shared nav header (back button + progress) ──
-  const showHeader = step !== "success";
+  // ── Progress dots — shown in the center slot of FullPageModal header ──
+  const progressDots = showHeader ? (
+    <ProgressDots current={stepIndex} total={TOTAL_STEPS} />
+  ) : null;
 
   return (
-    <div className="flex min-h-[calc(100svh-4rem)] flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg">
-
-        {showHeader && (
-          <div className="mb-6">
-            {/* Back + dots on same row */}
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={goBack}
-                className={`btn-sm btn-sm-secondary ${
-                  stepIndex === 0 ? "pointer-events-none opacity-0" : ""
-                }`}
-                aria-label="Go back"
-              >
-                <ChevronLeft size={14} strokeWidth={1.5} />
-                Back
-              </button>
-
-              <ProgressDots current={stepIndex} total={TOTAL_STEPS} />
-            </div>
-
-            {/* Step x of x — underneath, left aligned, Geist Mono 12px */}
-            <p
-              className="mt-2 text-[var(--muted-foreground)]"
-              style={{
-                fontFamily: "var(--font-geist-mono), monospace",
-                fontSize: 12,
-              }}
-            >
-              Step {stepIndex + 1} of {TOTAL_STEPS}
-            </p>
-          </div>
-        )}
+    <FullPageModal
+      onClose={() => router.back()}
+      onBack={goBack}
+      showBack={showHeader && stepIndex > 0}
+      centerSlot={progressDots}
+    >
+      <div className="w-full">
 
         {/* ── Step: Name ── */}
         {step === "name" && (
           <div>
             <StepHeading>What&rsquo;s this place called?</StepHeading>
-            <div className="mt-8">
+            {/* mt-4: 8px closer to input than the previous mt-6 */}
+            <div className="mt-4">
               <input
                 ref={nameRef}
                 type="text"
@@ -233,7 +216,7 @@ export function SuggestFlow() {
               />
             </div>
             <div className="mt-4">
-              <Button onClick={advance} disabled={!form.name.trim()}>
+              <Button className="w-full sm:w-auto" onClick={advance} disabled={!form.name.trim()}>
                 Continue
               </Button>
             </div>
@@ -244,7 +227,7 @@ export function SuggestFlow() {
         {step === "city" && (
           <div>
             <StepHeading>Where is it?</StepHeading>
-            <div className="mt-8">
+            <div className="mt-4">
               <CityAutocomplete
                 value={form.cityName}
                 onChange={(cityName, city) =>
@@ -260,12 +243,12 @@ export function SuggestFlow() {
                 }}
                 inputRef={cityRef}
               />
-              <p className="mt-2 text-xs text-[var(--muted-foreground)]">
-                Type any city — even if it&rsquo;s not on the map yet.
+              <p className="mt-2 text-[13px] text-[var(--muted-foreground)]">
+                Type any city, even if it&rsquo;s not listed yet.
               </p>
             </div>
             <div className="mt-4">
-              <Button onClick={advance} disabled={!form.cityName.trim()}>
+              <Button className="w-full sm:w-auto" onClick={advance} disabled={!form.cityName.trim()}>
                 Continue
               </Button>
             </div>
@@ -276,7 +259,7 @@ export function SuggestFlow() {
         {step === "type" && (
           <div>
             <StepHeading>What kind of place is it?</StepHeading>
-            <div className="mt-8 grid grid-cols-3 gap-3">
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
               {SUGGEST_VENUE_OPTIONS.map(({ value, label, emoji }) => (
                 <button
                   key={value}
@@ -305,10 +288,7 @@ export function SuggestFlow() {
         {step === "links" && (
           <div>
             <StepHeading>Any links to help us find it?</StepHeading>
-            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              Totally optional — skip if you&rsquo;re not sure.
-            </p>
-            <div className="mt-8 grid gap-4">
+            <div className="mt-4 grid gap-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium">
                   Instagram
@@ -346,12 +326,13 @@ export function SuggestFlow() {
               <p className="mt-4 text-sm text-[var(--red)]">{error}</p>
             )}
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Button onClick={handleSubmit} disabled={submitting}>
+            <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-3">
+              <Button className="w-full sm:w-auto" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? "Submitting…" : "Save and add place"}
               </Button>
               <Button
                 variant="secondary"
+                className="w-full sm:w-auto"
                 onClick={handleSubmit}
                 disabled={submitting}
               >
@@ -365,14 +346,12 @@ export function SuggestFlow() {
         {step === "success" && (
           <div className="text-center">
             {/* Spinning rainbow logo */}
-            <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-[var(--muted)]">
-              <div style={{ animation: "spin 3s linear infinite" }}>
-                <RainbowLogo size="lg" />
-              </div>
+            <div className="mb-6" style={{ animation: "spin 3s linear infinite", display: "inline-block" }}>
+              <Image src="/rainbow-logo.svg" alt="" width={72} height={72} />
             </div>
 
             <h1
-              className="text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
+              className="text-4xl font-normal leading-tight tracking-tight sm:text-5xl"
               style={{
                 fontFamily:
                   'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
@@ -385,20 +364,26 @@ export function SuggestFlow() {
               <span className="font-semibold">{form.name}</span>
               {" in "}
               <span className="font-semibold">{form.cityName}</span>
-              {" is on its way to the map. We\u2019ll review it and add it soon."}
+              {" is on its way to the map."}
+            </p>
+            <p className="mt-1 text-sm text-[var(--foreground)]">
+              We&rsquo;ll review it and add it soon.
             </p>
 
-            <div className="mt-8 flex flex-col items-center gap-4">
-              <Button onClick={reset}>Add another place</Button>
-              <span className="flex items-center gap-2 text-sm text-[var(--foreground)]">
-                Want credit for your suggestions?
+            <div className="mt-8 flex flex-col items-center">
+              <Button className="w-full sm:w-auto" onClick={reset}>Add another place</Button>
+              {/* 24px more space (mt-12 = 48px total) between button and "want credit" */}
+              <div className="mt-12 flex flex-col items-center gap-3">
+                <p className="text-[13px] text-[var(--foreground)]">
+                  Want credit for your suggestions?
+                </p>
                 <Link
                   href="/sign-in?next=/account"
-                  className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--muted)] px-4 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[color-mix(in_srgb,var(--muted)_85%,transparent)]"
+                  className="inline-flex w-full sm:w-auto h-11 items-center justify-center whitespace-nowrap rounded-full border border-[var(--border)] bg-transparent px-5 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--muted)]"
                 >
                   Sign in
                 </Link>
-              </span>
+              </div>
             </div>
           </div>
         )}
@@ -410,6 +395,6 @@ export function SuggestFlow() {
           to { transform: rotate(360deg); }
         }
       `}</style>
-    </div>
+    </FullPageModal>
   );
 }

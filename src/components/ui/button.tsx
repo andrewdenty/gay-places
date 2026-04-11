@@ -16,7 +16,7 @@ export function Button({
   }
 >) {
   const base =
-    "inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none";
+    "inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors disabled:pointer-events-none";
 
   const sizes: Record<Size, string> = {
     sm: "h-9 px-4 text-sm",
@@ -25,11 +25,11 @@ export function Button({
 
   const variants: Record<Variant, string> = {
     primary:
-      "bg-accent text-accent-foreground hover:opacity-90 active:opacity-85",
+      "bg-accent text-accent-foreground hover:opacity-90 active:opacity-85 disabled:bg-[#F5F5F3] disabled:text-[#C8C8C6]",
     secondary:
-      "bg-muted text-foreground hover:bg-[color-mix(in_srgb,var(--muted)_85%,transparent)]",
+      "border border-[var(--border)] bg-transparent text-foreground hover:bg-[var(--muted)] disabled:opacity-50",
     ghost:
-      "bg-transparent text-foreground hover:bg-[color-mix(in_srgb,var(--muted)_70%,transparent)]",
+      "bg-transparent text-foreground hover:bg-[color-mix(in_srgb,var(--muted)_70%,transparent)] disabled:opacity-50",
   };
 
   return (
