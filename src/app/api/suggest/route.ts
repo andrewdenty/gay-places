@@ -78,16 +78,20 @@ export async function POST(request: Request) {
 
   if (insertError) {
     // If the NOT NULL constraint fires (code 23502), the DB migration hasn't run yet.
-    // Fall back to Supabase anonymous auth to get a real user ID.
+    // Create a transient anonymous user via the admin API (works regardless of whether
+    // client-side anonymous sign-in is enabled in the Supabase dashboard).
     if (insertError.code === "23502" && !submitterId) {
-      const { data: anonData, error: anonError } = await sessionClient.auth.signInAnonymously();
-      if (anonError || !anonData.user) {
+      const anonEmail = `anon-${Date.now()}-${Math.random().toString(36).slice(2)}@anonymous.internal`;
+      const { data: anonData, error: anonError } = await adminClient.auth.admin.createUser({
+        email: anonEmail,
+        email_confirm: true,
+        user_metadata: { is_anonymous: true },
+      });
+      if (anonError || !anonData?.user) {
+        console.error("[suggest] failed to create anon user:", anonError?.message);
         return NextResponse.json(
-          {
-            error:
-              "Sign in to submit a place — anonymous submissions require a quick setup in settings.",
-          },
-          { status: 400 },
+          { error: `[debug] anon user creation failed: ${anonError?.message ?? "no user returned"}` },
+          { status: 500 },
         );
       }
 
@@ -110,7 +114,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, id: retryData.id });
     }
 
-    return NextResponse.json({ error: insertError.message }, { status: 400 });
+    return NextResponse.json(
+      { error: `[debug] insert failed (${insertError.code}): ${insertError.message}` },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json({ ok: true, id: submission.id });
