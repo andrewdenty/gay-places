@@ -40,4 +40,4 @@ alter table public.ingest_jobs
 
 alter table public.ingest_jobs
   add constraint ingest_jobs_type_check
-  check (type in ('discovery', 'manual', 'user_submission'));
+  check (type in ('discovery', 'enrichment', 'manual', 'user_submission'));
