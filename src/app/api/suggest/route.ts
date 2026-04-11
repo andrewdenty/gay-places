@@ -81,13 +81,16 @@ export async function POST(request: Request) {
     // Create a transient anonymous user via the admin API (works regardless of whether
     // client-side anonymous sign-in is enabled in the Supabase dashboard).
     if (insertError.code === "23502" && !submitterId) {
+      const anonEmail = `anon-${Date.now()}-${Math.random().toString(36).slice(2)}@anonymous.internal`;
       const { data: anonData, error: anonError } = await adminClient.auth.admin.createUser({
+        email: anonEmail,
+        email_confirm: true,
         user_metadata: { is_anonymous: true },
       });
       if (anonError || !anonData?.user) {
         console.error("[suggest] failed to create anon user:", anonError?.message);
         return NextResponse.json(
-          { error: "Something went wrong. Please try again." },
+          { error: `[debug] anon user creation failed: ${anonError?.message ?? "no user returned"}` },
           { status: 500 },
         );
       }
@@ -111,7 +114,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, id: retryData.id });
     }
 
-    return NextResponse.json({ error: insertError.message }, { status: 400 });
+    return NextResponse.json(
+      { error: `[debug] insert failed (${insertError.code}): ${insertError.message}` },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json({ ok: true, id: submission.id });
