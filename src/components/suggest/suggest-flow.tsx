@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { RainbowLogo } from "@/components/ui/rainbow-logo";
+import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
 import { CityAutocomplete } from "./city-autocomplete";
 import type { VenueTypeValue } from "@/lib/venue-types";
@@ -82,6 +84,7 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function SuggestFlow() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>("name");
   const [form, setForm] = useState<FormState>({
     name: "",
@@ -179,7 +182,8 @@ export function SuggestFlow() {
   const showHeader = step !== "success";
 
   return (
-    <div className="flex min-h-[calc(100svh-4rem)] flex-col items-center justify-center px-4 py-12">
+    <FullPageModal onClose={() => router.back()}>
+    <div className="flex min-h-dvh flex-col items-center justify-center px-4 py-16">
       <div className="w-full max-w-lg">
 
         {showHeader && (
@@ -367,7 +371,7 @@ export function SuggestFlow() {
             {/* Spinning rainbow logo */}
             <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-[var(--muted)]">
               <div style={{ animation: "spin 3s linear infinite" }}>
-                <RainbowLogo size="lg" />
+                <Image src="/rainbow-logo.svg" alt="" width={64} height={64} />
               </div>
             </div>
 
@@ -390,15 +394,15 @@ export function SuggestFlow() {
 
             <div className="mt-8 flex flex-col items-center gap-4">
               <Button onClick={reset}>Add another place</Button>
-              <span className="flex items-center gap-2 text-sm text-[var(--foreground)]">
+              <p className="text-sm text-[var(--muted-foreground)]">
                 Want credit for your suggestions?
-                <Link
-                  href="/sign-in?next=/account"
-                  className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--muted)] px-4 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[color-mix(in_srgb,var(--muted)_85%,transparent)]"
-                >
-                  Sign in
-                </Link>
-              </span>
+              </p>
+              <Link
+                href="/sign-in?next=/account"
+                className="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-[var(--muted)] px-5 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[color-mix(in_srgb,var(--muted)_85%,transparent)]"
+              >
+                Sign in
+              </Link>
             </div>
           </div>
         )}
@@ -411,5 +415,6 @@ export function SuggestFlow() {
         }
       `}</style>
     </div>
+    </FullPageModal>
   );
 }
