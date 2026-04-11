@@ -40,11 +40,11 @@ export function FullPageModal({
         WebkitBackdropFilter: "blur(24px)",
       }}
     >
-      {/* Scrollable content — top-aligned, mirrors search modal vertical rhythm */}
-      <div className="min-h-full px-4 pt-4 sm:pt-[15vh] pb-16">
+      {/* Scrollable content — header pinned to top, form content positioned lower */}
+      <div className="min-h-full px-4 pt-4 pb-16">
         <div className="mx-auto w-full max-w-lg">
 
-          {/* Header row: back button (left) + close button (right) */}
+          {/* Header row: left slot + close button — always near the viewport top */}
           <div className="flex items-center justify-between">
             {/* Left slot — always rendered to keep close button right-aligned */}
             <div className="min-w-[48px]">{leftAction}</div>
@@ -58,8 +58,9 @@ export function FullPageModal({
             </button>
           </div>
 
-          {/* Content — 48px below header on mobile, 32px on desktop */}
-          <div className="mt-12 sm:mt-8">
+          {/* Content — 48px below header on mobile; on desktop calc positions
+              the form at ~15vh from the viewport top (matching search modal rhythm) */}
+          <div className="mt-12 sm:mt-[calc(15vh-4rem)]">
             {children}
           </div>
 
