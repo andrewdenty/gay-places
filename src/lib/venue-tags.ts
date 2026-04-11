@@ -40,6 +40,7 @@ export const TAG_CATEGORIES: {
       "Cubs",
       "Solo Friendly",
       "Students",
+      "Gay Friendly",
     ],
   },
   {
