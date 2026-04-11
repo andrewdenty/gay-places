@@ -8,18 +8,9 @@ type Submission = {
   status: "pending" | "approved" | "rejected";
   city_id: string | null;
   venue_id: string | null;
-  submitter_id: string;
+  submitter_id: string | null;
   proposed_data: Record<string, unknown>;
 };
-
-type VenueType =
-  | "bar"
-  | "club"
-  | "restaurant"
-  | "cafe"
-  | "sauna"
-  | "event_space"
-  | "other";
 
 function asString(v: unknown): string | null {
   const s = typeof v === "string" ? v.trim() : "";
@@ -74,34 +65,73 @@ export async function POST(
 
   try {
     if (s.kind === "new_venue") {
+      // User-submitted venues go into the enrichment pipeline (ingest_candidates)
+      // rather than publishing directly. This lets admin verify, add coordinates,
+      // photos, and a full description before the venue goes live.
       const pd = s.proposed_data ?? {};
       const name = asString(pd.name) ?? "Untitled";
-      const address = asString(pd.address) ?? "";
-      const lat = asNumber(pd.lat) ?? 0;
-      const lng = asNumber(pd.lng) ?? 0;
-      const venue_type = (asString(pd.venue_type) ?? "other") as VenueType;
-      const description = asString(pd.description) ?? "";
-      const website_url = asString(pd.website_url);
-      const google_maps_url = asString(pd.google_maps_url);
-      const tags = asStringArray(pd.tags);
+      const cityName = asString(pd.city_name) ?? asString(pd.name) ?? "";
+      const citySlug = asString(pd.city_slug) ?? "";
+      const country = asString(pd.country) ?? "";
+      const venueType = asString(pd.venue_type) ?? "other";
+      const instagramUrl = asString(pd.instagram_url);
+      const websiteUrl = asString(pd.website_url);
 
-      if (!s.city_id) throw new Error("Missing city_id");
+      // Resolve city info if city_slug was stored but country wasn't.
+      let resolvedCity: { name: string; slug: string; country: string } | null = null;
+      if (citySlug) {
+        const { data: city } = await admin
+          .from("cities")
+          .select("name,slug,country")
+          .eq("slug", citySlug)
+          .maybeSingle();
+        if (city) resolvedCity = city as typeof resolvedCity;
+      }
 
-      const { error: insertError } = await admin.from("venues").insert({
-        city_id: s.city_id,
+      const finalCityName = resolvedCity?.name ?? cityName;
+      const finalCitySlug = resolvedCity?.slug ?? citySlug;
+      const finalCountry = resolvedCity?.country ?? country;
+
+      function buildGoogleSearchUrl(n: string, city: string, c: string) {
+        return `https://www.google.com/search?q=${encodeURIComponent(`${n} ${city} ${c}`)}`;
+      }
+      function buildGoogleMapsSearchUrl(n: string, city: string, c: string) {
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${n} ${city} ${c}`)}`;
+      }
+
+      // Create a lightweight ingest_job to satisfy the FK constraint.
+      const { data: job, error: jobErr } = await admin
+        .from("ingest_jobs")
+        .insert({
+          type: "user_submission",
+          status: "succeeded",
+          params: { submission_id: s.id, city_name: finalCityName, city_slug: finalCitySlug },
+          stats: { total_inserted: 1 },
+          created_by: user.id,
+          finished_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+      if (jobErr) throw jobErr;
+
+      const { error: candidateErr } = await admin.from("ingest_candidates").insert({
+        job_id: job.id,
+        status: "pending",
+        city_slug: finalCitySlug,
+        city_name: finalCityName,
+        country: finalCountry,
         name,
-        address,
-        lat,
-        lng,
-        venue_type,
-        description,
-        website_url,
-        google_maps_url,
-        tags,
-        opening_hours: pd.opening_hours ?? {},
-        published: true,
+        venue_type: venueType,
+        address: null,
+        website_url: websiteUrl,
+        instagram_url: instagramUrl,
+        google_search_url: buildGoogleSearchUrl(name, finalCityName, finalCountry),
+        google_maps_search_url: buildGoogleMapsSearchUrl(name, finalCityName, finalCountry),
+        source_links: [],
+        confidence: "medium",
+        notes: `Submitted by ${s.submitter_id ? `user ${s.submitter_id}` : "anonymous user"}`,
       });
-      if (insertError) throw insertError;
+      if (candidateErr) throw candidateErr;
     }
 
     if (s.kind === "edit_venue") {
@@ -133,6 +163,7 @@ export async function POST(
 
     if (s.kind === "new_review") {
       if (!s.venue_id) throw new Error("Missing venue_id");
+      if (!s.submitter_id) throw new Error("Review requires an authenticated submitter");
       const pd = s.proposed_data ?? {};
       const rating = asNumber(pd.rating);
       const body = asString(pd.body) ?? "";
@@ -167,7 +198,7 @@ export async function POST(
         venue_id: s.venue_id,
         storage_path: dest,
         caption,
-        author_id: s.submitter_id,
+        author_id: s.submitter_id ?? null,
       });
       if (photoError) throw photoError;
     }
