@@ -85,7 +85,7 @@ export async function POST(
           .select("name,slug,country")
           .eq("slug", citySlug)
           .maybeSingle();
-        if (city) resolvedCity = city as typeof resolvedCity;
+        if (city) resolvedCity = city as { name: string; slug: string; country: string };
       }
 
       const finalCityName = resolvedCity?.name ?? cityName;
