@@ -45,7 +45,6 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
   const isUserRoute =
-    pathname === "/suggest" ||
     pathname.startsWith("/account") ||
     pathname.startsWith("/venues/");
 

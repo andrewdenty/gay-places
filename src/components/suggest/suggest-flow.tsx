@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { RainbowLogo } from "@/components/ui/rainbow-logo";
 import { CityAutocomplete } from "./city-autocomplete";
 import { submitVenueSuggestion } from "@/app/(public)/suggest/actions";
 
@@ -31,10 +32,10 @@ type Step = "name" | "city" | "type" | "links" | "success";
 
 const VENUE_TYPES: { value: VenueType; label: string; emoji: string }[] = [
   { value: "bar", label: "Bar", emoji: "🍸" },
-  { value: "club", label: "Club", emoji: "🎉" },
+  { value: "club", label: "Club", emoji: "🪩" },
   { value: "restaurant", label: "Restaurant", emoji: "🍽️" },
   { value: "cafe", label: "Café", emoji: "☕" },
-  { value: "sauna", label: "Sauna", emoji: "🧖" },
+  { value: "sauna", label: "Sauna", emoji: "🔥" },
   { value: "other", label: "Other", emoji: "✨" },
 ];
 
@@ -51,24 +52,18 @@ function normaliseInstagram(raw: string): string {
   return stripped ? `https://www.instagram.com/${stripped}/` : "";
 }
 
-// ─── Step components ──────────────────────────────────────────────────────────
+// ─── Step heading ─────────────────────────────────────────────────────────────
 
-function StepIndicator({ current, total }: { current: number; total: number }) {
+function StepHeading({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-1.5">
-      {Array.from({ length: total }).map((_, i) => (
-        <span
-          key={i}
-          className={`block h-1.5 rounded-full transition-all duration-300 ${
-            i < current
-              ? "w-4 bg-[var(--foreground)]"
-              : i === current
-              ? "w-4 bg-[var(--foreground)]"
-              : "w-1.5 bg-[var(--border)]"
-          }`}
-        />
-      ))}
-    </div>
+    <h1
+      className="mt-2 text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
+      style={{
+        fontFamily: 'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
+      }}
+    >
+      {children}
+    </h1>
   );
 }
 
@@ -87,7 +82,6 @@ export function SuggestFlow() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [direction, setDirection] = useState<"forward" | "back">("forward");
 
   const nameRef = useRef<HTMLInputElement>(null);
   const cityRef = useRef<HTMLInputElement>(null);
@@ -118,13 +112,11 @@ export function SuggestFlow() {
   });
 
   function advance() {
-    setDirection("forward");
     const next = STEP_ORDER[stepIndex + 1];
     if (next) setStep(next);
   }
 
   function goBack() {
-    setDirection("back");
     const prev = STEP_ORDER[stepIndex - 1];
     if (prev && prev !== "success") setStep(prev);
   }
@@ -140,7 +132,6 @@ export function SuggestFlow() {
       website: "",
     });
     setError(null);
-    setDirection("forward");
     setStep("name");
   }
 
@@ -157,7 +148,6 @@ export function SuggestFlow() {
         instagramUrl: form.instagram ? normaliseInstagram(form.instagram) : null,
         websiteUrl: form.website.trim() || null,
       });
-      setDirection("forward");
       setStep("success");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
@@ -166,59 +156,40 @@ export function SuggestFlow() {
     }
   }
 
-  // ── Render ──
+  // ── Shared header: back + step indicator ──
+  const showHeader = step !== "success";
 
   return (
     <div className="flex min-h-[calc(100svh-4rem)] flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
 
-        {/* Back + step indicator header */}
-        {step !== "success" && (
-          <div className="mb-8 flex items-center justify-between">
-            <button
-              type="button"
+        {showHeader && (
+          <div className="mb-8 flex items-center gap-4">
+            {/* Back button */}
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={goBack}
-              className={`flex items-center gap-1.5 text-sm text-[var(--muted-foreground)] transition-opacity hover:text-[var(--foreground)] ${
-                stepIndex === 0 ? "pointer-events-none opacity-0" : "opacity-100"
-              }`}
+              className={stepIndex === 0 ? "pointer-events-none opacity-0" : ""}
               aria-label="Go back"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden
-              >
-                <path
-                  d="M10 12L6 8l4-4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Back
-            </button>
-            <StepIndicator current={stepIndex} total={totalSteps} />
+              ← Back
+            </Button>
+
+            {/* Step indicator — left aligned, Geist Mono 12px */}
+            <span
+              className="text-[var(--muted-foreground)]"
+              style={{ fontFamily: "var(--font-geist-mono), monospace", fontSize: 12 }}
+            >
+              Step {stepIndex + 1} of {totalSteps}
+            </span>
           </div>
         )}
 
         {/* Step: Name */}
         {step === "name" && (
-          <div key="name">
-            <p className="text-sm font-medium text-[var(--muted-foreground)]">
-              Step 1 of 4
-            </p>
-            <h1
-              className="mt-2 text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
-              style={{
-                fontFamily:
-                  'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
-              }}
-            >
-              What&rsquo;s this place called?
-            </h1>
+          <div>
+            <StepHeading>What&rsquo;s this place called?</StepHeading>
             <div className="mt-8">
               <input
                 ref={nameRef}
@@ -234,11 +205,7 @@ export function SuggestFlow() {
               />
             </div>
             <div className="mt-4">
-              <Button
-                onClick={advance}
-                disabled={!form.name.trim()}
-                className="w-full sm:w-auto"
-              >
+              <Button onClick={advance} disabled={!form.name.trim()}>
                 Continue
               </Button>
             </div>
@@ -247,19 +214,8 @@ export function SuggestFlow() {
 
         {/* Step: City */}
         {step === "city" && (
-          <div key="city">
-            <p className="text-sm font-medium text-[var(--muted-foreground)]">
-              Step 2 of 4
-            </p>
-            <h1
-              className="mt-2 text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
-              style={{
-                fontFamily:
-                  'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
-              }}
-            >
-              Where is it?
-            </h1>
+          <div>
+            <StepHeading>Where is it?</StepHeading>
             <div className="mt-8">
               <CityAutocomplete
                 value={form.cityName}
@@ -281,11 +237,7 @@ export function SuggestFlow() {
               </p>
             </div>
             <div className="mt-4">
-              <Button
-                onClick={advance}
-                disabled={!form.cityName.trim()}
-                className="w-full sm:w-auto"
-              >
+              <Button onClick={advance} disabled={!form.cityName.trim()}>
                 Continue
               </Button>
             </div>
@@ -294,19 +246,8 @@ export function SuggestFlow() {
 
         {/* Step: Venue type */}
         {step === "type" && (
-          <div key="type">
-            <p className="text-sm font-medium text-[var(--muted-foreground)]">
-              Step 3 of 4
-            </p>
-            <h1
-              className="mt-2 text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
-              style={{
-                fontFamily:
-                  'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
-              }}
-            >
-              What kind of place is it?
-            </h1>
+          <div>
+            <StepHeading>What kind of place is it?</StepHeading>
             <div className="mt-8 grid grid-cols-3 gap-3">
               {VENUE_TYPES.map(({ value, label, emoji }) => (
                 <button
@@ -314,10 +255,9 @@ export function SuggestFlow() {
                   type="button"
                   onClick={() => {
                     setForm((f) => ({ ...f, venueType: value }));
-                    // Auto-advance after a tiny delay so the selection is visible
                     setTimeout(() => advance(), 160);
                   }}
-                  className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition-all duration-150 hover:border-[var(--foreground)] hover:bg-[var(--muted)] active:scale-95 ${
+                  className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-sm font-medium transition-all duration-150 hover:border-[var(--foreground)] hover:bg-[var(--muted)] active:scale-95 ${
                     form.venueType === value
                       ? "border-[var(--foreground)] bg-[var(--muted)]"
                       : "border-[var(--border)] bg-[var(--card)]"
@@ -335,19 +275,8 @@ export function SuggestFlow() {
 
         {/* Step: Links */}
         {step === "links" && (
-          <div key="links">
-            <p className="text-sm font-medium text-[var(--muted-foreground)]">
-              Step 4 of 4
-            </p>
-            <h1
-              className="mt-2 text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
-              style={{
-                fontFamily:
-                  'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
-              }}
-            >
-              Any links to help us find it?
-            </h1>
+          <div>
+            <StepHeading>Any links to help us find it?</StepHeading>
             <p className="mt-2 text-sm text-[var(--muted-foreground)]">
               Totally optional — skip if you&rsquo;re not sure.
             </p>
@@ -390,31 +319,30 @@ export function SuggestFlow() {
             )}
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="sm:w-auto"
-              >
+              <Button onClick={handleSubmit} disabled={submitting}>
                 {submitting ? "Submitting…" : "Submit"}
               </Button>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="text-sm text-[var(--muted-foreground)] underline underline-offset-2 hover:text-[var(--foreground)] transition-colors disabled:pointer-events-none disabled:opacity-50"
               >
                 Skip this
-              </button>
+              </Button>
             </div>
           </div>
         )}
 
         {/* Step: Success */}
         {step === "success" && (
-          <div key="success" className="text-center">
-            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[var(--muted)] text-4xl">
-              🎉
+          <div className="text-center">
+            {/* Spinning rainbow logo */}
+            <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-[var(--muted)]">
+              <div style={{ animation: "spin 3s linear infinite" }}>
+                <RainbowLogo size="lg" />
+              </div>
             </div>
+
             <h1
               className="text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
               style={{
@@ -422,32 +350,41 @@ export function SuggestFlow() {
                   'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
               }}
             >
-              You&rsquo;re a legend.
+              Nice find.
             </h1>
-            <p className="mt-3 text-base text-[var(--muted-foreground)]">
-              <strong className="text-[var(--foreground)]">{form.name}</strong>
+
+            <p className="mt-3 text-sm text-[var(--foreground)]">
+              <span className="font-semibold">{form.name}</span>
               {" in "}
-              <strong className="text-[var(--foreground)]">{form.cityName}</strong>
-              {" is on its way to the map."}
-            </p>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-              We&rsquo;ll review it and add it soon.
+              <span className="font-semibold">{form.cityName}</span>
+              {" is on its way to the map. We'll review it and add it soon."}
             </p>
 
-            <div className="mt-8 flex flex-col items-center gap-3">
-              <Button onClick={reset} className="w-full sm:w-auto">
-                Know somewhere else? →
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <Button onClick={reset}>
+                Add another place
               </Button>
-              <Link
-                href="/sign-in?next=/account"
-                className="text-sm text-[var(--muted-foreground)] underline underline-offset-2 hover:text-[var(--foreground)] transition-colors"
-              >
-                Sign in to get credited and track your spots
-              </Link>
+              <span className="flex items-center gap-2 text-sm text-[var(--foreground)]">
+                Want credit for your suggestions?
+                <Link
+                  href="/sign-in?next=/account"
+                  className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--muted)] px-4 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[color-mix(in_srgb,var(--muted)_85%,transparent)]"
+                >
+                  Sign in
+                </Link>
+              </span>
             </div>
           </div>
         )}
       </div>
+
+      {/* CSS for spin animation */}
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
