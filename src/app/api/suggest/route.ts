@@ -78,10 +78,14 @@ export async function POST(request: Request) {
 
   if (insertError) {
     // If the NOT NULL constraint fires (code 23502), the DB migration hasn't run yet.
-    // Fall back to Supabase anonymous auth to get a real user ID.
+    // Create a transient anonymous user via the admin API (works regardless of whether
+    // client-side anonymous sign-in is enabled in the Supabase dashboard).
     if (insertError.code === "23502" && !submitterId) {
-      const { data: anonData, error: anonError } = await sessionClient.auth.signInAnonymously();
-      if (anonError || !anonData.user) {
+      const { data: anonData, error: anonError } = await adminClient.auth.admin.createUser({
+        user_metadata: { is_anonymous: true },
+      });
+      if (anonError || !anonData?.user) {
+        console.error("[suggest] failed to create anon user:", anonError?.message);
         return NextResponse.json(
           { error: "Something went wrong. Please try again." },
           { status: 500 },
