@@ -7,8 +7,9 @@
 
 import { TAG_CATEGORIES, type VenueTags } from "@/lib/venue-tags";
 import { callClaude } from "./client";
-import { MODEL_CONFIG, VENUE_TYPE_VALUES } from "./constants";
+import { MODEL_CONFIG } from "./constants";
 import { buildDiscoveryPrompt, buildEnrichmentPrompt } from "./prompts";
+import { VENUE_TYPE_SET } from "@/lib/venue-types";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -116,13 +117,15 @@ function extractSocialUrls(html: string): { instagram: string | null; facebook: 
 
 function normaliseVenueType(raw: string): string {
   const lower = raw.toLowerCase().trim();
-  for (const valid of VENUE_TYPE_VALUES) {
-    if (lower === valid) return valid;
-  }
-  if (lower === "club" || lower === "nightclub") return "dance club";
+  // Map AI prompt vocabulary and common aliases → DB enum values
+  if (lower === "dance club" || lower === "club" || lower === "nightclub") return "club";
+  if (lower === "cruising club" || lower === "sex club") return "cruising";
   if (lower === "pub") return "bar";
   if (lower === "bathhouse" || lower === "bath house") return "sauna";
   if (lower === "café") return "cafe";
+  if (lower === "boutique" || lower === "store") return "shop";
+  // If already a valid DB enum value, pass it through
+  if (VENUE_TYPE_SET.has(lower)) return lower;
   return "bar";
 }
 

@@ -5,6 +5,7 @@ import { AdminModal } from "@/components/admin/admin-modal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { createVenue } from "@/app/(admin)/admin/venues/actions";
+import { VENUE_TYPES } from "@/lib/venue-types";
 
 type City = { id: string; name: string; slug: string };
 
@@ -68,14 +69,9 @@ export function NewVenueModal({ cities }: { cities: City[] }) {
             required
           />
           <select name="venue_type" defaultValue="bar" className={SELECT}>
-            <option value="bar">Bar</option>
-            <option value="club">Club</option>
-            <option value="restaurant">Restaurant</option>
-            <option value="cafe">Café</option>
-            <option value="sauna">Sauna</option>
-            <option value="event_space">Event space</option>
-            <option value="cruising">Cruising</option>
-            <option value="other">Other</option>
+            {VENUE_TYPES.map((vt) => (
+              <option key={vt.value} value={vt.value}>{vt.label}</option>
+            ))}
           </select>
           <input
             name="website_url"

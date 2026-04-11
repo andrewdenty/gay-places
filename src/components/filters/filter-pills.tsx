@@ -1,6 +1,6 @@
-import type { Venue } from "@/lib/data/public";
+import type { VenueTypeValue } from "@/lib/venue-types";
 
-export type VenueType = Venue["venue_type"] | "all";
+export type VenueType = VenueTypeValue | "all";
 
 export type PillOption =
   | { label: string; kind: "type"; value: VenueType }

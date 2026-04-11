@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { FilterPills } from "@/components/filters/filter-pills";
 import type { PillOption, VenueType } from "@/components/filters/filter-pills";
+import { VENUE_TYPES } from "@/lib/venue-types";
 import { CornerUpRight } from "lucide-react";
 import type { Venue } from "@/lib/data/public";
 import type { NearMeVenue } from "@/components/near-me/near-me-map";
@@ -32,10 +33,11 @@ type Props = {
 
 const allPills: PillOption[] = [
   { label: "Show all", kind: "type", value: "all" },
-  { label: "Bars", kind: "type", value: "bar" },
-  { label: "Clubs", kind: "type", value: "club" },
-  { label: "Saunas", kind: "type", value: "sauna" },
-  { label: "Cafés", kind: "type", value: "cafe" },
+  ...VENUE_TYPES.map((vt) => ({
+    label: vt.filterLabel,
+    kind: "type" as const,
+    value: vt.value,
+  })),
   { label: "Open Now", kind: "open" },
 ];
 

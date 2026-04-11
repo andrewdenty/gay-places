@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { suggestNewVenue } from "./actions";
+import { VENUE_TYPES } from "@/lib/venue-types";
 
 export default function SuggestPage() {
   return (
@@ -65,13 +66,9 @@ export default function SuggestPage() {
                 className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
                 defaultValue="bar"
               >
-                <option value="bar">Bar</option>
-                <option value="club">Club</option>
-                <option value="restaurant">Restaurant</option>
-                <option value="cafe">Café</option>
-                <option value="sauna">Sauna</option>
-                <option value="event_space">Event space</option>
-                <option value="other">Other</option>
+                {VENUE_TYPES.map((vt) => (
+                  <option key={vt.value} value={vt.value}>{vt.label}</option>
+                ))}
               </select>
             </div>
 

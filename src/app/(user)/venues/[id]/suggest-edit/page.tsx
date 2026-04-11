@@ -6,6 +6,7 @@ import { VenueTagPicker } from "@/components/venue/venue-tag-picker";
 import type { VenueTags } from "@/lib/venue-tags";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { suggestVenueEdit } from "./actions";
+import { VENUE_TYPES } from "@/lib/venue-types";
 
 export const dynamic = "force-dynamic";
 
@@ -88,13 +89,9 @@ export default async function SuggestEditPage({
                 defaultValue={venue.venue_type ?? "other"}
                 className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
               >
-                <option value="bar">Bar</option>
-                <option value="club">Club</option>
-                <option value="restaurant">Restaurant</option>
-                <option value="cafe">Café</option>
-                <option value="sauna">Sauna</option>
-                <option value="event_space">Event space</option>
-                <option value="other">Other</option>
+                {VENUE_TYPES.map((vt) => (
+                  <option key={vt.value} value={vt.value}>{vt.label}</option>
+                ))}
               </select>
             </div>
 

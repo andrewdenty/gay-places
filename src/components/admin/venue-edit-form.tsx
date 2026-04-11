@@ -18,6 +18,7 @@ import { VenueEnrichBar, TagsEnrichButton, OpeningHoursEnrichButton } from "@/co
 import { useToast } from "@/components/ui/toast";
 import { updateVenueDetails } from "@/app/(admin)/admin/venues/[venueId]/actions";
 import type { VenueTagCategory, VenueTags } from "@/lib/venue-tags";
+import { VENUE_TYPES } from "@/lib/venue-types";
 
 // ─── Styling constants ────────────────────────────────────────────────────────
 const INPUT =
@@ -335,14 +336,9 @@ export function VenueEditForm({
             onChange={(e) => { setVenueType(e.target.value); setIsDirty(true); }}
             className={SELECT}
           >
-            <option value="bar">Bar</option>
-            <option value="club">Club</option>
-            <option value="restaurant">Restaurant</option>
-            <option value="cafe">Café</option>
-            <option value="sauna">Sauna</option>
-            <option value="event_space">Event space</option>
-            <option value="cruising">Cruising</option>
-            <option value="other">Other</option>
+            {VENUE_TYPES.map((vt) => (
+              <option key={vt.value} value={vt.value}>{vt.label}</option>
+            ))}
           </select>
 
           <input
