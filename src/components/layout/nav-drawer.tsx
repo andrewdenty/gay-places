@@ -196,7 +196,7 @@ export function NavDrawer({
                   style={{ borderColor: "#E4E4E1", color: "#171717" }}
                   onClick={onClose}
                 >
-                  Submit a Place
+                  Add a place
                 </Link>
               </div>
 
