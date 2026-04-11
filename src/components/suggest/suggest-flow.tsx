@@ -6,24 +6,23 @@ import { ChevronLeft } from "lucide-react";
 import { RainbowLogo } from "@/components/ui/rainbow-logo";
 import { Button } from "@/components/ui/button";
 import { CityAutocomplete } from "./city-autocomplete";
+import type { VenueTypeValue } from "@/lib/venue-types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type VenueType = "bar" | "club" | "restaurant" | "cafe" | "sauna" | "other";
 
 type FormState = {
   name: string;
   cityName: string;
   cityId: string | null;
   citySlug: string | null;
-  venueType: VenueType | null;
+  venueType: VenueTypeValue | null;
   instagram: string;
   website: string;
 };
 
 type Step = "name" | "city" | "type" | "links" | "success";
 
-const VENUE_TYPES: { value: VenueType; label: string; emoji: string }[] = [
+const SUGGEST_VENUE_OPTIONS: { value: VenueTypeValue; label: string; emoji: string }[] = [
   { value: "bar", label: "Bar", emoji: "🍸" },
   { value: "club", label: "Club", emoji: "🪩" },
   { value: "restaurant", label: "Restaurant", emoji: "🍽️" },
@@ -278,7 +277,7 @@ export function SuggestFlow() {
           <div>
             <StepHeading>What kind of place is it?</StepHeading>
             <div className="mt-8 grid grid-cols-3 gap-3">
-              {VENUE_TYPES.map(({ value, label, emoji }) => (
+              {SUGGEST_VENUE_OPTIONS.map(({ value, label, emoji }) => (
                 <button
                   key={value}
                   type="button"
