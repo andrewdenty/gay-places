@@ -13,6 +13,7 @@ import { venueUrlPath } from "@/lib/slugs";
 import { normalizeSearch } from "@/lib/normalize-search";
 import { FilterPills } from "@/components/filters/filter-pills";
 import type { PillOption, VenueType } from "@/components/filters/filter-pills";
+import { VENUE_TYPES } from "@/lib/venue-types";
 import { NearMeFieldButton } from "@/components/ui/near-me-field-button";
 
 const CityMap = dynamic(
@@ -28,11 +29,11 @@ type Props = {
 
 const allPills: PillOption[] = [
   { label: "Show all", kind: "type", value: "all" },
-  { label: "Bars", kind: "type", value: "bar" },
-  { label: "Clubs", kind: "type", value: "club" },
-  { label: "Saunas", kind: "type", value: "sauna" },
-  { label: "Cafés", kind: "type", value: "cafe" },
-  { label: "Cruising", kind: "type", value: "cruising" },
+  ...VENUE_TYPES.map((vt) => ({
+    label: vt.filterLabel,
+    kind: "type" as const,
+    value: vt.value,
+  })),
   { label: "Open Now", kind: "open" },
 ];
 

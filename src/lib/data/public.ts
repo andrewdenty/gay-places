@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { OpeningHours } from "@/lib/types/opening-hours";
 import type { VenueTags } from "@/lib/venue-tags";
 import { toSlug } from "@/lib/slugs";
+import type { VenueTypeValue } from "@/lib/venue-types";
 
 export type Country = {
   id: string;
@@ -37,15 +38,7 @@ export type Venue = {
   address: string;
   lat: number;
   lng: number;
-  venue_type:
-    | "bar"
-    | "club"
-    | "restaurant"
-    | "cafe"
-    | "sauna"
-    | "event_space"
-    | "other"
-    | "cruising";
+  venue_type: VenueTypeValue;
   /** @deprecated Use description_editorial or description_base instead. */
   description: string;
   /** Auto-generated base description (deterministic or AI draft). */

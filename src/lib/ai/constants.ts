@@ -45,7 +45,9 @@ export const BANNED_WORDS = [
   "stepping inside",
 ] as const;
 
-/** Valid venue types for discovery output. */
+/** Venue type vocabulary for AI discovery prompts.
+ * Uses human-readable terms (e.g. "dance club") that produce better LLM output.
+ * normaliseVenueType() in claude.ts maps these back to DB enum values. */
 export const VENUE_TYPE_VALUES = [
   "bar",
   "dance club",
@@ -54,6 +56,8 @@ export const VENUE_TYPE_VALUES = [
   "restaurant",
   "cafe",
   "event_space",
+  "hotel",
+  "shop",
 ] as const;
 
 /** Model + generation config per task type. */
