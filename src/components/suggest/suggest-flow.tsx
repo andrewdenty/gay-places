@@ -25,12 +25,16 @@ type FormState = {
 type Step = "name" | "city" | "type" | "links" | "success";
 
 const SUGGEST_VENUE_OPTIONS: { value: VenueTypeValue; label: string; emoji: string }[] = [
-  { value: "bar", label: "Bar", emoji: "🍸" },
-  { value: "club", label: "Club", emoji: "🪩" },
-  { value: "restaurant", label: "Restaurant", emoji: "🍽️" },
-  { value: "cafe", label: "Café", emoji: "☕" },
-  { value: "sauna", label: "Sauna", emoji: "🔥" },
-  { value: "other", label: "Other", emoji: "✨" },
+  { value: "bar",         label: "Bar",         emoji: "🍸" },
+  { value: "club",        label: "Club",        emoji: "🪩" },
+  { value: "restaurant",  label: "Restaurant",  emoji: "🍽️" },
+  { value: "cafe",        label: "Café",        emoji: "☕" },
+  { value: "sauna",       label: "Sauna",       emoji: "🔥" },
+  { value: "event_space", label: "Event space", emoji: "🎪" },
+  { value: "cruising",    label: "Cruising",    emoji: "😈" },
+  { value: "hotel",       label: "Hotel",       emoji: "🏨" },
+  { value: "shop",        label: "Shop",        emoji: "🛍️" },
+  { value: "other",       label: "Other",       emoji: "✨" },
 ];
 
 const STEP_ORDER: Step[] = ["name", "city", "type", "links", "success"];
@@ -183,7 +187,6 @@ export function SuggestFlow() {
 
   return (
     <FullPageModal onClose={() => router.back()}>
-    <div className="flex min-h-dvh flex-col items-center justify-center px-4 py-16">
       <div className="w-full max-w-lg">
 
         {showHeader && (
@@ -204,17 +207,6 @@ export function SuggestFlow() {
 
               <ProgressDots current={stepIndex} total={TOTAL_STEPS} />
             </div>
-
-            {/* Step x of x — underneath, left aligned, Geist Mono 12px */}
-            <p
-              className="mt-2 text-[var(--muted-foreground)]"
-              style={{
-                fontFamily: "var(--font-geist-mono), monospace",
-                fontSize: 12,
-              }}
-            >
-              Step {stepIndex + 1} of {TOTAL_STEPS}
-            </p>
           </div>
         )}
 
@@ -264,7 +256,7 @@ export function SuggestFlow() {
                 }}
                 inputRef={cityRef}
               />
-              <p className="mt-2 text-xs text-[var(--muted-foreground)]">
+              <p className="mt-2 text-[13px] text-[var(--muted-foreground)]">
                 Type any city — even if it&rsquo;s not on the map yet.
               </p>
             </div>
@@ -280,7 +272,7 @@ export function SuggestFlow() {
         {step === "type" && (
           <div>
             <StepHeading>What kind of place is it?</StepHeading>
-            <div className="mt-8 grid grid-cols-3 gap-3">
+            <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
               {SUGGEST_VENUE_OPTIONS.map(({ value, label, emoji }) => (
                 <button
                   key={value}
@@ -309,7 +301,7 @@ export function SuggestFlow() {
         {step === "links" && (
           <div>
             <StepHeading>Any links to help us find it?</StepHeading>
-            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+            <p className="mt-2 text-[13px] text-[var(--muted-foreground)]">
               Totally optional — skip if you&rsquo;re not sure.
             </p>
             <div className="mt-8 grid gap-4">
@@ -369,10 +361,8 @@ export function SuggestFlow() {
         {step === "success" && (
           <div className="text-center">
             {/* Spinning rainbow logo */}
-            <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-[var(--muted)]">
-              <div style={{ animation: "spin 3s linear infinite" }}>
-                <Image src="/rainbow-logo.svg" alt="" width={64} height={64} />
-              </div>
+            <div className="mb-6" style={{ animation: "spin 3s linear infinite", display: "inline-block" }}>
+              <Image src="/rainbow-logo.svg" alt="" width={72} height={72} />
             </div>
 
             <h1
@@ -389,12 +379,15 @@ export function SuggestFlow() {
               <span className="font-semibold">{form.name}</span>
               {" in "}
               <span className="font-semibold">{form.cityName}</span>
-              {" is on its way to the map. We\u2019ll review it and add it soon."}
+              {" is on its way to the map."}
+            </p>
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+              We&rsquo;ll review it and add it soon.
             </p>
 
             <div className="mt-8 flex flex-col items-center gap-4">
               <Button onClick={reset}>Add another place</Button>
-              <p className="text-sm text-[var(--muted-foreground)]">
+              <p className="text-[13px] text-[var(--muted-foreground)]">
                 Want credit for your suggestions?
               </p>
               <Link
@@ -414,7 +407,6 @@ export function SuggestFlow() {
           to { transform: rotate(360deg); }
         }
       `}</style>
-    </div>
     </FullPageModal>
   );
 }
