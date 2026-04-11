@@ -83,11 +83,8 @@ export async function POST(request: Request) {
       const { data: anonData, error: anonError } = await sessionClient.auth.signInAnonymously();
       if (anonError || !anonData.user) {
         return NextResponse.json(
-          {
-            error:
-              "Sign in to submit a place — anonymous submissions require a quick setup in settings.",
-          },
-          { status: 400 },
+          { error: "Something went wrong. Please try again." },
+          { status: 500 },
         );
       }
 

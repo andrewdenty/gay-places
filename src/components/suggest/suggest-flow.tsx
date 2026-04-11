@@ -348,7 +348,7 @@ export function SuggestFlow() {
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Button onClick={handleSubmit} disabled={submitting}>
-                {submitting ? "Submitting…" : "Submit"}
+                {submitting ? "Submitting…" : "Save and add place"}
               </Button>
               <Button
                 variant="secondary"
