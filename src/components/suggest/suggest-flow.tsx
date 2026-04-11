@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
 import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
 import { CityAutocomplete } from "./city-autocomplete";
@@ -183,34 +182,19 @@ export function SuggestFlow() {
     }
   }
 
-  // ── Progress dots — passed as leftAction to FullPageModal header ──
+  // ── Progress dots — shown in the center slot of FullPageModal header ──
   const progressDots = showHeader ? (
     <ProgressDots current={stepIndex} total={TOTAL_STEPS} />
   ) : null;
 
   return (
-    <FullPageModal onClose={() => router.back()} leftAction={progressDots}>
+    <FullPageModal
+      onClose={() => router.back()}
+      onBack={goBack}
+      showBack={showHeader && stepIndex > 0}
+      centerSlot={progressDots}
+    >
       <div className="w-full">
-
-        {/* Back button — in content area, left-aligned, above the heading */}
-        {showHeader && (
-          <div className="mb-4">
-            <button
-              type="button"
-              onClick={(e) => {
-                goBack();
-                (e.currentTarget as HTMLButtonElement).blur();
-              }}
-              className={`btn-sm btn-sm-secondary ${
-                stepIndex === 0 ? "pointer-events-none opacity-0" : ""
-              }`}
-              aria-label="Go back"
-            >
-              <ChevronLeft size={14} strokeWidth={1.5} />
-              Back
-            </button>
-          </div>
-        )}
 
         {/* ── Step: Name ── */}
         {step === "name" && (
@@ -304,9 +288,6 @@ export function SuggestFlow() {
         {step === "links" && (
           <div>
             <StepHeading>Any links to help us find it?</StepHeading>
-            <p className="mt-2 text-[13px] text-[var(--muted-foreground)]">
-              This is totally optional.
-            </p>
             <div className="mt-4 grid gap-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium">
@@ -370,7 +351,7 @@ export function SuggestFlow() {
             </div>
 
             <h1
-              className="text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
+              className="text-4xl font-normal leading-tight tracking-tight sm:text-5xl"
               style={{
                 fontFamily:
                   'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
@@ -385,7 +366,7 @@ export function SuggestFlow() {
               <span className="font-semibold">{form.cityName}</span>
               {" is on its way to the map."}
             </p>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+            <p className="mt-1 text-sm text-[var(--foreground)]">
               We&rsquo;ll review it and add it soon.
             </p>
 
@@ -393,7 +374,7 @@ export function SuggestFlow() {
               <Button className="w-full sm:w-auto" onClick={reset}>Add another place</Button>
               {/* 24px more space (mt-12 = 48px total) between button and "want credit" */}
               <div className="mt-12 flex flex-col items-center gap-3">
-                <p className="text-[13px] text-[var(--muted-foreground)]">
+                <p className="text-[13px] text-[var(--foreground)]">
                   Want credit for your suggestions?
                 </p>
                 <Link

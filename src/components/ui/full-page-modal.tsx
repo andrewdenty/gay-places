@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { X } from "lucide-react";
+import { X, ChevronLeft } from "lucide-react";
 
 /**
  * FullPageModal — reusable full-screen modal shell for multi-step flows.
@@ -10,17 +10,22 @@ import { X } from "lucide-react";
  * Intentionally NOT dismissible via the Escape key — callers handle their own
  * keyboard navigation internally (e.g. Escape to go back a step).
  *
- * `leftAction` renders on the left of the close button row (e.g. a Back button).
- * Passing nothing still reserves the space so the X button stays right-aligned.
+ * Header layout: 3-column grid — back button (left), center slot (e.g. progress
+ * dots), close button (right). Back button is invisible when `showBack` is false
+ * but still occupies space to keep the layout stable.
  */
 export function FullPageModal({
   children,
   onClose,
-  leftAction,
+  onBack,
+  showBack = false,
+  centerSlot,
 }: {
   children: React.ReactNode;
   onClose: () => void;
-  leftAction?: React.ReactNode;
+  onBack?: () => void;
+  showBack?: boolean;
+  centerSlot?: React.ReactNode;
 }) {
   // Prevent body scroll while the modal is mounted
   useEffect(() => {
@@ -44,18 +49,39 @@ export function FullPageModal({
       <div className="min-h-full px-4 pt-4 pb-16">
         <div className="mx-auto w-full max-w-lg">
 
-          {/* Header row: left slot + close button — always near the viewport top */}
-          <div className="flex items-center justify-between">
-            {/* Left slot — always rendered to keep close button right-aligned */}
-            <div className="min-w-[48px]">{leftAction}</div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#E4E4E1] hover:bg-[#F7F7F5] transition-colors"
-            >
-              <X size={24} strokeWidth={1.5} />
-            </button>
+          {/* Header row: 3-column grid — back | center slot | close */}
+          <div className="grid grid-cols-3 items-center">
+            {/* Left: back button — same style as X, invisible when not shown */}
+            <div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  onBack?.();
+                  (e.currentTarget as HTMLButtonElement).blur();
+                }}
+                aria-label="Go back"
+                className={`flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#E4E4E1] hover:bg-[#F7F7F5] transition-colors ${
+                  showBack ? "" : "pointer-events-none opacity-0"
+                }`}
+              >
+                <ChevronLeft size={24} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Center: progress dots or other slot */}
+            <div className="flex justify-center">{centerSlot}</div>
+
+            {/* Right: close button */}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#E4E4E1] hover:bg-[#F7F7F5] transition-colors"
+              >
+                <X size={24} strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
 
           {/* Content — 48px below header on mobile; on desktop calc positions
