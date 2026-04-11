@@ -2,21 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 import { RainbowLogo } from "@/components/ui/rainbow-logo";
+import { Button } from "@/components/ui/button";
 import { CityAutocomplete } from "./city-autocomplete";
-import { submitVenueSuggestion } from "@/app/(public)/suggest/actions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type VenueType = "bar" | "club" | "restaurant" | "cafe" | "sauna" | "other";
-
-type City = {
-  id: string;
-  slug: string;
-  name: string;
-  country: string;
-};
 
 type FormState = {
   name: string;
@@ -40,6 +33,7 @@ const VENUE_TYPES: { value: VenueType; label: string; emoji: string }[] = [
 ];
 
 const STEP_ORDER: Step[] = ["name", "city", "type", "links", "success"];
+const TOTAL_STEPS = 4; // excludes success
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -67,6 +61,25 @@ function StepHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ─── Progress dots ────────────────────────────────────────────────────────────
+
+function ProgressDots({ current, total }: { current: number; total: number }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {Array.from({ length: total }).map((_, i) => (
+        <span
+          key={i}
+          className={`block rounded-full transition-all duration-300 ${
+            i <= current
+              ? "h-1.5 w-4 bg-[var(--foreground)]"
+              : "h-1.5 w-1.5 bg-[var(--border)]"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function SuggestFlow() {
@@ -88,7 +101,6 @@ export function SuggestFlow() {
   const instagramRef = useRef<HTMLInputElement>(null);
 
   const stepIndex = STEP_ORDER.indexOf(step);
-  const totalSteps = 4; // excluding success
 
   // Focus the active input when step changes
   useEffect(() => {
@@ -103,7 +115,7 @@ export function SuggestFlow() {
   // Keyboard: Escape goes back
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && step !== "name" && step !== "success") {
+      if (e.key === "Escape" && stepIndex > 0 && step !== "success") {
         goBack();
       }
     }
@@ -139,15 +151,23 @@ export function SuggestFlow() {
     setSubmitting(true);
     setError(null);
     try {
-      await submitVenueSuggestion({
-        name: form.name,
-        cityName: form.cityName,
-        cityId: form.cityId,
-        citySlug: form.citySlug,
-        venueType: form.venueType ?? "other",
-        instagramUrl: form.instagram ? normaliseInstagram(form.instagram) : null,
-        websiteUrl: form.website.trim() || null,
+      const res = await fetch("/api/suggest", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          cityName: form.cityName,
+          cityId: form.cityId,
+          citySlug: form.citySlug,
+          venueType: form.venueType ?? "other",
+          instagramUrl: form.instagram ? normaliseInstagram(form.instagram) : null,
+          websiteUrl: form.website.trim() || null,
+        }),
       });
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || json.error) {
+        throw new Error(json.error ?? "Something went wrong. Please try again.");
+      }
       setStep("success");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
@@ -156,7 +176,7 @@ export function SuggestFlow() {
     }
   }
 
-  // ── Shared header: back + step indicator ──
+  // ── Shared nav header (back button + progress) ──
   const showHeader = step !== "success";
 
   return (
@@ -164,29 +184,38 @@ export function SuggestFlow() {
       <div className="w-full max-w-lg">
 
         {showHeader && (
-          <div className="mb-8 flex items-center gap-4">
-            {/* Back button */}
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={goBack}
-              className={stepIndex === 0 ? "pointer-events-none opacity-0" : ""}
-              aria-label="Go back"
-            >
-              ← Back
-            </Button>
+          <div className="mb-6">
+            {/* Back + dots on same row */}
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={goBack}
+                className={`btn-sm btn-sm-secondary ${
+                  stepIndex === 0 ? "pointer-events-none opacity-0" : ""
+                }`}
+                aria-label="Go back"
+              >
+                <ChevronLeft size={14} strokeWidth={1.5} />
+                Back
+              </button>
 
-            {/* Step indicator — left aligned, Geist Mono 12px */}
-            <span
-              className="text-[var(--muted-foreground)]"
-              style={{ fontFamily: "var(--font-geist-mono), monospace", fontSize: 12 }}
+              <ProgressDots current={stepIndex} total={TOTAL_STEPS} />
+            </div>
+
+            {/* Step x of x — underneath, left aligned, Geist Mono 12px */}
+            <p
+              className="mt-2 text-[var(--muted-foreground)]"
+              style={{
+                fontFamily: "var(--font-geist-mono), monospace",
+                fontSize: 12,
+              }}
             >
-              Step {stepIndex + 1} of {totalSteps}
-            </span>
+              Step {stepIndex + 1} of {TOTAL_STEPS}
+            </p>
           </div>
         )}
 
-        {/* Step: Name */}
+        {/* ── Step: Name ── */}
         {step === "name" && (
           <div>
             <StepHeading>What&rsquo;s this place called?</StepHeading>
@@ -212,7 +241,7 @@ export function SuggestFlow() {
           </div>
         )}
 
-        {/* Step: City */}
+        {/* ── Step: City ── */}
         {step === "city" && (
           <div>
             <StepHeading>Where is it?</StepHeading>
@@ -244,7 +273,7 @@ export function SuggestFlow() {
           </div>
         )}
 
-        {/* Step: Venue type */}
+        {/* ── Step: Venue type ── */}
         {step === "type" && (
           <div>
             <StepHeading>What kind of place is it?</StepHeading>
@@ -273,7 +302,7 @@ export function SuggestFlow() {
           </div>
         )}
 
-        {/* Step: Links */}
+        {/* ── Step: Links ── */}
         {step === "links" && (
           <div>
             <StepHeading>Any links to help us find it?</StepHeading>
@@ -333,7 +362,7 @@ export function SuggestFlow() {
           </div>
         )}
 
-        {/* Step: Success */}
+        {/* ── Step: Success ── */}
         {step === "success" && (
           <div className="text-center">
             {/* Spinning rainbow logo */}
@@ -357,13 +386,11 @@ export function SuggestFlow() {
               <span className="font-semibold">{form.name}</span>
               {" in "}
               <span className="font-semibold">{form.cityName}</span>
-              {" is on its way to the map. We'll review it and add it soon."}
+              {" is on its way to the map. We\u2019ll review it and add it soon."}
             </p>
 
             <div className="mt-8 flex flex-col items-center gap-4">
-              <Button onClick={reset}>
-                Add another place
-              </Button>
+              <Button onClick={reset}>Add another place</Button>
               <span className="flex items-center gap-2 text-sm text-[var(--foreground)]">
                 Want credit for your suggestions?
                 <Link
@@ -378,7 +405,6 @@ export function SuggestFlow() {
         )}
       </div>
 
-      {/* CSS for spin animation */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
