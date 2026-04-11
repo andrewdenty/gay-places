@@ -56,7 +56,7 @@ function normaliseInstagram(raw: string): string {
 function StepHeading({ children }: { children: React.ReactNode }) {
   return (
     <h1
-      className="mt-2 text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
+      className="text-3xl font-normal leading-tight tracking-tight sm:text-4xl"
       style={{
         fontFamily: 'var(--font-instrument-serif), Georgia, "Times New Roman", serif',
       }}
@@ -107,6 +107,7 @@ export function SuggestFlow() {
   const instagramRef = useRef<HTMLInputElement>(null);
 
   const stepIndex = STEP_ORDER.indexOf(step);
+  const showHeader = step !== "success";
 
   // Focus the active input when step changes
   useEffect(() => {
@@ -182,31 +183,29 @@ export function SuggestFlow() {
     }
   }
 
-  // ── Shared nav header (back button + progress) ──
-  const showHeader = step !== "success";
+  // ── Back button — passed to FullPageModal as leftAction ──
+  const backButton = showHeader ? (
+    <button
+      type="button"
+      onClick={goBack}
+      className={`btn-sm btn-sm-secondary ${
+        stepIndex === 0 ? "pointer-events-none opacity-0" : ""
+      }`}
+      aria-label="Go back"
+    >
+      <ChevronLeft size={14} strokeWidth={1.5} />
+      Back
+    </button>
+  ) : null;
 
   return (
-    <FullPageModal onClose={() => router.back()}>
-      <div className="w-full max-w-lg">
+    <FullPageModal onClose={() => router.back()} leftAction={backButton}>
+      <div className="w-full">
 
+        {/* Progress dots — left-aligned, 24px above step heading */}
         {showHeader && (
           <div className="mb-6">
-            {/* Back + dots on same row */}
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={goBack}
-                className={`btn-sm btn-sm-secondary ${
-                  stepIndex === 0 ? "pointer-events-none opacity-0" : ""
-                }`}
-                aria-label="Go back"
-              >
-                <ChevronLeft size={14} strokeWidth={1.5} />
-                Back
-              </button>
-
-              <ProgressDots current={stepIndex} total={TOTAL_STEPS} />
-            </div>
+            <ProgressDots current={stepIndex} total={TOTAL_STEPS} />
           </div>
         )}
 
@@ -214,7 +213,8 @@ export function SuggestFlow() {
         {step === "name" && (
           <div>
             <StepHeading>What&rsquo;s this place called?</StepHeading>
-            <div className="mt-8">
+            {/* 8px closer to input than before (mt-6 vs mt-8) */}
+            <div className="mt-6">
               <input
                 ref={nameRef}
                 type="text"
@@ -229,7 +229,7 @@ export function SuggestFlow() {
               />
             </div>
             <div className="mt-4">
-              <Button onClick={advance} disabled={!form.name.trim()}>
+              <Button className="w-full sm:w-auto" onClick={advance} disabled={!form.name.trim()}>
                 Continue
               </Button>
             </div>
@@ -240,7 +240,7 @@ export function SuggestFlow() {
         {step === "city" && (
           <div>
             <StepHeading>Where is it?</StepHeading>
-            <div className="mt-8">
+            <div className="mt-6">
               <CityAutocomplete
                 value={form.cityName}
                 onChange={(cityName, city) =>
@@ -261,7 +261,7 @@ export function SuggestFlow() {
               </p>
             </div>
             <div className="mt-4">
-              <Button onClick={advance} disabled={!form.cityName.trim()}>
+              <Button className="w-full sm:w-auto" onClick={advance} disabled={!form.cityName.trim()}>
                 Continue
               </Button>
             </div>
@@ -272,7 +272,7 @@ export function SuggestFlow() {
         {step === "type" && (
           <div>
             <StepHeading>What kind of place is it?</StepHeading>
-            <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
               {SUGGEST_VENUE_OPTIONS.map(({ value, label, emoji }) => (
                 <button
                   key={value}
@@ -304,7 +304,7 @@ export function SuggestFlow() {
             <p className="mt-2 text-[13px] text-[var(--muted-foreground)]">
               Totally optional — skip if you&rsquo;re not sure.
             </p>
-            <div className="mt-8 grid gap-4">
+            <div className="mt-6 grid gap-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium">
                   Instagram
@@ -342,12 +342,14 @@ export function SuggestFlow() {
               <p className="mt-4 text-sm text-[var(--red)]">{error}</p>
             )}
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Button onClick={handleSubmit} disabled={submitting}>
+            {/* Full-width stacked on mobile, inline on sm+ */}
+            <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-3">
+              <Button className="w-full sm:w-auto" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? "Submitting…" : "Save and add place"}
               </Button>
               <Button
                 variant="secondary"
+                className="w-full sm:w-auto"
                 onClick={handleSubmit}
                 disabled={submitting}
               >
@@ -385,17 +387,20 @@ export function SuggestFlow() {
               We&rsquo;ll review it and add it soon.
             </p>
 
-            <div className="mt-8 flex flex-col items-center gap-4">
-              <Button onClick={reset}>Add another place</Button>
-              <p className="text-[13px] text-[var(--muted-foreground)]">
-                Want credit for your suggestions?
-              </p>
-              <Link
-                href="/sign-in?next=/account"
-                className="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-[var(--muted)] px-5 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[color-mix(in_srgb,var(--muted)_85%,transparent)]"
-              >
-                Sign in
-              </Link>
+            <div className="mt-8 flex flex-col items-center gap-3">
+              <Button className="w-full sm:w-auto" onClick={reset}>Add another place</Button>
+              {/* 24px gap before "Want credit" copy */}
+              <div className="mt-3 flex flex-col items-center gap-3">
+                <p className="text-[13px] text-[var(--muted-foreground)]">
+                  Want credit for your suggestions?
+                </p>
+                <Link
+                  href="/sign-in?next=/account"
+                  className="inline-flex w-full sm:w-auto h-11 items-center justify-center whitespace-nowrap rounded-full bg-[var(--muted)] px-5 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[color-mix(in_srgb,var(--muted)_85%,transparent)]"
+                >
+                  Sign in
+                </Link>
+              </div>
             </div>
           </div>
         )}

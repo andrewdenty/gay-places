@@ -9,13 +9,18 @@ import { X } from "lucide-react";
  *
  * Intentionally NOT dismissible via the Escape key — callers handle their own
  * keyboard navigation internally (e.g. Escape to go back a step).
+ *
+ * `leftAction` renders on the left of the close button row (e.g. a Back button).
+ * Passing nothing still reserves the space so the X button stays right-aligned.
  */
 export function FullPageModal({
   children,
   onClose,
+  leftAction,
 }: {
   children: React.ReactNode;
   onClose: () => void;
+  leftAction?: React.ReactNode;
 }) {
   // Prevent body scroll while the modal is mounted
   useEffect(() => {
@@ -35,15 +40,14 @@ export function FullPageModal({
         WebkitBackdropFilter: "blur(24px)",
       }}
     >
-      <div className="flex min-h-full flex-col">
-        {/* Close button row — sticky, aligned with max-w-lg content column */}
-        <div
-          className="sticky top-0 z-10 px-4 pt-5 pb-2"
-          style={{
-            backgroundColor: "color-mix(in srgb, var(--background) 99%, transparent)",
-          }}
-        >
-          <div className="mx-auto flex w-full max-w-lg justify-end">
+      {/* Scrollable content — top-aligned, mirrors search modal vertical rhythm */}
+      <div className="min-h-full px-4 pt-4 sm:pt-[15vh] pb-16">
+        <div className="mx-auto w-full max-w-lg">
+
+          {/* Header row: back button (left) + close button (right) */}
+          <div className="flex items-center justify-between">
+            {/* Left slot — always rendered to keep close button right-aligned */}
+            <div className="min-w-[48px]">{leftAction}</div>
             <button
               type="button"
               onClick={onClose}
@@ -53,11 +57,12 @@ export function FullPageModal({
               <X size={24} strokeWidth={1.5} />
             </button>
           </div>
-        </div>
 
-        {/* Vertically centred content area */}
-        <div className="flex flex-1 items-center justify-center px-4 py-8">
-          {children}
+          {/* Content — 48px below header on mobile, 32px on desktop */}
+          <div className="mt-12 sm:mt-8">
+            {children}
+          </div>
+
         </div>
       </div>
     </div>

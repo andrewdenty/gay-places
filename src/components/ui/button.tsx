@@ -25,7 +25,7 @@ export function Button({
 
   const variants: Record<Variant, string> = {
     primary:
-      "bg-accent text-accent-foreground hover:opacity-90 active:opacity-85 disabled:bg-[var(--border)] disabled:text-[var(--muted-foreground)]",
+      "bg-accent text-accent-foreground hover:opacity-90 active:opacity-85 disabled:bg-[#F5F5F3] disabled:text-[#C8C8C6]",
     secondary:
       "bg-muted text-foreground hover:bg-[color-mix(in_srgb,var(--muted)_85%,transparent)] disabled:opacity-50",
     ghost:
