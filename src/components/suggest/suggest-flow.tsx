@@ -212,6 +212,7 @@ export function SuggestFlow() {
                 }}
                 placeholder="e.g. Eagle Bar"
                 autoComplete="off"
+                autoFocus
                 className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] transition-colors placeholder:text-[var(--muted-foreground)]"
               />
             </div>
