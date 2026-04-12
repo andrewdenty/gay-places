@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, ArrowUp, Heart, ArrowRight } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { ArrowUp, Heart, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ProfileTabs } from "@/components/account/profile-tabs";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -48,19 +47,6 @@ const VENUE_TYPE_LABEL: Record<string, string> = {
   hotel: "Hotel",
   shop: "Shop",
   other: "Place",
-};
-
-const VENUE_TYPE_EMOJI: Record<string, string> = {
-  bar: "🍸",
-  club: "🎉",
-  restaurant: "🍽️",
-  cafe: "☕",
-  sauna: "🧖",
-  event_space: "🎪",
-  cruising: "🌲",
-  hotel: "🏨",
-  shop: "🛍️",
-  other: "✨",
 };
 
 const SUBMISSION_KIND_LABEL: Record<string, string> = {
@@ -115,27 +101,25 @@ function VenueList({
   }
 
   return (
-    <div className="divide-y divide-[var(--border)]">
+    <div>
       {venues.map((venue) => (
         <Link
           key={venue.id}
           href={venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)}
-          className="flex items-center justify-between gap-4 py-4 hover:opacity-70 transition-opacity"
+          className="group flex items-center justify-between border-b border-[var(--border)] py-3 overflow-hidden"
         >
-          <div className="min-w-0">
-            <div className="text-sm font-medium text-[var(--foreground)] truncate">
+          <div className="flex flex-col gap-1 pt-3 pb-2 flex-1 min-w-0 mr-4">
+            <span className="text-[17px] font-semibold text-[var(--foreground)] leading-[1.4] truncate">
               {venue.name}
-            </div>
-            <div className="mt-0.5 text-xs text-[var(--muted-foreground)]">
-              {venue.city_name}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="label-mono text-[var(--muted-foreground)]">
-              {VENUE_TYPE_LABEL[venue.venue_type] ?? "Place"}
             </span>
-            <ArrowUpRight size={14} strokeWidth={1.5} className="text-[var(--muted-foreground)]" />
+            <div className="font-mono text-[12px] text-[var(--muted-foreground)] leading-[1.4]">
+              {venue.city_name} • {VENUE_TYPE_LABEL[venue.venue_type] ?? "Place"}
+            </div>
           </div>
+          <ArrowRight
+            size={18}
+            className="text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors shrink-0"
+          />
         </Link>
       ))}
     </div>
@@ -165,14 +149,20 @@ function ContributionsList({
   }
 
   return (
-    <div className="grid gap-3">
+    <div>
       {submissions.map((s) => {
         const pd = s.proposed_data ?? {};
         const name =
           typeof pd.name === "string" ? pd.name : SUBMISSION_KIND_LABEL[s.kind] ?? s.kind;
         const cityName = typeof pd.city_name === "string" ? pd.city_name : null;
-        const venueType = typeof pd.venue_type === "string" ? pd.venue_type : null;
         const kindLabel = SUBMISSION_KIND_LABEL[s.kind] ?? s.kind;
+        const date = new Date(s.created_at).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+
+        const meta = [kindLabel, cityName, date].filter(Boolean).join(" • ");
 
         const approvedVenue =
           s.status === "approved" && s.venue_id
@@ -182,58 +172,39 @@ function ContributionsList({
           ? venueUrlPath(approvedVenue.city_slug, approvedVenue.venue_type, approvedVenue.slug)
           : null;
 
-        const CardContent = (
-          <Card className="p-5 transition-colors hover:bg-[var(--muted)]">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3 min-w-0">
-                {venueType && (
-                  <span
-                    className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--muted)] text-lg"
-                    aria-hidden
-                  >
-                    {VENUE_TYPE_EMOJI[venueType] ?? "✨"}
-                  </span>
-                )}
-                <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{name}</div>
-                  <div className="mt-0.5 flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
-                    <span className="label-mono">{kindLabel}</span>
-                    {cityName && (
-                      <>
-                        <span>·</span>
-                        <span>{cityName}</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="mt-1 text-xs text-[var(--muted-foreground)]">
-                    {new Date(s.created_at).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <StatusBadge status={s.status} />
-                {venueHref && (
-                  <ArrowUpRight
-                    size={14}
-                    strokeWidth={1.5}
-                    className="text-[var(--muted-foreground)]"
-                  />
-                )}
+        const rowClass =
+          "group flex items-center justify-between border-b border-[var(--border)] py-3 overflow-hidden";
+
+        const rowContent = (
+          <>
+            <div className="flex flex-col gap-1 pt-3 pb-2 flex-1 min-w-0 mr-4">
+              <span className="text-[17px] font-semibold text-[var(--foreground)] leading-[1.4] truncate">
+                {name}
+              </span>
+              <div className="font-mono text-[12px] text-[var(--muted-foreground)] leading-[1.4]">
+                {meta}
               </div>
             </div>
-          </Card>
+            <div className="flex items-center gap-2 shrink-0">
+              <StatusBadge status={s.status} />
+              {venueHref && (
+                <ArrowRight
+                  size={18}
+                  className="text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors"
+                />
+              )}
+            </div>
+          </>
         );
 
         return venueHref ? (
-          <Link key={s.id} href={venueHref}>
-            {CardContent}
+          <Link key={s.id} href={venueHref} className={rowClass}>
+            {rowContent}
           </Link>
         ) : (
-          <div key={s.id}>{CardContent}</div>
+          <div key={s.id} className={rowClass}>
+            {rowContent}
+          </div>
         );
       })}
     </div>
@@ -251,12 +222,12 @@ export default async function AccountPage() {
   if (!user) {
     return (
       <div className="py-10 sm:py-14">
-        <Card className="p-8 text-center">
+        <div className="rounded-xl border border-[var(--border)] p-8 text-center">
           <p className="text-sm font-medium">Sign in to see your places</p>
           <p className="mt-1 text-sm text-[var(--muted-foreground)]">
             Track places you&rsquo;ve visited, your recommendations, and your contributions.
           </p>
-        </Card>
+        </div>
       </div>
     );
   }
