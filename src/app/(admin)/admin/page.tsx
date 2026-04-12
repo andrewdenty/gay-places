@@ -11,6 +11,7 @@ export default async function AdminHomePage() {
     { count: cityCount },
     { count: countryCount },
     { count: pendingCount },
+    { count: claimsCount },
   ] = await Promise.all([
     supabase.from("venues").select("id", { count: "exact", head: true }),
     supabase.from("cities").select("id", { count: "exact", head: true }),
@@ -19,9 +20,11 @@ export default async function AdminHomePage() {
       .from("submissions")
       .select("id", { count: "exact", head: true })
       .eq("status", "pending"),
+    supabase.from("venue_claims").select("id", { count: "exact", head: true }),
   ]);
 
   const pending = pendingCount ?? 0;
+  const claims = claimsCount ?? 0;
 
   const stats = [
     {
@@ -47,6 +50,12 @@ export default async function AdminHomePage() {
       value: pending,
       href: "/admin/submissions",
       alert: pending > 0,
+    },
+    {
+      label: "Claim requests",
+      value: claims,
+      href: "/admin/claims",
+      alert: claims > 0,
     },
   ];
 
@@ -85,7 +94,35 @@ export default async function AdminHomePage() {
         </Link>
       )}
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {/* Claim requests alert banner */}
+      {claims > 0 && (
+        <Link
+          href="/admin/claims"
+          className="mt-3 flex items-center justify-between gap-4 rounded-xl border border-blue-200 bg-blue-50 px-5 py-4 transition-colors hover:bg-blue-100"
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-base">
+              🏳️
+            </span>
+            <div>
+              <div className="text-sm font-semibold text-blue-900">
+                {claims === 1
+                  ? "1 venue claim request"
+                  : `${claims} venue claim requests`}{" "}
+                to review
+              </div>
+              <div className="text-xs text-blue-700">
+                Follow up by email and mark as verified in Places
+              </div>
+            </div>
+          </div>
+          <span className="shrink-0 text-sm font-medium text-blue-800">
+            Review →
+          </span>
+        </Link>
+      )}
+
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((stat) => (
           <Link
             key={stat.href}
