@@ -18,6 +18,13 @@ const VALID_EDIT_TYPES = new Set([
   "other",
 ]);
 
+// Edit types where the user note is optional
+const OPTIONAL_NOTE_TYPES = new Set([
+  "place_closed",
+  "wrong_hours",
+  "wrong_address",
+]);
+
 export async function POST(request: Request) {
   let body: Body;
   try {
@@ -34,7 +41,7 @@ export async function POST(request: Request) {
   if (!editType || !VALID_EDIT_TYPES.has(editType)) {
     return NextResponse.json({ error: "Invalid edit type." }, { status: 400 });
   }
-  if (!note?.trim()) {
+  if (!note?.trim() && !OPTIONAL_NOTE_TYPES.has(editType)) {
     return NextResponse.json(
       { error: "Please add a note about what needs changing." },
       { status: 400 },
