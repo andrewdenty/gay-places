@@ -249,7 +249,7 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
 
             {/* Preview */}
             {previewUrl && (
-              <div className="mt-6 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--muted)]">
+              <div className="mt-6 overflow-hidden rounded-2xl bg-[#F7F7F5]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previewUrl}
@@ -290,7 +290,7 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
 
             {/* Keep the preview visible so the user can see what they uploaded */}
             {previewUrl && (
-              <div className="mt-6 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--muted)]">
+              <div className="mt-6 overflow-hidden rounded-2xl bg-[#F7F7F5]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previewUrl}
