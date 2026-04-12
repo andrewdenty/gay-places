@@ -60,6 +60,11 @@ export type Venue = {
 const VENUE_FIELDS =
   "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours,closed,claimed,updated_at";
 
+// Fallback projection used when the `claimed` column doesn't exist yet
+// (i.e. migration 0030 hasn't been applied). Matches the pre-0030 schema.
+const VENUE_FIELDS_NO_CLAIMED =
+  "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours,closed,updated_at";
+
 // Minimal projection for the "Nearby places" list: only the fields required to
 // render the names/links and to sort by distance (lat, lng).
 const NEARBY_VENUE_FIELDS = "id,slug,name,venue_type,lat,lng";
@@ -202,13 +207,28 @@ export async function getVenuesByCitySlug(slug: string): Promise<Venue[]> {
   if (cityError) throw cityError;
   if (!city) return [];
 
+  let venueData: Venue[] | null = null;
   const { data, error } = await supabase
     .from("venues")
     .select(VENUE_FIELDS)
     .eq("city_id", city.id)
     .eq("published", true);
-  if (error) throw error;
-  const venues = (data ?? []) as Venue[];
+  if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("venues")
+        .select(VENUE_FIELDS_NO_CLAIMED)
+        .eq("city_id", city.id)
+        .eq("published", true);
+      if (fallbackError) throw fallbackError;
+      venueData = (fallback ?? []) as Venue[];
+    } else {
+      throw error;
+    }
+  } else {
+    venueData = (data ?? []) as Venue[];
+  }
+  const venues = venueData;
   if (venues.length === 0) return venues;
 
   // Fetch pre-aggregated popularity scores (one row per venue, not per session).
@@ -252,7 +272,20 @@ export async function getVenueBySlug(
     .eq("slug", venueSlug.toLowerCase())
     .eq("published", true)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("venues")
+        .select(VENUE_FIELDS_NO_CLAIMED)
+        .eq("city_id", city.id)
+        .eq("slug", venueSlug.toLowerCase())
+        .eq("published", true)
+        .maybeSingle();
+      if (fallbackError) throw fallbackError;
+      return (fallback ?? null) as Venue | null;
+    }
+    throw error;
+  }
   return (data ?? null) as Venue | null;
 }
 
@@ -314,13 +347,28 @@ export async function getVenueCountByCityId(cityId: string): Promise<number> {
 export async function getVenuesByIds(ids: string[]): Promise<(Venue & { city_slug?: string })[]> {
   if (ids.length === 0) return [];
   const supabase = await createSupabaseServerClient();
+  let rawData: unknown[] | null = null;
   const { data, error } = await supabase
     .from("venues")
     .select(`${VENUE_FIELDS},cities!inner(slug)`)
     .in("id", ids)
     .eq("published", true);
-  if (error) throw error;
-  return ((data ?? []) as unknown[]).map((v) => {
+  if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("venues")
+        .select(`${VENUE_FIELDS_NO_CLAIMED},cities!inner(slug)`)
+        .in("id", ids)
+        .eq("published", true);
+      if (fallbackError) throw fallbackError;
+      rawData = (fallback ?? []) as unknown[];
+    } else {
+      throw error;
+    }
+  } else {
+    rawData = (data ?? []) as unknown[];
+  }
+  return (rawData).map((v) => {
     const row = v as Record<string, unknown>;
     const city = row.cities as { slug: string } | null;
     return { ...(row as Venue), city_slug: city?.slug };
@@ -448,6 +496,18 @@ export async function getVenueById(id: string): Promise<Venue | null> {
     .eq("id", id)
     .eq("published", true)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("venues")
+        .select(VENUE_FIELDS_NO_CLAIMED)
+        .eq("id", id)
+        .eq("published", true)
+        .maybeSingle();
+      if (fallbackError) throw fallbackError;
+      return (fallback ?? null) as Venue | null;
+    }
+    throw error;
+  }
   return (data ?? null) as Venue | null;
 }
