@@ -20,6 +20,10 @@ function bannedWordsList(): string {
   return BANNED_WORDS.join(", ");
 }
 
+function punctuationRules(): string {
+  return "Do not use em dashes (—). If you find yourself reaching for one, split the sentence or use a comma instead.";
+}
+
 function buildTagAllowlist(): string {
   return TAG_CATEGORIES.map(
     (cat) => `  "${cat.key}": [${cat.tags.map((t) => `"${t}"`).join(", ")}]`,
@@ -102,7 +106,9 @@ IMPORTANT DISTINCTION FOR CROWD TAGS:
 
 DO NOT suggest "Mostly Men" under any circumstances.
 
-BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.`;
+BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
+
+${punctuationRules()}`;
 
   const placesSection = input.places
     ? (() => {
@@ -243,6 +249,7 @@ Use the provided venue data as your foundation. You may also draw on facts you k
 Only mention opening times if they are a genuinely defining feature of the venue — for example, the only late-night option in a city, or a specific day or time that drives a cult following (e.g. a Thursday margarita special everyone knows about). Do not mention routine hours.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
+${punctuationRules()}
 Do not end with a recommendation or call to action ("worth a visit", "don't miss it", etc.).
 Write in present tense, third person. No lists, no markdown, no labels.`;
 
@@ -286,10 +293,8 @@ export function buildUnifiedDescriptionPrompt(
 Use the provided venue data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), crowd characterisations, or specific claims that aren't supported by evidence.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
-
-PUNCTUATION RULES:
-- Do not use em dashes (—). If you find yourself reaching for one, split the sentence or use a comma instead.
-- No lists, no markdown, no labels.
+${punctuationRules()}
+No lists, no markdown, no labels.
 
 Write in present tense, third person. Do not end with a recommendation or call to action.`;
 
@@ -393,6 +398,7 @@ Use the provided venue data as your foundation. You may also draw on facts you k
 Only mention opening times if they are a genuinely defining feature of the venue — for example, the only late-night option in a city, or a specific day or time that drives a cult following (e.g. a Thursday margarita special everyone knows about). Do not mention routine hours.
 
 BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
+${punctuationRules()}
 Do not end with a recommendation, summary statement, or call to action.
 Write in present tense, third person. No lists, no markdown, no labels.`;
 
