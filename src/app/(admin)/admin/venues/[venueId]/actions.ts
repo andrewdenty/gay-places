@@ -41,6 +41,7 @@ export async function updateVenueDetails(formData: FormData) {
   const facebook_url = getText(formData, "facebook_url") || null;
   const published = formData.get("published") === "on";
   const closed = formData.get("closed") === "on";
+  const claimed = formData.get("claimed") === "on";
 
   const venueTagsRaw = getText(formData, "venue_tags");
   let venue_tags: Record<string, unknown> = {};
@@ -89,6 +90,7 @@ export async function updateVenueDetails(formData: FormData) {
       opening_hours,
       published,
       closed,
+      claimed,
     })
     .eq("id", id);
   if (error) throw error;

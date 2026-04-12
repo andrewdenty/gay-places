@@ -547,6 +547,43 @@ export default async function VenuePage({
           </div>
         </VenueSectionRow>
 
+        {/* Claim CTA — secondary, business-facing */}
+        {!venue.claimed && (
+          <div className="mt-6 text-center">
+            <Link
+              href={`/venues/${venue.id}/claim`}
+              className="text-[13px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors underline underline-offset-2"
+            >
+              Own this place? Claim this page
+            </Link>
+          </div>
+        )}
+
+        {/* Verified badge — shown when claimed is true */}
+        {venue.claimed && (
+          <div className="mt-6 flex justify-center">
+            <span
+              title="This venue's details have been confirmed by the venue team."
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-[11px] font-medium tracking-wide text-[var(--muted-foreground)]"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                className="h-3 w-3 shrink-0"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm11.78-1.72a.75.75 0 0 0-1.06-1.06L7 8.94 5.28 7.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.06 0l4.25-4.25Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Verified by venue
+            </span>
+          </div>
+        )}
+
         {/* Last updated — SEO freshness signal */}
         {venue.updated_at && (
           <p className="mt-12 text-[11px] text-[var(--muted-foreground)]">

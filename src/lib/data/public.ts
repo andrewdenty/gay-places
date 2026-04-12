@@ -52,11 +52,13 @@ export type Venue = {
   facebook_url: string | null;
   opening_hours: OpeningHours;
   closed?: boolean;
+  /** Admin-controlled. When true, displays a "Verified by venue" badge on the public page. */
+  claimed?: boolean;
   updated_at: string;
 };
 
 const VENUE_FIELDS =
-  "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours,closed,updated_at";
+  "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours,closed,claimed,updated_at";
 
 // Minimal projection for the "Nearby places" list: only the fields required to
 // render the names/links and to sort by distance (lat, lng).
