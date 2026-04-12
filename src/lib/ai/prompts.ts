@@ -302,13 +302,45 @@ Write in present tense, third person. Do not end with a recommendation or call t
 
 Sentence 1 (anchor): State what the venue is. Type + location + who goes there, in one plain line. This sentence will be used standalone as a listing card summary, so it must work on its own.
 
-Sentence 2 (experience): Describe what it is actually like to be there — the atmosphere, what people do, how it feels. No adjective stacking. State facts and let them carry the weight.
+Sentence 2 (experience): Describe what it is actually like to be there — the atmosphere, what people do, how it feels. Physical details, practical notes for visitors, and specific characteristics are all welcome. State facts and let them carry the weight.
 
 Sentence 3 (events — include only if something specific is known): If the venue has a notable regular event, name it and describe what it involves. Be specific: name the night, say what happens, note when it runs. If nothing specific is known about events, skip this sentence entirely — do not genericise ("known for its events" is not acceptable).
 
 Sentence 4 (context — optional): One fact worth knowing: what makes this venue distinct from similar venues in the city, its history, who runs it, or something about the physical space. History and founding dates belong here, not earlier. If you have nothing specific to add, stop at sentence 3 (or sentence 2 if no events).
 
 Do not lead with history. Do not repeat the same information across sentences. A sharp 2–3 sentences beats a padded 4.
+
+Here are four gold-standard examples of the tone, specificity, and structure we want:
+
+---
+Name: Centralhjørnet
+Type: bar
+City: Copenhagen, Denmark
+Address: Kattesundet 18, 1458 København
+
+A classic smoky bar in Copenhagen's old town featuring over-the-top seasonal decorations. A good place to chat and soak in the atmosphere. It is also famous for being the oldest gay bar in Denmark, and some claim the oldest gay bar in the world, having been open since 1917.
+---
+Name: Jailhouse CPH
+Type: bar
+City: Copenhagen, Denmark
+Address: Studiestræde 33, 1455 København
+
+One of the Studiestræde bars with a prison-themed interior. This compact basement space is often packed and social - great for a stop whilst bar hopping on Studiestræde or staying longer into the night. Non-smoking but has a smoking lounge in the back.
+---
+Name: Oscar Bar & Café
+Type: bar
+City: Copenhagen, Denmark
+Address: Regnbuepladsen 5, 1550 København
+
+A café-bar on Regnbuepladsen, Copenhagen's Rainbow Square, open from noon to late with a broad mix of the city's gay crowd. Relaxed in the afternoon and social at night; the terrace works well for anything from a long evening to a quick drink before heading somewhere else. One of the few venues on the scene that functions as a meeting point at any time of day.
+---
+Name: Café Intime
+Type: café
+City: Copenhagen, Denmark
+Address: Frederiksberg Allé 25, 1820 Frederiksberg
+
+A piano bar in Frederiksberg, a few kilometres west of the city centre, known for its singalong sessions and an older regular crowd. The pianist plays through the evening; the audience sings along, which makes it feel nothing like a standard bar night out. Has been running since the 1940s and opens only Wednesday through Saturday, which gives it a rhythm of its own.
+---
 
 Name: ${input.name}
 Type: ${typeLabel}
