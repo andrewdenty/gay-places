@@ -230,7 +230,7 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="mt-6 flex w-full flex-col items-center justify-center rounded-2xl bg-[#FCFCFB] py-16 transition-colors hover:bg-[var(--muted)]"
+              className="mt-6 flex w-full flex-col items-center justify-center rounded-2xl bg-[#F7F7F5] py-16 transition-colors hover:bg-[var(--muted)]"
             >
               <span className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 text-sm font-medium text-[var(--accent-foreground)]">
                 <Camera size={16} strokeWidth={1.75} />
