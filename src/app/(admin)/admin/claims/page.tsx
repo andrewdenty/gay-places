@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { ClaimDismissButton } from "@/components/admin/claim-dismiss-button";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -142,17 +143,18 @@ export default async function AdminClaimsPage() {
                     </div>
                   </div>
 
-                  {/* Quick admin link */}
-                  {venue && (
-                    <div className="shrink-0">
+                  {/* Actions */}
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    {venue && (
                       <Link
                         href={`/admin/venues/${venue.id}`}
                         className="inline-flex h-9 items-center rounded-xl border border-border px-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
                       >
                         Edit place →
                       </Link>
-                    </div>
-                  )}
+                    )}
+                    <ClaimDismissButton id={claim.id} />
+                  </div>
                 </div>
               </Card>
             );

@@ -44,3 +44,11 @@ create policy "Admins can read venue claims"
   for select
   to authenticated
   using (public.is_admin());
+
+-- Only admins can delete (dismiss) claims.
+drop policy if exists "Admins can delete venue claims" on public.venue_claims;
+create policy "Admins can delete venue claims"
+  on public.venue_claims
+  for delete
+  to authenticated
+  using (public.is_admin());
