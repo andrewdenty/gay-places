@@ -57,6 +57,7 @@ export interface VenueData {
   description_last_generated_at: string | null;
   published: boolean | null;
   closed: boolean | null;
+  claimed: boolean | null;
   city_id: string | null;
   slug: string | null;
   opening_hours: unknown;
@@ -131,6 +132,7 @@ export function VenueEditForm({
   );
   const [published, setPublished] = useState(venue.published ?? false);
   const [closed, setClosed] = useState(venue.closed ?? false);
+  const [claimed, setClaimed] = useState(venue.claimed ?? false);
 
   // ── Opening hours + tags (use onChange callbacks) ─────────────────────────
   const [openingHours, setOpeningHours] = useState<OpeningHours | null>(null);
@@ -185,6 +187,7 @@ export function VenueEditForm({
     formData.set("description_editorial", descriptionEditorial);
     if (published) formData.set("published", "on");
     if (closed) formData.set("closed", "on");
+    if (claimed) formData.set("claimed", "on");
     formData.set("venue_tags", JSON.stringify(venueTags));
     if (openingHours !== null) {
       formData.set("opening_hours", JSON.stringify(openingHours));
@@ -206,7 +209,7 @@ export function VenueEditForm({
     venue.id, venue.opening_hours,
     cityId, venueType, name, address, lat, lng,
     websiteUrl, googleMapsUrl, instagramUrl, facebookUrl,
-    descriptionBase, descriptionEditorial, published, closed,
+    descriptionBase, descriptionEditorial, published, closed, claimed,
     venueTags, openingHours,
     startTransition, showToast, onSave,
   ]);
@@ -540,6 +543,19 @@ export function VenueEditForm({
                 aria-label="Permanently closed"
               />
               Closed
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-sm select-none">
+              <input
+                type="checkbox"
+                checked={claimed}
+                onChange={(e) => {
+                  setClaimed(e.target.checked);
+                  setIsDirty(true);
+                }}
+                className="h-4 w-4 rounded"
+                aria-label="Verified by venue"
+              />
+              Verified
             </label>
           </div>
 
