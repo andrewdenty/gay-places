@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, MapPin } from "lucide-react";
-import { Container } from "@/components/ui/container";
+import { ArrowUpRight, ArrowUp, Heart, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProfileTabs } from "@/components/account/profile-tabs";
@@ -91,7 +90,7 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-// ─── Sub-panels (server-rendered, passed into the client tab switcher) ────────
+// ─── Sub-panels ───────────────────────────────────────────────────────────────
 
 function VenueList({
   venues,
@@ -107,11 +106,9 @@ function VenueList({
       <div className="py-10 text-center">
         <p className="text-sm font-medium text-[var(--foreground)]">{emptyHeading}</p>
         <p className="mt-1 text-sm text-[var(--muted-foreground)]">{emptyBody}</p>
-        <Link
-          href="/"
-          className="mt-4 inline-block text-sm font-medium underline underline-offset-2 hover:opacity-70"
-        >
-          Explore places →
+        <Link href="/" className="btn-sm btn-sm-secondary mt-4 inline-flex">
+          Explore places
+          <ArrowRight size={14} strokeWidth={1.5} />
         </Link>
       </div>
     );
@@ -129,8 +126,7 @@ function VenueList({
             <div className="text-sm font-medium text-[var(--foreground)] truncate">
               {venue.name}
             </div>
-            <div className="mt-0.5 flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
-              <MapPin size={11} strokeWidth={1.5} className="shrink-0" />
+            <div className="mt-0.5 text-xs text-[var(--muted-foreground)]">
               {venue.city_name}
             </div>
           </div>
@@ -160,11 +156,9 @@ function ContributionsList({
         <p className="mt-1 text-sm text-[var(--muted-foreground)]">
           Found a great spot that&rsquo;s missing from the map? Add it.
         </p>
-        <Link
-          href="/suggest"
-          className="mt-4 inline-block text-sm font-medium underline underline-offset-2 hover:opacity-70"
-        >
-          Add a place →
+        <Link href="/suggest" className="btn-sm btn-sm-secondary mt-4 inline-flex">
+          Add a place
+          <ArrowRight size={14} strokeWidth={1.5} />
         </Link>
       </div>
     );
@@ -180,7 +174,6 @@ function ContributionsList({
         const venueType = typeof pd.venue_type === "string" ? pd.venue_type : null;
         const kindLabel = SUBMISSION_KIND_LABEL[s.kind] ?? s.kind;
 
-        // Build venue link for approved new_venue submissions
         const approvedVenue =
           s.status === "approved" && s.venue_id
             ? approvedVenueMap.get(s.venue_id)
@@ -257,22 +250,19 @@ export default async function AccountPage() {
 
   if (!user) {
     return (
-      <Container className="py-10 sm:py-14">
-        <div className="mx-auto max-w-3xl">
-          <Card className="p-8 text-center">
-            <p className="text-sm font-medium">Sign in to see your places</p>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-              Track places you&rsquo;ve visited, your recommendations, and your contributions.
-            </p>
-          </Card>
-        </div>
-      </Container>
+      <div className="py-10 sm:py-14">
+        <Card className="p-8 text-center">
+          <p className="text-sm font-medium">Sign in to see your places</p>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+            Track places you&rsquo;ve visited, your recommendations, and your contributions.
+          </p>
+        </Card>
+      </div>
     );
   }
 
   // ── Data fetching ───────────────────────────────────────────────────────────
 
-  // Run the two root queries in parallel
   const [{ data: interactionRows }, { data: submissionsData }] = await Promise.all([
     supabase
       .from("venue_interactions")
@@ -293,7 +283,6 @@ export default async function AccountPage() {
   type InteractionRow = { been_here: boolean; recommend: boolean; venue_id: string };
   const typedInteractionRows = (interactionRows ?? []) as InteractionRow[];
 
-  // IDs needed for secondary venue lookups
   const interactionVenueIds = [
     ...new Set(typedInteractionRows.map((r) => r.venue_id)),
   ];
@@ -301,7 +290,6 @@ export default async function AccountPage() {
     .filter((s) => s.kind === "new_venue" && s.status === "approved" && s.venue_id)
     .map((s) => s.venue_id as string);
 
-  // Run the two venue lookups in parallel (skip if nothing to fetch)
   const [interactionVenueData, approvedVenueData] = await Promise.all([
     interactionVenueIds.length > 0
       ? supabase
@@ -318,7 +306,6 @@ export default async function AccountPage() {
       : { data: [] as unknown[] },
   ]);
 
-  // Build a map of venue_id → VenueItem for interaction lists
   const interactionVenueMap = new Map<string, VenueItem>();
   for (const v of interactionVenueData.data ?? []) {
     const row = v as {
@@ -338,7 +325,6 @@ export default async function AccountPage() {
     });
   }
 
-  // Build a map of venue_id → link info for approved contributions
   const approvedVenueMap = new Map<string, ApprovedVenueInfo>();
   for (const v of approvedVenueData.data ?? []) {
     const row = v as {
@@ -354,7 +340,6 @@ export default async function AccountPage() {
     });
   }
 
-  // Build Been Here / Recommended lists (deduplicated per venue)
   const beenHereIds = new Set<string>();
   const recommendIds = new Set<string>();
   const beenHereVenues: VenueItem[] = [];
@@ -375,71 +360,78 @@ export default async function AccountPage() {
 
   // ── Avatar ──────────────────────────────────────────────────────────────────
 
-  const avatarUrl =
-    (user.user_metadata?.avatar_url as string | undefined) ?? null;
+  const avatarUrl = (user.user_metadata?.avatar_url as string | undefined) ?? null;
   const emailInitial = user.email ? user.email[0].toUpperCase() : "?";
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <Container className="py-10 sm:py-14">
-      <div className="mx-auto max-w-3xl">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3 min-w-0">
-            {/* Avatar */}
+    <div className="py-10 sm:py-14">
+      {/* Page heading */}
+      <div className="flex items-start justify-between gap-4 mb-8">
+        <div>
+          <h1 className="h2-editorial">Your Places</h1>
+          <div className="mt-2 flex items-center gap-2">
             {avatarUrl ? (
               <Image
                 src={avatarUrl}
                 alt=""
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-full object-cover shrink-0"
+                width={20}
+                height={20}
+                className="h-5 w-5 rounded-full object-cover shrink-0"
                 unoptimized
               />
             ) : (
-              <div className="h-10 w-10 rounded-full bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center text-sm font-semibold shrink-0 select-none">
+              <div className="h-5 w-5 rounded-full bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center text-[9px] font-semibold shrink-0 select-none">
                 {emailInitial}
               </div>
             )}
-            <div className="min-w-0">
-              <h1 className="text-xl font-semibold tracking-tight">Your Places</h1>
-              <div className="text-xs text-[var(--muted-foreground)] truncate mt-0.5">
-                {user.email}
-              </div>
-            </div>
+            <span className="text-xs text-[var(--muted-foreground)]">{user.email}</span>
           </div>
-          <Link href="/suggest" className="btn-sm btn-sm-secondary shrink-0">
-            Add a place
-            <ArrowUpRight size={14} strokeWidth={1.5} />
-          </Link>
         </div>
-
-        {/* Tabbed content */}
-        <ProfileTabs
-          tabs={[
-            { id: "been-here", label: "Been Here", count: beenHereVenues.length },
-            { id: "recommended", label: "Recommended", count: recommendedVenues.length },
-            { id: "contributions", label: "Contributions", count: submissions.length },
-          ]}
-          panels={[
-            <VenueList
-              venues={beenHereVenues}
-              emptyHeading="No places yet"
-              emptyBody="Tap 'Been Here' on any venue page to start tracking your visits."
-            />,
-            <VenueList
-              venues={recommendedVenues}
-              emptyHeading="No recommendations yet"
-              emptyBody="Tap 'Recommend' on any venue page to share your favourite spots."
-            />,
-            <ContributionsList
-              submissions={submissions}
-              approvedVenueMap={approvedVenueMap}
-            />,
-          ]}
-        />
+        <Link href="/suggest" className="btn-sm btn-sm-secondary shrink-0 mt-1">
+          Add a place
+        </Link>
       </div>
-    </Container>
+
+      {/* Tabbed content */}
+      <ProfileTabs
+        tabs={[
+          {
+            id: "been-here",
+            label: "Been Here",
+            count: beenHereVenues.length,
+            icon: <ArrowUp size={13} strokeWidth={1.75} />,
+          },
+          {
+            id: "recommended",
+            label: "Recommended",
+            count: recommendedVenues.length,
+            icon: <Heart size={13} strokeWidth={1.75} />,
+          },
+          {
+            id: "contributions",
+            label: "Contributions",
+            count: submissions.length,
+          },
+        ]}
+        panels={[
+          <VenueList
+            venues={beenHereVenues}
+            emptyHeading="No places yet"
+            emptyBody="Tap 'Been Here' on any venue page to start tracking your visits."
+          />,
+          <VenueList
+            venues={recommendedVenues}
+            emptyHeading="No recommendations yet"
+            emptyBody="Tap 'Recommend' on any venue page to share your favourite spots."
+          />,
+          <ContributionsList
+            submissions={submissions}
+            approvedVenueMap={approvedVenueMap}
+          />,
+        ]}
+      />
+    </div>
   );
 }

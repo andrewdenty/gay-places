@@ -6,6 +6,7 @@ interface Tab {
   id: string;
   label: string;
   count?: number;
+  icon?: ReactNode;
 }
 
 interface ProfileTabsProps {
@@ -25,6 +26,7 @@ export function ProfileTabs({ tabs, panels }: ProfileTabsProps) {
             key={tab.id}
             onClick={() => setActiveIndex(i)}
             className={[
+              "flex items-center gap-1.5",
               "pb-3 mr-6 last:mr-0 -mb-px",
               "text-sm font-medium border-b-2 transition-colors duration-150",
               "focus-visible:outline-none",
@@ -33,9 +35,10 @@ export function ProfileTabs({ tabs, panels }: ProfileTabsProps) {
                 : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
             ].join(" ")}
           >
+            {tab.icon && <span className="flex items-center">{tab.icon}</span>}
             {tab.label}
             {tab.count !== undefined && tab.count > 0 && (
-              <span className="ml-1.5 text-xs font-normal tabular-nums text-[var(--muted-foreground)]">
+              <span className="ml-0.5 text-xs font-normal tabular-nums text-[var(--muted-foreground)]">
                 {tab.count}
               </span>
             )}
