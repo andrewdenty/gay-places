@@ -213,8 +213,8 @@ export function SearchModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Search area — positioned in upper third */}
-      <div className="relative z-10 flex flex-col items-center px-4 pt-4 sm:pt-[15vh]">
-        <div className="w-full max-w-[560px]">
+      <div className="relative z-10 flex flex-col items-center px-4 pt-4 sm:pt-[15vh] flex-1 overflow-hidden">
+        <div className="w-full max-w-[560px] flex flex-col h-full">
           {/* Search field + close button row */}
           <div className="flex items-center gap-3">
             {/* Pill input */}
@@ -275,7 +275,7 @@ export function SearchModal({
 
           {/* Results */}
           {hasQuery && (
-            <div className={`mt-6 flex flex-col gap-6 transition-opacity ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
+            <div className={`mt-6 flex-1 min-h-0 flex flex-col gap-6 overflow-y-auto pb-8 transition-opacity ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
               {!hasResults && loading && (
                 <div className="px-5 py-8 text-center text-[13px] text-[var(--muted-foreground)]">
                   Searching…
