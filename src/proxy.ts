@@ -44,9 +44,10 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isUserRoute =
-    pathname.startsWith("/account") ||
-    pathname.startsWith("/venues/");
+  // Only gate /account routes at the middleware level. Individual /venues/*
+  // sub-routes that require auth (review, upload-photo) enforce it themselves
+  // via server actions, keeping anonymous flows like claim and suggest-edit open.
+  const isUserRoute = pathname.startsWith("/account");
 
   if (isAdminRoute || isUserRoute) {
     const {
