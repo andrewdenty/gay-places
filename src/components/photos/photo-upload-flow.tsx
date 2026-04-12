@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Camera } from "lucide-react";
 import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
 
@@ -229,14 +230,12 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="mt-6 flex w-full flex-col items-center justify-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] py-16 transition-colors hover:bg-[var(--muted)]"
+              className="mt-6 flex w-full flex-col items-center justify-center rounded-2xl bg-[#FCFCFB] py-16 transition-colors hover:bg-[var(--muted)]"
             >
-              <span className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-medium text-[var(--accent-foreground)]">
+              <span className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 text-sm font-medium text-[var(--accent-foreground)]">
+                <Camera size={16} strokeWidth={1.75} />
                 Choose photo
               </span>
-              <p className="text-xs text-[var(--muted-foreground)]">
-                JPEG, PNG, HEIC up to 50 MB
-              </p>
             </button>
           </div>
         )}
