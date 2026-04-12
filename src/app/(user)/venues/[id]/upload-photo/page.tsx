@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
-import { Card } from "@/components/ui/card";
-import { Container } from "@/components/ui/container";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { PhotoUploader } from "@/components/photos/photo-uploader";
+import { PhotoUploadFlow } from "@/components/photos/photo-upload-flow";
 import { updateSubmissionWithData } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -23,19 +21,10 @@ export default async function UploadPhotoPage({
   if (!venue) notFound();
 
   return (
-    <Container className="py-10 sm:py-14">
-      <div className="mx-auto max-w-xl">
-        <h1 className="text-2xl font-semibold tracking-tight">Upload a photo</h1>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Photo for <span className="font-medium text-foreground">{venue.name}</span>.{" "}
-          Your photo will be moderated before it appears publicly.
-        </p>
-
-        <Card className="mt-6 p-6">
-          <PhotoUploader venueId={venue.id} onUpdateSubmission={updateSubmissionWithData} />
-        </Card>
-      </div>
-    </Container>
+    <PhotoUploadFlow
+      venueId={venue.id}
+      venueName={venue.name}
+      onUpdateSubmission={updateSubmissionWithData}
+    />
   );
 }
-
