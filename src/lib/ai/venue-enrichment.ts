@@ -20,6 +20,8 @@ import {
   buildTagSuggestionPrompt,
   buildBaseDescriptionPrompt,
   buildEditorialDescriptionPrompt,
+  buildUnifiedDescriptionPrompt,
+  extractListingSentence,
   venueTypeLabel,
 } from "./prompts";
 
@@ -370,6 +372,47 @@ export async function generateBaseDescriptionText(
 
   const text = await callClaude(user, { system, ...MODEL_CONFIG.base_description });
   return { text };
+}
+
+export interface UnifiedDescriptionProposal {
+  /** The full 3–4 sentence paragraph — store as description_editorial */
+  full: string;
+  /** The first sentence only — store as description_base and description */
+  listing: string;
+}
+
+export async function generateUnifiedDescriptionText(
+  venueId: string,
+  supabase: SupabaseClient,
+): Promise<UnifiedDescriptionProposal> {
+  const { data: venue, error } = await supabase
+    .from("venues")
+    .select("name,venue_type,venue_tags,address,website_url,city_id,cities(name,country)")
+    .eq("id", venueId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!venue) throw new Error("Venue not found");
+
+  const cityRow = venue.cities as unknown as { name: string; country: string } | null;
+  const venueTags = (venue.venue_tags ?? {}) as Record<string, unknown>;
+  const flatTags = Object.values(venueTags).flatMap((v) =>
+    Array.isArray(v) ? (v as string[]) : [],
+  );
+
+  const { system, user } = buildUnifiedDescriptionPrompt({
+    name: venue.name,
+    venueType: venue.venue_type,
+    cityName: cityRow?.name ?? "",
+    country: cityRow?.country ?? "",
+    address: venue.address,
+    tags: flatTags,
+    websiteUrl: venue.website_url ?? null,
+  });
+
+  const full = await callClaude(user, { system, ...MODEL_CONFIG.unified_description });
+  const listing = extractListingSentence(full);
+  return { full, listing };
 }
 
 export async function generateEditorialDescriptionText(

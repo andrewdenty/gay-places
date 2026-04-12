@@ -51,8 +51,12 @@ interface JsonVenue {
   name: string;
   slug?: string;
   venue_type?: string;
+  /** New unified format: single prose paragraph (sentence 1 → description_base, full → description_editorial) */
+  description?: string;
+  /** Legacy format: short listing summary */
   summary_short?: string;
-  why_unique?: string | string[]; // string[] kept for backwards-compat with older JSON files
+  /** Legacy format: deeper context (array kept for backwards-compat with older JSON files) */
+  why_unique?: string | string[];
   address_line_1?: string;
   address_line_2?: string;
   postal_code?: string;
@@ -170,6 +174,23 @@ function mapTags(tags?: JsonTags): Record<string, string[]> {
     }
   }
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// Description helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract the first sentence from a venue description for use as the listing
+ * card summary. Mirrors the logic in src/lib/ai/prompts.ts.
+ */
+function extractListingSentence(fullDescription: string): string {
+  const trimmed = fullDescription.trim();
+  const match = trimmed.match(/^(.+?[.!?])(?:\s+[A-Z]|$)/);
+  if (match) {
+    return match[1].trim();
+  }
+  return trimmed;
 }
 
 // ---------------------------------------------------------------------------
@@ -376,6 +397,20 @@ async function ingestCity(cityFile: CityFile): Promise<number> {
     }
     usedSlugs.add(slug);
 
+    // Unified format (new): description = full paragraph; extract sentence 1 for listing.
+    // Legacy format (old): summary_short = listing text; why_unique = editorial paragraph.
+    let listingSummary: string;
+    let editorialText: string | null;
+    if (v.description) {
+      listingSummary = extractListingSentence(v.description);
+      editorialText = v.description;
+    } else {
+      listingSummary = v.summary_short ?? "";
+      editorialText = Array.isArray(v.why_unique)
+        ? v.why_unique.join("\n")
+        : (v.why_unique ?? null);
+    }
+
     return {
       city_id: cityId,
       slug,
@@ -384,11 +419,9 @@ async function ingestCity(cityFile: CityFile): Promise<number> {
       lat: v.latitude!,
       lng: v.longitude!,
       venue_type: mapVenueType(v.venue_type),
-      description: v.summary_short ?? "",
-      description_base: v.summary_short ?? "",
-      description_editorial: Array.isArray(v.why_unique)
-        ? v.why_unique.join("\n")
-        : (v.why_unique ?? null),
+      description: listingSummary,
+      description_base: listingSummary,
+      description_editorial: editorialText,
       venue_tags: mapTags(v.tags),
       website_url: v.website_url ?? null,
       google_maps_url: v.google_maps_url ?? null,

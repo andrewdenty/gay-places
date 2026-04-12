@@ -6,6 +6,7 @@ import {
   enrichOpeningHours,
   generateBaseDescriptionText,
   generateEditorialDescriptionText,
+  generateUnifiedDescriptionText,
 } from "@/lib/ai/venue-enrichment";
 
 type Action =
@@ -13,7 +14,8 @@ type Action =
   | "tags"
   | "opening_hours"
   | "base_description"
-  | "editorial_description";
+  | "editorial_description"
+  | "unified_description";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -54,6 +56,7 @@ export async function POST(
     "opening_hours",
     "base_description",
     "editorial_description",
+    "unified_description",
   ];
 
   if (!action || !validActions.includes(action)) {
@@ -88,6 +91,18 @@ export async function POST(
       case "editorial_description": {
         const proposal = await generateEditorialDescriptionText(venueId, supabase);
         return NextResponse.json({ ok: true, action, proposal });
+      }
+
+      case "unified_description": {
+        const { full, listing } = await generateUnifiedDescriptionText(venueId, supabase);
+        return NextResponse.json({
+          ok: true,
+          action,
+          proposal: {
+            description_editorial: full,
+            description_base: listing,
+          },
+        });
       }
     }
   } catch (e) {

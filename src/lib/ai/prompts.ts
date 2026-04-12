@@ -266,7 +266,77 @@ Return ONLY the summary text. No quotes, no labels, no markdown.`;
 }
 
 // ---------------------------------------------------------------------------
-// 5. Editorial description (follow-on paragraph)
+// 5. Unified description (single 3–4 sentence paragraph)
+
+export interface UnifiedDescriptionPromptInput {
+  name: string;
+  venueType: string | null;
+  cityName: string;
+  country: string;
+  address: string | null;
+  tags: string[];
+  websiteUrl: string | null;
+}
+
+export function buildUnifiedDescriptionPrompt(
+  input: UnifiedDescriptionPromptInput,
+): { system: string; user: string } {
+  const system = `You write venue descriptions for Gay Places, an editorial LGBTQ+ travel guide. Every venue on the platform is an LGBTQ+ venue — never state or imply this, as it is redundant.
+
+Use the provided venue data as your foundation. You may also draw on facts you know about this venue with high confidence — but never invent sensory details (smells, sounds, lighting), crowd characterisations, or specific claims that aren't supported by evidence.
+
+BANNED WORDS AND PHRASES (never use these): ${bannedWordsList()}.
+
+PUNCTUATION RULES:
+- Do not use em dashes (—). If you find yourself reaching for one, split the sentence or use a comma instead.
+- No lists, no markdown, no labels.
+
+Write in present tense, third person. Do not end with a recommendation or call to action.`;
+
+  const typeLabel = venueTypeLabel(input.venueType);
+  const tagLine = input.tags.length > 0 ? `\nTags: ${input.tags.join(", ")}` : "";
+  const addressLine = input.address ? `\nAddress: ${input.address}` : "";
+  const websiteLine = input.websiteUrl ? `\nWebsite: ${input.websiteUrl}` : "";
+
+  const user = `Write a description of this venue in 3–4 sentences. Each sentence has a specific job — follow this order exactly:
+
+Sentence 1 (anchor): State what the venue is. Type + location + who goes there, in one plain line. This sentence will be used standalone as a listing card summary, so it must work on its own.
+
+Sentence 2 (experience): Describe what it is actually like to be there — the atmosphere, what people do, how it feels. No adjective stacking. State facts and let them carry the weight.
+
+Sentence 3 (events — include only if something specific is known): If the venue has a notable regular event, name it and describe what it involves. Be specific: name the night, say what happens, note when it runs. If nothing specific is known about events, skip this sentence entirely — do not genericise ("known for its events" is not acceptable).
+
+Sentence 4 (context — optional): One fact worth knowing: what makes this venue distinct from similar venues in the city, its history, who runs it, or something about the physical space. History and founding dates belong here, not earlier. If you have nothing specific to add, stop at sentence 3 (or sentence 2 if no events).
+
+Do not lead with history. Do not repeat the same information across sentences. A sharp 2–3 sentences beats a padded 4.
+
+Name: ${input.name}
+Type: ${typeLabel}
+City: ${input.cityName}${input.country ? `, ${input.country}` : ""}${addressLine}${tagLine}${websiteLine}
+
+Return ONLY the paragraph text. No quotes, no labels, no markdown.`;
+
+  return { system, user };
+}
+
+/**
+ * Extract the first sentence from a venue description for use as a listing card summary.
+ * Splits on the first sentence-ending punctuation followed by a space or end of string.
+ */
+export function extractListingSentence(fullDescription: string): string {
+  const trimmed = fullDescription.trim();
+  // Match end of first sentence: period, exclamation, or question mark
+  // followed by a space+capital or end of string
+  const match = trimmed.match(/^(.+?[.!?])(?:\s+[A-Z]|$)/);
+  if (match) {
+    return match[1].trim();
+  }
+  // Fallback: return whole text if no sentence boundary found
+  return trimmed;
+}
+
+// ---------------------------------------------------------------------------
+// 6. Editorial description (follow-on paragraph)
 
 export interface EditorialPromptInput {
   name: string;

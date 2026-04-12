@@ -87,4 +87,9 @@ export const MODEL_CONFIG = {
     temperature: 0.3,
     max_tokens: 300,
   },
+  unified_description: {
+    model: "claude-sonnet-4-6",
+    temperature: 0.3,
+    max_tokens: 500,
+  },
 } as const;
