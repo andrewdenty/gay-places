@@ -159,50 +159,68 @@ export default async function CityPage({
             </div>
 
             {/* City text — above image on desktop, below on mobile */}
-            <div className="flex flex-col gap-4 sm:order-1">
-              <div className="flex flex-col gap-1">
-                <div className="label-mono text-[var(--muted-foreground)]">
-                  {countryPublished ? (
-                    <Link
-                      href={`/country/${countrySlug}`}
-                      className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
-                    >
-                      {city.country}
-                    </Link>
-                  ) : (
-                    <span className="text-[var(--foreground)]">{city.country}</span>
-                  )}
+            <div className="flex items-start justify-between gap-4 sm:order-1">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <div className="label-mono text-[var(--muted-foreground)]">
+                    {countryPublished ? (
+                      <Link
+                        href={`/country/${countrySlug}`}
+                        className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
+                      >
+                        {city.country}
+                      </Link>
+                    ) : (
+                      <span className="text-[var(--foreground)]">{city.country}</span>
+                    )}
+                  </div>
+                  <h1 className="h1-editorial">{city.name}</h1>
                 </div>
-                <h1 className="h1-editorial">{city.name}</h1>
+                {city.description && (
+                  <p className="text-[15px] text-[var(--foreground)] leading-[1.4]">
+                    {city.description}
+                  </p>
+                )}
               </div>
-              {city.description && (
-                <p className="text-[15px] text-[var(--foreground)] leading-[1.4]">
-                  {city.description}
-                </p>
-              )}
+              <Link
+                href="/suggest"
+                className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5] shrink-0"
+                style={{ borderColor: "#E4E4E1", color: "#171717" }}
+              >
+                Add a place
+              </Link>
             </div>
           </div>
         ) : (
           /* No image: standard stacked layout */
-          <div className="mb-8">
-            <div className="label-mono text-[var(--muted-foreground)] mb-1">
-              {countryPublished ? (
-                <Link
-                  href={`/country/${countrySlug}`}
-                  className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
-                >
-                  {city.country}
-                </Link>
-              ) : (
-                <span className="text-[var(--foreground)]">{city.country}</span>
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div>
+              <div className="label-mono text-[var(--muted-foreground)] mb-1">
+                {countryPublished ? (
+                  <Link
+                    href={`/country/${countrySlug}`}
+                    className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
+                  >
+                    {city.country}
+                  </Link>
+                ) : (
+                  <span className="text-[var(--foreground)]">{city.country}</span>
+                )}
+              </div>
+              <h1 className="h1-editorial">{city.name}</h1>
+              {city.description && (
+                <p className="mt-4 text-[15px] text-[var(--foreground)] leading-[1.4]">
+                  {city.description}
+                </p>
               )}
             </div>
-            <h1 className="h1-editorial">{city.name}</h1>
-            {city.description && (
-              <p className="mt-4 text-[15px] text-[var(--foreground)] leading-[1.4]">
-                {city.description}
-              </p>
-            )}
+            <Link
+              href="/suggest"
+              className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5] shrink-0"
+              style={{ borderColor: "#E4E4E1", color: "#171717" }}
+            >
+              Add a place
+            </Link>
           </div>
         )}
 
