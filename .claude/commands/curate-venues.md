@@ -74,8 +74,7 @@ For each approved venue, research and populate all fields below.
 - name
 - slug (lowercase, hyphens, derived from name — e.g. "Eagle Bar" → `eagle-bar`)
 - venue_type
-- summary_short
-- why_unique (array of factual bullets)
+- description
 - address_line_1
 - address_line_2
 - postal_code
@@ -142,22 +141,26 @@ Rules:
 - Leave the day empty rather than guessing
 - Do not fabricate hours
 
-### Summary style
+### Description style
 
-Write `summary_short` as a 2–6 sentence editorial description. Be concrete and specific — explain what the venue is and what makes it distinctive. Avoid phrases like "vibrant atmosphere". Base statements on available evidence.
+Write `description` as a single prose paragraph of 3–4 sentences. Each sentence has a specific job — follow this order exactly:
 
-Good example: *"A compact central bar known for its strong gin selection and lively karaoke nights. A regular stop for locals early in the evening before the city's clubs get busy."*
+**Sentence 1 (anchor):** What is this venue? Type + location + who goes there, in one plain line. This sentence is used standalone on listing cards, so it must work on its own.
 
-### why_unique
+**Sentence 2 (experience):** What is it actually like to be there? Atmosphere, what people do, how it feels. No adjective stacking. State facts and let them carry the weight.
 
-Short factual bullets highlighting distinguishing characteristics.
+**Sentence 3 (events — only if something specific is known):** If the venue has a notable regular event, name it and describe what it involves. Be specific: name the night, say what happens, note when it runs. If nothing specific is known, skip this sentence — do not genericise.
 
-Examples:
-- Regular weekend drag shows
-- Large terrace overlooking the canal
-- One of the city's longest-running leather bars
+**Sentence 4 (context — optional):** One fact worth knowing: what makes this venue distinct from similar venues in the city, its history, who runs it, or something about the physical space. History and founding dates belong here, not earlier. If nothing specific to add, stop at sentence 3 (or 2).
 
-Avoid vague claims.
+Rules:
+- Do not use em dashes (—). Split the sentence or use a comma instead.
+- Do not lead with history. Experience before context.
+- Do not use banned words: vibrant, iconic, legendary, must-visit, welcoming, lively, beloved, thriving, hidden gem, nestled, tucked away, hub, community, inclusive, etc.
+- Base statements on available evidence. Do not invent crowd characterisations or sensory details.
+
+Good example:
+*"A leather and cruising bar on Studiestræde, Copenhagen's main gay strip, with a prison-themed interior and a bears-and-leather crowd. The ground floor is relaxed enough for a drink and conversation; the basement runs darker and more cruisy. Sits in the middle of the strip, which makes it an easy detour without having to plan ahead."*
 
 ### Sources
 
@@ -203,8 +206,8 @@ Confirm to the user: `Written to {city-slug}.json — run /ingest-venues to load
 
 | JSON field | DB column |
 |---|---|
-| `summary_short` | `description`, `description_base` |
-| `why_unique` (string or string[]) | `description_editorial` (joined with `\n`) |
+| `description` (full paragraph) | `description_editorial` |
+| `description` (sentence 1, auto-extracted) | `description_base`, `description` |
 | `tags.atmosphere` | `venue_tags.atmosphere` (UI label: "Vibe") |
 | `latitude` / `longitude` | `lat` / `lng` |
 | `hours` | `opening_hours` JSONB |

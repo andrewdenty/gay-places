@@ -13,7 +13,7 @@ import { VenueTagPicker } from "@/components/venue/venue-tag-picker";
 import { OpeningHoursEditor } from "@/components/admin/opening-hours-editor";
 import type { OpeningHours } from "@/components/admin/opening-hours-editor";
 import { LatLngPicker } from "@/components/admin/lat-lng-picker";
-import { DescriptionGenerateForm } from "@/app/(admin)/admin/venues/[venueId]/description-generate-button";
+import { UnifiedDescriptionGenerateForm } from "@/app/(admin)/admin/venues/[venueId]/description-generate-button";
 import { VenueEnrichBar, TagsEnrichButton, OpeningHoursEnrichButton } from "@/components/admin/venue-enrich-panel";
 import { useToast } from "@/components/ui/toast";
 import { updateVenueDetails } from "@/app/(admin)/admin/venues/[venueId]/actions";
@@ -414,36 +414,42 @@ export function VenueEditForm({
           </div>
 
           {/* ── Description ──────────────────────────────────────── */}
-          <SectionLabel>Description</SectionLabel>
+          <div className="col-span-full flex items-center justify-between border-t border-border pt-4">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Description
+            </span>
+            <div className="flex items-center gap-2">
+              {venue.description_generation_status && (
+                <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+                  {venue.description_generation_status}
+                </span>
+              )}
+              <UnifiedDescriptionGenerateForm
+                venueId={venue.id}
+                hasExisting={!!(descriptionEditorial || descriptionBase)}
+                currentEditorial={descriptionEditorial}
+                currentBase={descriptionBase}
+                onApplied={(editorial, base) => {
+                  setDescriptionEditorial(editorial);
+                  setDescriptionBase(base);
+                  setIsDirty(true);
+                }}
+              />
+            </div>
+          </div>
 
-          {/* Summary */}
+          {/* Full description */}
           <div className="sm:col-span-2">
-            <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-              <span>
-                Summary{" "}
-                <span className="text-muted-foreground/60">— 1–3 sentences shown on city listings</span>
-              </span>
-              <div className="flex items-center gap-2">
-                {venue.description_generation_status && (
-                  <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
-                    {venue.description_generation_status}
-                  </span>
-                )}
-                <DescriptionGenerateForm
-                  venueId={venue.id}
-                  descriptionType="base_description"
-                  currentText={descriptionBase}
-                  hasExisting={!!descriptionBase}
-                  onTextApplied={(text) => setDescriptionBase(text)}
-                />
-              </div>
+            <div className="mb-1 text-xs text-muted-foreground">
+              Full description{" "}
+              <span className="text-muted-foreground/60">— shown on the venue page</span>
             </div>
             <textarea
-              name="description_base"
-              value={descriptionBase}
-              onChange={(e) => { setDescriptionBase(e.target.value); setIsDirty(true); }}
+              name="description_editorial"
+              value={descriptionEditorial}
+              onChange={(e) => { setDescriptionEditorial(e.target.value); setIsDirty(true); }}
               placeholder="Not yet generated — click Generate to create one."
-              rows={2}
+              rows={4}
               className={TEXTAREA}
             />
             {venue.description_last_generated_at && (
@@ -457,29 +463,18 @@ export function VenueEditForm({
             )}
           </div>
 
-          {/* Editorial description */}
+          {/* Listing summary */}
           <div className="sm:col-span-2">
-            <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-              <span>
-                Editorial description{" "}
-                <span className="text-muted-foreground/60">
-                  — in-depth paragraph shown on the venue page
-                </span>
-              </span>
-              <DescriptionGenerateForm
-                venueId={venue.id}
-                descriptionType="editorial_description"
-                currentText={descriptionEditorial}
-                hasExisting={!!descriptionEditorial}
-                onTextApplied={(text) => setDescriptionEditorial(text)}
-              />
+            <div className="mb-1 text-xs text-muted-foreground">
+              Listing summary{" "}
+              <span className="text-muted-foreground/60">— sentence 1, shown on city listings</span>
             </div>
             <textarea
-              name="description_editorial"
-              value={descriptionEditorial}
-              onChange={(e) => { setDescriptionEditorial(e.target.value); setIsDirty(true); }}
-              placeholder="Write an editorial paragraph about this venue…"
-              rows={4}
+              name="description_base"
+              value={descriptionBase}
+              onChange={(e) => { setDescriptionBase(e.target.value); setIsDirty(true); }}
+              placeholder="Auto-extracted from sentence 1 when you generate."
+              rows={2}
               className={TEXTAREA}
             />
           </div>

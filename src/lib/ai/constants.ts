@@ -8,7 +8,6 @@ export const BANNED_WORDS = [
   "iconic",
   "legendary",
   "must-visit",
-  "welcoming",
   "lively",
   "beloved",
   "thriving",
@@ -21,7 +20,6 @@ export const BANNED_WORDS = [
   "unforgettable",
   "unmissable",
   "pulsating",
-  "diverse",
   "eclectic",
   "trendy",
   "bustling",
@@ -31,7 +29,6 @@ export const BANNED_WORDS = [
   "something for everyone",
   "a safe space",
   "all are welcome",
-  "community",
   "inclusive",
   "a place to be yourself",
   "beating heart",
@@ -39,7 +36,6 @@ export const BANNED_WORDS = [
   "sun-drenched",
   "effortless",
   "pulsing",
-  "convivial",
   "discerning",
   "step inside",
   "stepping inside",
@@ -77,14 +73,9 @@ export const MODEL_CONFIG = {
     temperature: 0.3,
     max_tokens: 512,
   },
-  base_description: {
+  unified_description: {
     model: "claude-sonnet-4-6",
     temperature: 0.3,
-    max_tokens: 300,
-  },
-  editorial_description: {
-    model: "claude-sonnet-4-6",
-    temperature: 0.3,
-    max_tokens: 300,
+    max_tokens: 500,
   },
 } as const;

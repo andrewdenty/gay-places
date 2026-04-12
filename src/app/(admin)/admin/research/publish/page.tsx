@@ -21,7 +21,7 @@ type IngestDraft = {
     venue_type?: string;
     address?: string;
     google_maps_url?: string | null;
-    summary_short?: string;
+    description?: string;
   };
   ingest_candidates: {
     id: string;

@@ -63,8 +63,7 @@ export interface EnrichedVenueDraft {
   instagram_url: string | null;
   facebook_url: string | null;
   phone: string | null;
-  summary_short: string;
-  why_unique: string;
+  description: string;
   venue_tags: VenueTags;
   opening_hours: unknown;
   discovery_sources: string[];
@@ -317,12 +316,9 @@ function validateEnrichedDraft(
       ? raw.phone.trim()
       : null;
 
-  const summary_short =
-    typeof raw.summary_short === "string" ? raw.summary_short.trim() : "";
-  if (!summary_short) errors.push("Missing summary_short");
-
-  const why_unique =
-    typeof raw.why_unique === "string" ? raw.why_unique.trim() : "";
+  const description =
+    typeof raw.description === "string" ? raw.description.trim() : "";
+  if (!description) errors.push("Missing description");
 
   // Validate tags against allowlist
   const rawTags =
@@ -376,8 +372,7 @@ function validateEnrichedDraft(
       instagram_url,
       facebook_url,
       phone,
-      summary_short,
-      why_unique,
+      description,
       venue_tags,
       opening_hours,
       discovery_sources,
