@@ -302,7 +302,7 @@ Write in present tense, third person. Do not end with a recommendation or call t
 
 Sentence 1 (anchor): State what the venue is. Type + location + who goes there, in one plain line. This sentence will be used standalone as a listing card summary, so it must work on its own.
 
-Sentence 2 (experience): Describe what it is actually like to be there — the atmosphere, what people do, how it feels. Physical details, practical notes for visitors, and specific characteristics are all welcome. State facts and let them carry the weight.
+Sentence 2 (experience): Describe what it is actually like to be there — the atmosphere, what people do, how it feels. Physical details, practical notes for visitors, and specific characteristics are all welcome. State facts and let them carry the weight. Describe what IS present, not what is absent — avoid shorthand like "no-frills", "unpretentious", or "down-to-earth". Instead of saying a venue lacks something, show the specific reality: the worn bar stools, the cash-only policy, the same faces every weekend.
 
 Sentence 3 (events — include only if something specific is known): If the venue has a notable regular event, name it and describe what it involves. Be specific: name the night, say what happens, note when it runs. If nothing specific is known about events, skip this sentence entirely — do not genericise ("known for its events" is not acceptable).
 

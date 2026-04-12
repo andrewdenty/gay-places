@@ -39,7 +39,6 @@ export const BANNED_WORDS = [
   "sun-drenched",
   "effortless",
   "pulsing",
-  "convivial",
   "discerning",
   "step inside",
   "stepping inside",
