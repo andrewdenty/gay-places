@@ -115,11 +115,8 @@ export async function PATCH(
   if (typeof body.facebook_url === "string") {
     updatedDraft.facebook_url = body.facebook_url.trim() || null;
   }
-  if (typeof body.summary_short === "string") {
-    updatedDraft.summary_short = body.summary_short.trim();
-  }
-  if (typeof body.why_unique === "string") {
-    updatedDraft.why_unique = body.why_unique.trim();
+  if (typeof body.description === "string") {
+    updatedDraft.description = body.description.trim();
   }
   if (typeof body.opening_hours === "object" && body.opening_hours !== null) {
     updatedDraft.opening_hours = body.opening_hours;

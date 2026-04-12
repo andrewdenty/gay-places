@@ -4,10 +4,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import {
-  generateBaseDescriptionText,
-  generateEditorialDescriptionText,
-} from "@/lib/ai/venue-enrichment";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -96,49 +92,6 @@ export async function updateVenueDetails(formData: FormData) {
   if (error) throw error;
 
   revalidatePath("/admin/venues");
-  revalidatePath(`/admin/venues/${id}`);
-}
-
-/**
- * Generate (or regenerate) a venue's base description (summary) using Claude.
- */
-export async function generateBaseDescription(formData: FormData) {
-  const supabase = await requireAdmin();
-  const id = getText(formData, "id");
-
-  const { text } = await generateBaseDescriptionText(id, supabase);
-
-  const { error: updateError } = await supabase
-    .from("venues")
-    .update({
-      description_base: text,
-      description_generation_status: "ai_draft",
-      description_last_generated_at: new Date().toISOString(),
-    })
-    .eq("id", id);
-  if (updateError) throw updateError;
-
-  revalidatePath(`/admin/venues/${id}`);
-}
-
-/**
- * Generate (or regenerate) a venue's editorial description using Claude.
- */
-export async function generateEditorialDescription(formData: FormData) {
-  const supabase = await requireAdmin();
-  const id = getText(formData, "id");
-
-  const { text } = await generateEditorialDescriptionText(id, supabase);
-
-  const { error: updateError } = await supabase
-    .from("venues")
-    .update({
-      description_editorial: text,
-      description_generation_status: "ai_draft",
-    })
-    .eq("id", id);
-  if (updateError) throw updateError;
-
   revalidatePath(`/admin/venues/${id}`);
 }
 

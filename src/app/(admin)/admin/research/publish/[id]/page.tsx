@@ -20,8 +20,7 @@ type DraftData = {
   instagram_url: string | null;
   facebook_url: string | null;
   phone: string | null;
-  summary_short: string;
-  why_unique: string;
+  description: string;
   venue_tags: VenueTags;
   opening_hours: unknown;
   discovery_sources: string[];

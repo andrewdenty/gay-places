@@ -73,16 +73,6 @@ export const MODEL_CONFIG = {
     temperature: 0.3,
     max_tokens: 512,
   },
-  base_description: {
-    model: "claude-sonnet-4-6",
-    temperature: 0.3,
-    max_tokens: 300,
-  },
-  editorial_description: {
-    model: "claude-sonnet-4-6",
-    temperature: 0.3,
-    max_tokens: 300,
-  },
   unified_description: {
     model: "claude-sonnet-4-6",
     temperature: 0.3,

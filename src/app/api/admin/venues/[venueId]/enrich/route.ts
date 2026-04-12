@@ -4,8 +4,6 @@ import {
   enrichPlaceDetails,
   enrichTags,
   enrichOpeningHours,
-  generateBaseDescriptionText,
-  generateEditorialDescriptionText,
   generateUnifiedDescriptionText,
 } from "@/lib/ai/venue-enrichment";
 
@@ -13,8 +11,6 @@ type Action =
   | "place_details"
   | "tags"
   | "opening_hours"
-  | "base_description"
-  | "editorial_description"
   | "unified_description";
 
 async function requireAdmin() {
@@ -54,8 +50,6 @@ export async function POST(
     "place_details",
     "tags",
     "opening_hours",
-    "base_description",
-    "editorial_description",
     "unified_description",
   ];
 
@@ -80,16 +74,6 @@ export async function POST(
 
       case "opening_hours": {
         const proposal = await enrichOpeningHours(venueId, supabase);
-        return NextResponse.json({ ok: true, action, proposal });
-      }
-
-      case "base_description": {
-        const proposal = await generateBaseDescriptionText(venueId, supabase);
-        return NextResponse.json({ ok: true, action, proposal });
-      }
-
-      case "editorial_description": {
-        const proposal = await generateEditorialDescriptionText(venueId, supabase);
         return NextResponse.json({ ok: true, action, proposal });
       }
 
