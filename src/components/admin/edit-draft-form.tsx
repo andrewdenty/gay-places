@@ -21,8 +21,12 @@ interface DraftData {
   instagram_url: string | null;
   facebook_url: string | null;
   phone: string | null;
-  summary_short: string;
-  why_unique: string;
+  /** New unified format: single prose paragraph */
+  description?: string;
+  /** Legacy: kept for backwards-compat with older drafts */
+  summary_short?: string;
+  /** Legacy: kept for backwards-compat with older drafts */
+  why_unique?: string;
   venue_tags: VenueTags;
   opening_hours: unknown;
   discovery_sources: string[];
@@ -73,8 +77,10 @@ export function EditDraftForm({
   const [facebookUrl, setFacebookUrl] = useState(initialDraft.facebook_url ?? "");
   const [lat, setLat] = useState(String(initialDraft.lat ?? ""));
   const [lng, setLng] = useState(String(initialDraft.lng ?? ""));
-  const [summaryShort, setSummaryShort] = useState(initialDraft.summary_short ?? "");
-  const [whyUnique, setWhyUnique] = useState(initialDraft.why_unique ?? "");
+  // Unified description: initialise from new field, fall back to legacy summary_short
+  const [description, setDescription] = useState(
+    initialDraft.description ?? initialDraft.summary_short ?? ""
+  );
   const [venueTags, setVenueTags] = useState<VenueTags>(initialDraft.venue_tags ?? {});
   const [openingHours, setOpeningHours] = useState<OpeningHours | null>(null);
   const [notes, setNotes] = useState(initialNotes ?? "");
@@ -93,8 +99,7 @@ export function EditDraftForm({
     facebookUrl: initialDraft.facebook_url ?? "",
     lat: String(initialDraft.lat ?? ""),
     lng: String(initialDraft.lng ?? ""),
-    summaryShort: initialDraft.summary_short ?? "",
-    whyUnique: initialDraft.why_unique ?? "",
+    description: initialDraft.description ?? initialDraft.summary_short ?? "",
     notes: initialNotes ?? "",
   });
 
@@ -108,12 +113,11 @@ export function EditDraftForm({
       facebookUrl !== init.facebookUrl ||
       lat !== init.lat ||
       lng !== init.lng ||
-      summaryShort !== init.summaryShort ||
-      whyUnique !== init.whyUnique ||
+      description !== init.description ||
       notes !== init.notes ||
       openingHours !== null;
     setIsDirty(dirty);
-  }, [name, googleMapsUrl, websiteUrl, instagramUrl, facebookUrl, lat, lng, summaryShort, whyUnique, notes, openingHours]);
+  }, [name, googleMapsUrl, websiteUrl, instagramUrl, facebookUrl, lat, lng, description, notes, openingHours]);
 
   // ── Unsaved changes guard ─────────────────────────────────────────────────
   useEffect(() => {
@@ -150,8 +154,7 @@ export function EditDraftForm({
       facebook_url: facebookUrl.trim() || null,
       lat: lat ? Number(lat) : null,
       lng: lng ? Number(lng) : null,
-      summary_short: summaryShort.trim(),
-      why_unique: whyUnique.trim(),
+      description: description.trim(),
       venue_tags: venueTags,
       opening_hours: openingHours ?? initialDraft.opening_hours,
       notes,
@@ -178,8 +181,7 @@ export function EditDraftForm({
           facebookUrl: facebookUrl.trim(),
           lat,
           lng,
-          summaryShort: summaryShort.trim(),
-          whyUnique: whyUnique.trim(),
+          description: description.trim(),
           notes,
         };
       } catch (e) {
@@ -190,7 +192,7 @@ export function EditDraftForm({
     });
   }, [
     draftId, name, googleMapsUrl, websiteUrl, instagramUrl, facebookUrl, lat, lng,
-    summaryShort, whyUnique, venueTags, openingHours, notes,
+    description, venueTags, openingHours, notes,
     initialDraft.opening_hours, startTransition, showToast,
   ]);
 
@@ -353,37 +355,19 @@ export function EditDraftForm({
           />
         </div>
 
-        {/* Summary */}
+        {/* Description */}
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="edit-summary">
-            Summary{" "}
+          <label className="block text-sm font-medium mb-1" htmlFor="edit-description">
+            Description{" "}
             <span className="text-muted-foreground font-normal text-xs">
-              — 1–3 sentences shown on city listings
+              — 3–4 sentences shown on the venue page (sentence 1 appears on city listings)
             </span>
           </label>
           <textarea
-            id="edit-summary"
-            rows={4}
-            value={summaryShort}
-            onChange={(e) => { setSummaryShort(e.target.value); setIsDirty(true); }}
-            disabled={isPending}
-            className={inputCls}
-          />
-        </div>
-
-        {/* Editorial description */}
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="edit-why-unique">
-            Editorial description{" "}
-            <span className="text-muted-foreground font-normal text-xs">
-              — in-depth paragraph shown on the venue page
-            </span>
-          </label>
-          <textarea
-            id="edit-why-unique"
-            rows={4}
-            value={whyUnique}
-            onChange={(e) => { setWhyUnique(e.target.value); setIsDirty(true); }}
+            id="edit-description"
+            rows={5}
+            value={description}
+            onChange={(e) => { setDescription(e.target.value); setIsDirty(true); }}
             disabled={isPending}
             className={inputCls}
           />

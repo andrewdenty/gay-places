@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { VenueTags } from "@/lib/venue-tags";
+import { extractListingSentence } from "@/lib/ai/prompts";
 
 type VenueType =
   | "bar"
@@ -162,10 +163,16 @@ export async function POST(
       typeof draft.lat === "number" && isFinite(draft.lat) ? draft.lat : 0;
     const lng =
       typeof draft.lng === "number" && isFinite(draft.lng) ? draft.lng : 0;
-    const summaryShort =
-      typeof draft.summary_short === "string" ? draft.summary_short.trim() : "";
-    const whyUnique =
-      typeof draft.why_unique === "string" ? draft.why_unique.trim() : "";
+    // New unified format: description = full paragraph; extract sentence 1 for listing.
+    // Legacy format: summary_short = listing text; why_unique = editorial text.
+    const unifiedDescription =
+      typeof draft.description === "string" ? draft.description.trim() : null;
+    const summaryShort = unifiedDescription
+      ? extractListingSentence(unifiedDescription)
+      : (typeof draft.summary_short === "string" ? draft.summary_short.trim() : "");
+    const whyUnique = unifiedDescription
+      ? unifiedDescription
+      : (typeof draft.why_unique === "string" ? draft.why_unique.trim() : "");
     const venueTags =
       typeof draft.venue_tags === "object" && draft.venue_tags !== null
         ? (draft.venue_tags as VenueTags)
