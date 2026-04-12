@@ -567,23 +567,10 @@ export default async function VenuePage({
           {/* Claim CTA or Verified badge — right-aligned */}
           {venue.claimed ? (
             <span
-              title="This venue's details have been confirmed by the venue team."
-              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-[11px] font-medium tracking-wide text-[var(--muted-foreground)]"
+              title="This place's details have been updated and verified by the venue's team"
+              className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333]"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                className="h-3 w-3 shrink-0"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm11.78-1.72a.75.75 0 0 0-1.06-1.06L7 8.94 5.28 7.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.06 0l4.25-4.25Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Verified by venue
+              Claimed Place
             </span>
           ) : (
             <Link
