@@ -226,14 +226,18 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
         {state.kind === "idle" && (
           <div>
             <Heading>Add a photo</Heading>
-            <div className="mt-6">
-              <Button className="w-full sm:w-auto" onClick={() => fileInputRef.current?.click()}>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-6 flex w-full flex-col items-center justify-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] py-16 transition-colors hover:bg-[var(--muted)]"
+            >
+              <span className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-medium text-[var(--accent-foreground)]">
                 Choose photo
-              </Button>
-              <p className="mt-3 text-xs text-[var(--muted-foreground)]">
+              </span>
+              <p className="text-xs text-[var(--muted-foreground)]">
                 JPEG, PNG, HEIC up to 50 MB
               </p>
-            </div>
+            </button>
           </div>
         )}
 
