@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -50,6 +51,30 @@ function KindBadge({ kind }: { kind: string }) {
   );
 }
 
+function EditTypeBadge({ editType }: { editType: string }) {
+  const isClosure = editType === "place_closed";
+  const labels: Record<string, string> = {
+    incorrect_details: "Incorrect details",
+    wrong_hours:       "Wrong hours",
+    wrong_links:       "Wrong links",
+    wrong_address:     "Wrong address",
+    place_closed:      "Place closed",
+    other:             "Other",
+  };
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+        isClosure
+          ? "border-red-200 bg-red-50 text-red-700"
+          : "border-slate-200 bg-slate-50 text-slate-700"
+      }`}
+    >
+      {isClosure && <span className="mr-1">⚠</span>}
+      {labels[editType] ?? editType.replace(/_/g, " ")}
+    </span>
+  );
+}
+
 type Submission = {
   id: string;
   kind: string;
@@ -59,6 +84,11 @@ type Submission = {
   venue_id: string | null;
   city_id: string | null;
   proposed_data: Record<string, unknown>;
+};
+
+type VenueRow = {
+  id: string;
+  name: string;
 };
 
 export default async function AdminSubmissionsPage() {
@@ -102,6 +132,25 @@ export default async function AdminSubmissionsPage() {
     }
   }
 
+  // Fetch venue names for edit suggestions that reference a venue_id
+  const venueIds = [
+    ...new Set(
+      (submissions ?? [])
+        .filter((s: Submission) => s.kind === "edit_venue" && s.venue_id)
+        .map((s: Submission) => s.venue_id as string),
+    ),
+  ];
+  const venueMap = new Map<string, VenueRow>();
+  if (venueIds.length > 0) {
+    const { data: venues } = await adminClient
+      .from("venues")
+      .select("id,name")
+      .in("id", venueIds);
+    for (const v of venues ?? []) {
+      venueMap.set(v.id, v as VenueRow);
+    }
+  }
+
   const rows = (submissions ?? []) as Submission[];
 
   return (
@@ -125,6 +174,75 @@ export default async function AdminSubmissionsPage() {
         ) : (
           rows.map((s) => {
             const pd = s.proposed_data ?? {};
+
+            // ── Edit suggestion (new lightweight format) ──────────────────────
+            const isEditSuggestion = s.kind === "edit_venue" && typeof pd.edit_type === "string";
+            if (isEditSuggestion) {
+              const editType = pd.edit_type as string;
+              const note = typeof pd.note === "string" ? pd.note : null;
+              const contactEmail = typeof pd.contact_email === "string" ? pd.contact_email : null;
+              const venue = s.venue_id ? venueMap.get(s.venue_id) : null;
+
+              return (
+                <Card key={s.id} className="p-5">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      {/* Kind + edit type + time */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <KindBadge kind={s.kind} />
+                        <EditTypeBadge editType={editType} />
+                        <span className="text-xs text-muted-foreground">
+                          {timeAgo(s.created_at)}
+                        </span>
+                      </div>
+
+                      {/* Venue name link */}
+                      {venue && (
+                        <div className="mt-2">
+                          <Link
+                            href={`/admin/venues/${venue.id}`}
+                            className="text-base font-semibold hover:underline underline-offset-2"
+                          >
+                            {venue.name}
+                          </Link>
+                        </div>
+                      )}
+
+                      {/* User note */}
+                      {note && (
+                        <p className="mt-2 text-sm text-foreground leading-relaxed">
+                          &ldquo;{note}&rdquo;
+                        </p>
+                      )}
+
+                      {/* Contact email + submitter */}
+                      <div className="mt-2 grid gap-0.5 text-xs text-muted-foreground">
+                        {contactEmail && (
+                          <div>
+                            <span>Contact: </span>
+                            <a
+                              href={`mailto:${contactEmail}`}
+                              className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                            >
+                              {contactEmail}
+                            </a>
+                          </div>
+                        )}
+                        <div>
+                          {s.submitter_id && emailMap.get(s.submitter_id)
+                            ? `Submitted by ${emailMap.get(s.submitter_id)}`
+                            : "Anonymous submission"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <SubmissionActions id={s.id} />
+                  </div>
+                </Card>
+              );
+            }
+
+            // ── All other submission kinds (new_venue, new_photo, legacy edit) ─
             const name = typeof pd.name === "string" ? pd.name : null;
             const cityName = typeof pd.city_name === "string" ? pd.city_name : null;
             const venueType = typeof pd.venue_type === "string" ? pd.venue_type : null;
