@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ImageIcon } from "lucide-react";
 import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
 
@@ -76,7 +75,6 @@ async function compressImage(file: File): Promise<File> {
 
 type FlowState =
   | { kind: "idle" }
-  | { kind: "selected"; file: File; previewUrl: string; caption: string }
   | { kind: "uploading"; file: File; previewUrl: string; caption: string }
   | { kind: "done"; previewUrl: string; approved: boolean }
   | { kind: "error"; message: string; file: File; previewUrl: string; caption: string };
@@ -117,7 +115,6 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
   const fileInputRef = useRef<HTMLInputElement>(null);
   const currentPreviewUrl = useRef<string | null>(null);
   const [state, setState] = useState<FlowState>({ kind: "idle" });
-  const [dragging, setDragging] = useState(false);
 
   // Escape closes the modal
   useEffect(() => {
@@ -136,15 +133,13 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
   }, []);
 
   function selectFile(file: File) {
-    // Revoke any existing preview URL before creating a new one
     if (currentPreviewUrl.current) {
       URL.revokeObjectURL(currentPreviewUrl.current);
     }
     const previewUrl = URL.createObjectURL(file);
     currentPreviewUrl.current = previewUrl;
-    setState({ kind: "selected", file, previewUrl, caption: "" });
-    // Reset file input so the same file can be selected again
     if (fileInputRef.current) fileInputRef.current.value = "";
+    upload(file, previewUrl);
   }
 
   function reset() {
@@ -155,11 +150,8 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
     setState({ kind: "idle" });
   }
 
-  async function upload() {
-    if (state.kind !== "selected" && state.kind !== "error") return;
-    const { file, previewUrl, caption } = state;
-
-    setState({ kind: "uploading", file, previewUrl, caption });
+  async function upload(file: File, previewUrl: string) {
+    setState({ kind: "uploading", file, previewUrl, caption: "" });
 
     try {
       if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
@@ -172,7 +164,7 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
       const createRes = await fetch("/api/submissions/photo", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ venue_id: venueId, caption, filename: compressed.name }),
+        body: JSON.stringify({ venue_id: venueId, caption: "", filename: compressed.name }),
       });
       const created = (await createRes.json()) as
         | { submission_id: string; upload_path: string }
@@ -193,7 +185,7 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
       // Step 3: record storage path on submission
       const result = await onUpdateSubmission(created.submission_id, {
         venue_id: venueId,
-        caption,
+        caption: "",
         storage_path: created.upload_path,
         filename: compressed.name,
       });
@@ -205,30 +197,12 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
         message: e instanceof Error ? e.message : "Upload failed",
         file,
         previewUrl,
-        caption,
+        caption: "",
       });
     }
   }
 
-  // Drop zone handlers
-  function onDragOver(e: React.DragEvent) {
-    e.preventDefault();
-    setDragging(true);
-  }
-  function onDragLeave(e: React.DragEvent) {
-    // Only clear dragging if leaving the drop zone entirely
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setDragging(false);
-    }
-  }
-  function onDrop(e: React.DragEvent) {
-    e.preventDefault();
-    setDragging(false);
-    const f = e.dataTransfer.files[0];
-    if (f && f.type.startsWith("image/")) selectFile(f);
-  }
-
-  // Derive the preview URL from state (for selected/uploading/error/done)
+  // Derive the preview URL from state (for uploading/error/done)
   const previewUrl = state.kind !== "idle" ? state.previewUrl : null;
 
   return (
@@ -248,40 +222,26 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
         {/* Venue label — visible in all states */}
         <p className="label-mono mb-3 text-[var(--muted-foreground)]">{venueName}</p>
 
-        {/* ── Idle: drop zone ─────────────────────────────────────────────── */}
+        {/* ── Idle ────────────────────────────────────────────────────────── */}
         {state.kind === "idle" && (
           <div>
             <Heading>Add a photo</Heading>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={onDragOver}
-              onDragLeave={onDragLeave}
-              onDrop={onDrop}
-              className={`mt-6 flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed py-16 text-center transition-colors ${
-                dragging
-                  ? "border-[var(--foreground)] bg-[var(--muted)]"
-                  : "border-[var(--border)] bg-[var(--card)] hover:border-[var(--foreground)] hover:bg-[var(--muted)]"
-              }`}
-            >
-              <ImageIcon size={32} strokeWidth={1.25} className="text-[var(--muted-foreground)]" />
-              <div>
-                <p className="text-sm font-medium text-[var(--foreground)]">
-                  Drag and drop, or click to choose
-                </p>
-                <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                  JPEG, PNG, HEIC up to 50 MB
-                </p>
-              </div>
-            </button>
+            <div className="mt-6">
+              <Button className="w-full sm:w-auto" onClick={() => fileInputRef.current?.click()}>
+                Choose photo
+              </Button>
+              <p className="mt-3 text-xs text-[var(--muted-foreground)]">
+                JPEG, PNG, HEIC up to 50 MB
+              </p>
+            </div>
           </div>
         )}
 
-        {/* ── Selected / Uploading / Error ─────────────────────────────────── */}
-        {(state.kind === "selected" || state.kind === "uploading" || state.kind === "error") && (
+        {/* ── Uploading / Error ────────────────────────────────────────────── */}
+        {(state.kind === "uploading" || state.kind === "error") && (
           <div>
             <Heading>
-              {state.kind === "uploading" ? "Uploading…" : "Looks good?"}
+              {state.kind === "uploading" ? "Uploading…" : "Something went wrong"}
             </Heading>
 
             {/* Preview */}
@@ -296,47 +256,27 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
               </div>
             )}
 
-            {/* Caption */}
-            <div className="mt-4">
-              <input
-                value={state.caption}
-                onChange={(e) => {
-                  if (state.kind === "selected" || state.kind === "error") {
-                    setState({ ...state, caption: e.target.value });
-                  }
-                }}
-                disabled={state.kind === "uploading"}
-                placeholder="Caption (optional)"
-                className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] transition-colors placeholder:text-[var(--muted-foreground)] disabled:opacity-50"
-              />
-            </div>
-
-            {/* Error message */}
+            {/* Error message + retry */}
             {state.kind === "error" && (
-              <p className="mt-3 text-sm text-[var(--red)]">{state.message}</p>
+              <>
+                <p className="mt-3 text-sm text-[var(--red)]">{state.message}</p>
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    className="w-full sm:w-auto"
+                    onClick={() => upload(state.file, state.previewUrl)}
+                  >
+                    Try again
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="w-full sm:w-auto"
+                    onClick={reset}
+                  >
+                    Choose a different photo
+                  </Button>
+                </div>
+              </>
             )}
-
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <Button
-                className="w-full sm:w-auto"
-                onClick={upload}
-                disabled={state.kind === "uploading"}
-              >
-                {state.kind === "uploading"
-                  ? "Uploading…"
-                  : state.kind === "error"
-                  ? "Try again"
-                  : "Upload photo"}
-              </Button>
-              <Button
-                variant="secondary"
-                className="w-full sm:w-auto"
-                onClick={reset}
-                disabled={state.kind === "uploading"}
-              >
-                Choose a different photo
-              </Button>
-            </div>
           </div>
         )}
 
@@ -364,15 +304,11 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Button className="w-full sm:w-auto" onClick={reset}>
-                Add another photo
-              </Button>
-              <Button
-                variant="secondary"
-                className="w-full sm:w-auto"
-                onClick={() => router.back()}
-              >
+              <Button className="w-full sm:w-auto" onClick={() => router.back()}>
                 Done
+              </Button>
+              <Button variant="secondary" className="w-full sm:w-auto" onClick={reset}>
+                Add another photo
               </Button>
             </div>
           </div>
