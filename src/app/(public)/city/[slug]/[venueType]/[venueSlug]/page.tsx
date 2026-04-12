@@ -547,21 +547,25 @@ export default async function VenuePage({
           </div>
         </VenueSectionRow>
 
-        {/* Claim CTA — secondary, business-facing */}
-        {!venue.claimed && (
-          <div className="mt-6 text-center">
-            <Link
-              href={`/venues/${venue.id}/claim`}
-              className="text-[13px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors underline underline-offset-2"
-            >
-              Own this place? Claim this page
-            </Link>
-          </div>
-        )}
+        {/* Last updated + claim CTA — same row, same 11px size */}
+        <div className="mt-12 flex items-center justify-between gap-4">
+          {venue.updated_at ? (
+            <p className="text-[11px] text-[var(--muted-foreground)]">
+              Last updated{" "}
+              <time dateTime={venue.updated_at}>
+                {new Date(venue.updated_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </time>
+            </p>
+          ) : (
+            <span />
+          )}
 
-        {/* Verified badge — shown when claimed is true */}
-        {venue.claimed && (
-          <div className="mt-6 flex justify-center">
+          {/* Claim CTA or Verified badge — right-aligned */}
+          {venue.claimed ? (
             <span
               title="This venue's details have been confirmed by the venue team."
               className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-[11px] font-medium tracking-wide text-[var(--muted-foreground)]"
@@ -581,22 +585,15 @@ export default async function VenuePage({
               </svg>
               Verified by venue
             </span>
-          </div>
-        )}
-
-        {/* Last updated — SEO freshness signal */}
-        {venue.updated_at && (
-          <p className="mt-12 text-[11px] text-[var(--muted-foreground)]">
-            Last updated{" "}
-            <time dateTime={venue.updated_at}>
-              {new Date(venue.updated_at).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </time>
-          </p>
-        )}
+          ) : (
+            <Link
+              href={`/venues/${venue.id}/claim`}
+              className="text-[11px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors underline underline-offset-2"
+            >
+              Own this place? Claim this page
+            </Link>
+          )}
+        </div>
       </div>
       </VenueAdminToggle>
     </>
