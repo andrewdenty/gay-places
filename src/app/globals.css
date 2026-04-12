@@ -243,6 +243,18 @@ body {
   display: none;
 }
 
+/* MapLibre cooperative-gestures hint overlay */
+.maplibregl-cooperative-gestures-screen {
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em;
+  border-radius: 12px !important;
+}
+
 /* ─── Admin inline-edit toggle ──────────────────────────────────────────────── */
 
 /* Fixed container — top-right of viewport, below the site header */

@@ -29,6 +29,7 @@ export function MapView({ center, zoom, className, onReady }: Props) {
       dragRotate: false,
       touchPitch: false,
       attributionControl: false,
+      cooperativeGestures: true,
     });
 
     map.addControl(
