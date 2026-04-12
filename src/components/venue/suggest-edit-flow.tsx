@@ -2,6 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  ChevronRight,
+  Clock,
+  Globe,
+  MapPin,
+  Pencil,
+  DoorClosed,
+  MessageSquare,
+  type LucideIcon,
+} from "lucide-react";
 import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
 
@@ -17,13 +27,20 @@ type EditType =
 
 type Step = "type_select" | "note_and_email" | "success";
 
-const EDIT_TYPES: { value: EditType; label: string }[] = [
-  { value: "incorrect_details", label: "Incorrect details or description" },
-  { value: "wrong_hours",       label: "Hours are wrong" },
-  { value: "wrong_links",       label: "Website or Instagram is wrong" },
-  { value: "wrong_address",     label: "Address or map is wrong" },
-  { value: "place_closed",      label: "Place is closed" },
-  { value: "other",             label: "Something else" },
+// Edit types where the note step is completely optional
+const OPTIONAL_NOTE_TYPES = new Set<EditType>([
+  "place_closed",
+  "wrong_hours",
+  "wrong_address",
+]);
+
+const EDIT_TYPES: { value: EditType; label: string; icon: LucideIcon }[] = [
+  { value: "incorrect_details", label: "Incorrect details or description", icon: Pencil },
+  { value: "wrong_hours",       label: "Hours are wrong",                  icon: Clock },
+  { value: "wrong_links",       label: "Website or Instagram is wrong",    icon: Globe },
+  { value: "wrong_address",     label: "Address or map is wrong",          icon: MapPin },
+  { value: "place_closed",      label: "Place is closed",                  icon: DoorClosed },
+  { value: "other",             label: "Something else",                   icon: MessageSquare },
 ];
 
 // ─── Step heading ─────────────────────────────────────────────────────────────
@@ -104,6 +121,7 @@ export function SuggestEditFlow({
 
   function selectType(type: EditType) {
     setEditType(type);
+    setNote("");
     setStep("note_and_email");
   }
 
@@ -143,6 +161,9 @@ export function SuggestEditFlow({
     }
   }
 
+  const isOptional = editType ? OPTIONAL_NOTE_TYPES.has(editType) : false;
+  const canSubmit = isOptional || note.trim().length > 0;
+
   const stepIndex = step === "type_select" ? 0 : 1;
   const showProgress = step !== "success";
   const progressDots = showProgress ? (
@@ -151,13 +172,17 @@ export function SuggestEditFlow({
 
   const noteLabel =
     editType === "place_closed"
-      ? "What makes you think this place has closed?"
+      ? "Anything that would help us confirm?"
       : "What should we change?";
 
   const notePlaceholder =
     editType === "place_closed"
       ? "e.g. I visited last week and it was boarded up."
-      : "Describe what's incorrect or out of date…";
+      : editType === "wrong_hours"
+        ? "e.g. They close at midnight on Fridays, not 2am."
+        : editType === "wrong_address"
+          ? "e.g. The correct address is 14 Oak Street."
+          : "Describe what's incorrect or out of date…";
 
   return (
     <FullPageModal
@@ -177,15 +202,24 @@ export function SuggestEditFlow({
               <span className="font-medium text-[var(--foreground)]">{venueName}</span>.
             </p>
             <div className="mt-6 grid gap-2">
-              {EDIT_TYPES.map(({ value, label }) => (
+              {EDIT_TYPES.map(({ value, label, icon: Icon }) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => selectType(value)}
-                  className="flex w-full items-center justify-between rounded-2xl border border-[var(--border)] px-4 py-4 text-left text-sm font-normal text-[var(--foreground)] transition-colors hover:border-[var(--foreground)] hover:bg-[#F7F7F5] active:bg-[#F0F0EC]"
+                  className="flex w-full items-center gap-3 rounded-2xl border border-[var(--border)] px-4 py-4 text-left text-sm font-normal text-[var(--foreground)] transition-colors hover:border-[var(--foreground)] hover:bg-[#F7F7F5] active:bg-[#F0F0EC]"
                 >
-                  <span>{label}</span>
-                  <span className="ml-3 shrink-0 text-[var(--muted-foreground)]">→</span>
+                  <Icon
+                    size={16}
+                    strokeWidth={1.5}
+                    className="shrink-0 text-[var(--muted-foreground)]"
+                  />
+                  <span className="flex-1">{label}</span>
+                  <ChevronRight
+                    size={16}
+                    strokeWidth={1.5}
+                    className="shrink-0 text-[var(--muted-foreground)]"
+                  />
                 </button>
               ))}
             </div>
@@ -196,6 +230,11 @@ export function SuggestEditFlow({
         {step === "note_and_email" && (
           <div>
             <StepHeading>{noteLabel}</StepHeading>
+            {isOptional && (
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                Any extra detail helps, but this is optional.
+              </p>
+            )}
 
             <form onSubmit={handleSubmit} noValidate className="mt-6 grid gap-4">
               <textarea
@@ -235,7 +274,7 @@ export function SuggestEditFlow({
                 <Button
                   type="submit"
                   className="w-full sm:w-auto"
-                  disabled={submitting || !note.trim()}
+                  disabled={submitting || !canSubmit}
                 >
                   {submitting ? "Sending…" : "Send suggestion"}
                 </Button>
