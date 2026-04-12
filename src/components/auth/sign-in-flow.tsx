@@ -22,9 +22,8 @@ export function SignInFlow() {
           Sign in
         </h1>
         <p className="mt-3 text-sm leading-6 text-[var(--muted-foreground)]">
-          Create a free account to save your favourite spots, get credit for
-          venues you suggest, write reviews, and build a profile the community
-          can find.
+          Create a free account to save favourite places, get credit for venues
+          you suggest, and track your submissions.
         </p>
         <div className="mt-6">
           <Suspense
