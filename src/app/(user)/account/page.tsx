@@ -1,10 +1,24 @@
 import Link from "next/link";
-import { Container } from "@/components/ui/container";
+import Image from "next/image";
+import { ArrowUpRight, ArrowUp, Heart, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ProfileTabs } from "@/components/account/profile-tabs";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { venueUrlPath } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type VenueItem = {
+  id: string;
+  name: string;
+  slug: string;
+  venue_type: string;
+  city_slug: string;
+  city_name: string;
+};
 
 type Submission = {
   id: string;
@@ -12,17 +26,221 @@ type Submission = {
   status: string;
   created_at: string;
   venue_id: string | null;
-  city_id: string | null;
   proposed_data: Record<string, unknown>;
+};
+
+type ApprovedVenueInfo = {
+  slug: string;
+  venue_type: string;
+  city_slug: string;
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const VENUE_TYPE_LABEL: Record<string, string> = {
+  bar: "Bar",
+  club: "Club",
+  restaurant: "Restaurant",
+  cafe: "Café",
+  sauna: "Sauna",
+  event_space: "Event Space",
+  cruising: "Cruising",
+  hotel: "Hotel",
+  shop: "Shop",
+  other: "Place",
+};
+
+const VENUE_TYPE_EMOJI: Record<string, string> = {
+  bar: "🍸",
+  club: "🎉",
+  restaurant: "🍽️",
+  cafe: "☕",
+  sauna: "🧖",
+  event_space: "🎪",
+  cruising: "🌲",
+  hotel: "🏨",
+  shop: "🛍️",
+  other: "✨",
+};
+
+const SUBMISSION_KIND_LABEL: Record<string, string> = {
+  new_venue: "New place",
+  edit_venue: "Edit suggestion",
+  new_review: "Review",
+  new_photo: "Photo",
 };
 
 function StatusBadge({ status }: { status: string }) {
   if (status === "approved")
-    return <Badge className="bg-green-100 text-green-800 border-green-200">Approved</Badge>;
+    return (
+      <Badge className="bg-green-50 text-green-800 border-green-200 shrink-0">
+        Approved
+      </Badge>
+    );
   if (status === "rejected")
-    return <Badge className="bg-red-100 text-red-800 border-red-200">Rejected</Badge>;
-  return <Badge className="bg-amber-100 text-amber-800 border-amber-200">Pending review</Badge>;
+    return (
+      <Badge className="bg-red-50 text-red-800 border-red-200 shrink-0">
+        Rejected
+      </Badge>
+    );
+  return (
+    <Badge className="bg-amber-50 text-amber-800 border-amber-200 shrink-0">
+      Pending
+    </Badge>
+  );
 }
+
+// ─── Sub-panels ───────────────────────────────────────────────────────────────
+
+function VenueList({
+  venues,
+  emptyHeading,
+  emptyBody,
+}: {
+  venues: VenueItem[];
+  emptyHeading: string;
+  emptyBody: string;
+}) {
+  if (venues.length === 0) {
+    return (
+      <div className="py-10 text-center">
+        <p className="text-sm font-medium text-[var(--foreground)]">{emptyHeading}</p>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)]">{emptyBody}</p>
+        <Link href="/" className="btn-sm btn-sm-secondary mt-4 inline-flex">
+          Explore places
+          <ArrowRight size={14} strokeWidth={1.5} />
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="divide-y divide-[var(--border)]">
+      {venues.map((venue) => (
+        <Link
+          key={venue.id}
+          href={venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)}
+          className="flex items-center justify-between gap-4 py-4 hover:opacity-70 transition-opacity"
+        >
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-[var(--foreground)] truncate">
+              {venue.name}
+            </div>
+            <div className="mt-0.5 text-xs text-[var(--muted-foreground)]">
+              {venue.city_name}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="label-mono text-[var(--muted-foreground)]">
+              {VENUE_TYPE_LABEL[venue.venue_type] ?? "Place"}
+            </span>
+            <ArrowUpRight size={14} strokeWidth={1.5} className="text-[var(--muted-foreground)]" />
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function ContributionsList({
+  submissions,
+  approvedVenueMap,
+}: {
+  submissions: Submission[];
+  approvedVenueMap: Map<string, ApprovedVenueInfo>;
+}) {
+  if (submissions.length === 0) {
+    return (
+      <div className="py-10 text-center">
+        <p className="text-sm font-medium text-[var(--foreground)]">No contributions yet</p>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+          Found a great spot that&rsquo;s missing from the map? Add it.
+        </p>
+        <Link href="/suggest" className="btn-sm btn-sm-secondary mt-4 inline-flex">
+          Add a place
+          <ArrowRight size={14} strokeWidth={1.5} />
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3">
+      {submissions.map((s) => {
+        const pd = s.proposed_data ?? {};
+        const name =
+          typeof pd.name === "string" ? pd.name : SUBMISSION_KIND_LABEL[s.kind] ?? s.kind;
+        const cityName = typeof pd.city_name === "string" ? pd.city_name : null;
+        const venueType = typeof pd.venue_type === "string" ? pd.venue_type : null;
+        const kindLabel = SUBMISSION_KIND_LABEL[s.kind] ?? s.kind;
+
+        const approvedVenue =
+          s.status === "approved" && s.venue_id
+            ? approvedVenueMap.get(s.venue_id)
+            : null;
+        const venueHref = approvedVenue
+          ? venueUrlPath(approvedVenue.city_slug, approvedVenue.venue_type, approvedVenue.slug)
+          : null;
+
+        const CardContent = (
+          <Card className="p-5 transition-colors hover:bg-[var(--muted)]">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3 min-w-0">
+                {venueType && (
+                  <span
+                    className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--muted)] text-lg"
+                    aria-hidden
+                  >
+                    {VENUE_TYPE_EMOJI[venueType] ?? "✨"}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{name}</div>
+                  <div className="mt-0.5 flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
+                    <span className="label-mono">{kindLabel}</span>
+                    {cityName && (
+                      <>
+                        <span>·</span>
+                        <span>{cityName}</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-1 text-xs text-[var(--muted-foreground)]">
+                    {new Date(s.created_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <StatusBadge status={s.status} />
+                {venueHref && (
+                  <ArrowUpRight
+                    size={14}
+                    strokeWidth={1.5}
+                    className="text-[var(--muted-foreground)]"
+                  />
+                )}
+              </div>
+            </div>
+          </Card>
+        );
+
+        return venueHref ? (
+          <Link key={s.id} href={venueHref}>
+            {CardContent}
+          </Link>
+        ) : (
+          <div key={s.id}>{CardContent}</div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function AccountPage() {
   const supabase = await createSupabaseServerClient();
@@ -32,148 +250,188 @@ export default async function AccountPage() {
 
   if (!user) {
     return (
-      <Container className="py-10 sm:py-14">
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Please sign in.</div>
+      <div className="py-10 sm:py-14">
+        <Card className="p-8 text-center">
+          <p className="text-sm font-medium">Sign in to see your places</p>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+            Track places you&rsquo;ve visited, your recommendations, and your contributions.
+          </p>
         </Card>
-      </Container>
+      </div>
     );
   }
 
-  const { data: submissions } = await supabase
-    .from("submissions")
-    .select("id,kind,status,created_at,venue_id,city_id,proposed_data")
-    .order("created_at", { ascending: false })
-    .limit(50);
+  // ── Data fetching ───────────────────────────────────────────────────────────
 
-  const rows = (submissions ?? []) as Submission[];
-  const spots = rows.filter((s) => s.kind === "new_venue");
-  const otherSubmissions = rows.filter((s) => s.kind !== "new_venue");
+  const [{ data: interactionRows }, { data: submissionsData }] = await Promise.all([
+    supabase
+      .from("venue_interactions")
+      .select("been_here, recommend, venue_id")
+      .eq("user_id", user.id)
+      .or("been_here.eq.true,recommend.eq.true")
+      .order("updated_at", { ascending: false })
+      .limit(100),
+    supabase
+      .from("submissions")
+      .select("id,kind,status,created_at,venue_id,proposed_data")
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+
+  const submissions = (submissionsData ?? []) as Submission[];
+
+  type InteractionRow = { been_here: boolean; recommend: boolean; venue_id: string };
+  const typedInteractionRows = (interactionRows ?? []) as InteractionRow[];
+
+  const interactionVenueIds = [
+    ...new Set(typedInteractionRows.map((r) => r.venue_id)),
+  ];
+  const approvedSpotVenueIds = submissions
+    .filter((s) => s.kind === "new_venue" && s.status === "approved" && s.venue_id)
+    .map((s) => s.venue_id as string);
+
+  const [interactionVenueData, approvedVenueData] = await Promise.all([
+    interactionVenueIds.length > 0
+      ? supabase
+          .from("venues")
+          .select("id,name,slug,venue_type,cities!inner(slug,name)")
+          .in("id", interactionVenueIds)
+          .eq("published", true)
+      : { data: [] as unknown[] },
+    approvedSpotVenueIds.length > 0
+      ? supabase
+          .from("venues")
+          .select("id,slug,venue_type,cities!inner(slug)")
+          .in("id", approvedSpotVenueIds)
+      : { data: [] as unknown[] },
+  ]);
+
+  const interactionVenueMap = new Map<string, VenueItem>();
+  for (const v of interactionVenueData.data ?? []) {
+    const row = v as {
+      id: string;
+      name: string;
+      slug: string;
+      venue_type: string;
+      cities: { slug: string; name: string };
+    };
+    interactionVenueMap.set(row.id, {
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      venue_type: row.venue_type,
+      city_slug: row.cities.slug,
+      city_name: row.cities.name,
+    });
+  }
+
+  const approvedVenueMap = new Map<string, ApprovedVenueInfo>();
+  for (const v of approvedVenueData.data ?? []) {
+    const row = v as {
+      id: string;
+      slug: string;
+      venue_type: string;
+      cities: { slug: string };
+    };
+    approvedVenueMap.set(row.id, {
+      slug: row.slug,
+      venue_type: row.venue_type,
+      city_slug: row.cities.slug,
+    });
+  }
+
+  const beenHereIds = new Set<string>();
+  const recommendIds = new Set<string>();
+  const beenHereVenues: VenueItem[] = [];
+  const recommendedVenues: VenueItem[] = [];
+
+  for (const row of typedInteractionRows) {
+    const venue = interactionVenueMap.get(row.venue_id);
+    if (!venue) continue;
+    if (row.been_here && !beenHereIds.has(venue.id)) {
+      beenHereIds.add(venue.id);
+      beenHereVenues.push(venue);
+    }
+    if (row.recommend && !recommendIds.has(venue.id)) {
+      recommendIds.add(venue.id);
+      recommendedVenues.push(venue);
+    }
+  }
+
+  // ── Avatar ──────────────────────────────────────────────────────────────────
+
+  const avatarUrl = (user.user_metadata?.avatar_url as string | undefined) ?? null;
+  const emailInitial = user.email ? user.email[0].toUpperCase() : "?";
+
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <Container className="py-10 sm:py-14">
-      <div className="mx-auto max-w-3xl">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
-            <div className="mt-1 text-sm text-muted-foreground">
-              Signed in as {user.email ?? user.id}
-            </div>
-          </div>
-          <Link
-            href="/suggest"
-            className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-foreground)] transition-opacity hover:opacity-90"
-          >
-            Spot a place
-          </Link>
-        </div>
-
-        {/* Places you've spotted */}
-        <div className="mt-10">
-          <h2 className="text-base font-semibold tracking-tight">
-            Places you&rsquo;ve spotted
-            {spots.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                {spots.length}
-              </span>
-            )}
-          </h2>
-
-          {spots.length === 0 ? (
-            <Card className="mt-3 p-6">
-              <div className="text-sm font-medium">No spots yet</div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                Found a great queer bar, club, or sauna that&rsquo;s missing from the map?
+    <div className="py-10 sm:py-14">
+      {/* Page heading */}
+      <div className="flex items-start justify-between gap-4 mb-8">
+        <div>
+          <h1 className="h2-editorial">Your Places</h1>
+          <div className="mt-2 flex items-center gap-2">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt=""
+                width={20}
+                height={20}
+                className="h-5 w-5 rounded-full object-cover shrink-0"
+                unoptimized
+              />
+            ) : (
+              <div className="h-5 w-5 rounded-full bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center text-[9px] font-semibold shrink-0 select-none">
+                {emailInitial}
               </div>
-              <Link
-                href="/suggest"
-                className="mt-3 inline-block text-sm font-medium underline underline-offset-2"
-              >
-                Add your first spot →
-              </Link>
-            </Card>
-          ) : (
-            <div className="mt-3 grid gap-3">
-              {spots.map((s) => {
-                const pd = s.proposed_data ?? {};
-                const name = typeof pd.name === "string" ? pd.name : "Untitled";
-                const cityName = typeof pd.city_name === "string" ? pd.city_name : null;
-                const venueType = typeof pd.venue_type === "string" ? pd.venue_type : null;
-
-                const typeEmoji: Record<string, string> = {
-                  bar: "🍸",
-                  club: "🎉",
-                  restaurant: "🍽️",
-                  cafe: "☕",
-                  sauna: "🧖",
-                  other: "✨",
-                };
-
-                return (
-                  <Card key={s.id} className="p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3">
-                        {venueType && (
-                          <span
-                            className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--muted)] text-lg"
-                            aria-hidden
-                          >
-                            {typeEmoji[venueType] ?? "✨"}
-                          </span>
-                        )}
-                        <div>
-                          <div className="text-sm font-semibold">{name}</div>
-                          {cityName && (
-                            <div className="mt-0.5 text-xs text-muted-foreground">
-                              {cityName}
-                            </div>
-                          )}
-                          <div className="mt-1 text-xs text-muted-foreground">
-                            {new Date(s.created_at).toLocaleDateString("en-GB", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                      <StatusBadge status={s.status} />
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Other activity (edits, photos, reviews) */}
-        {otherSubmissions.length > 0 && (
-          <div className="mt-10">
-            <h2 className="text-base font-semibold tracking-tight">Other activity</h2>
-            <div className="mt-3 grid gap-3">
-              {otherSubmissions.map((s) => (
-                <Card key={s.id} className="p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-semibold capitalize">
-                        {s.kind.replace(/_/g, " ")}
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        {new Date(s.created_at).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </div>
-                    </div>
-                    <StatusBadge status={s.status} />
-                  </div>
-                </Card>
-              ))}
-            </div>
+            )}
+            <span className="text-xs text-[var(--muted-foreground)]">{user.email}</span>
           </div>
-        )}
+        </div>
+        <Link href="/suggest" className="btn-sm btn-sm-secondary shrink-0 mt-1">
+          Add a place
+        </Link>
       </div>
-    </Container>
+
+      {/* Tabbed content */}
+      <ProfileTabs
+        tabs={[
+          {
+            id: "been-here",
+            label: "Been Here",
+            count: beenHereVenues.length,
+            icon: <ArrowUp size={13} strokeWidth={1.75} />,
+          },
+          {
+            id: "recommended",
+            label: "Recommended",
+            count: recommendedVenues.length,
+            icon: <Heart size={13} strokeWidth={1.75} />,
+          },
+          {
+            id: "contributions",
+            label: "Contributions",
+            count: submissions.length,
+          },
+        ]}
+        panels={[
+          <VenueList
+            venues={beenHereVenues}
+            emptyHeading="No places yet"
+            emptyBody="Tap 'Been Here' on any venue page to start tracking your visits."
+          />,
+          <VenueList
+            venues={recommendedVenues}
+            emptyHeading="No recommendations yet"
+            emptyBody="Tap 'Recommend' on any venue page to share your favourite spots."
+          />,
+          <ContributionsList
+            submissions={submissions}
+            approvedVenueMap={approvedVenueMap}
+          />,
+        ]}
+      />
+    </div>
   );
 }

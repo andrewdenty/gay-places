@@ -96,6 +96,11 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createSupabaseServerClient();
 
+    // Associate interaction with the authenticated user if one is present.
+    // Anonymous sessions remain unaffected — user_id stays null.
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id ?? null;
+
     const { error } = await supabase.from("venue_interactions").upsert(
       {
         venue_id,
@@ -104,6 +109,7 @@ export async function POST(request: NextRequest) {
         recommend: !!recommend,
         tag: resolvedTag,
         updated_at: new Date().toISOString(),
+        ...(userId ? { user_id: userId } : {}),
       },
       { onConflict: "venue_id,session_id" },
     );

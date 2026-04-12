@@ -207,7 +207,14 @@ export function NavDrawer({
                     Account
                   </span>
                   <div className="flex items-center justify-between">
-                    <span className="text-[15px] leading-[1.4]" style={{ color: "#171717" }}>{userEmail}</span>
+                    <Link
+                      href="/account"
+                      onClick={onClose}
+                      className="text-[15px] leading-[1.4] transition-colors hover:text-[#6E6E6D]"
+                      style={{ color: "#171717" }}
+                    >
+                      {userEmail}
+                    </Link>
                     <form action="/auth/sign-out" method="post">
                       <button
                         type="submit"
