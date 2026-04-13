@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { X, ChevronLeft } from "lucide-react";
+import { IconButton } from "@/components/ui/icon-button";
 
 /**
  * FullPageModal — reusable full-screen modal shell for multi-step flows.
@@ -51,21 +52,18 @@ export function FullPageModal({
 
           {/* Header row: 3-column grid — back | center slot | close */}
           <div className="grid grid-cols-3 items-center">
-            {/* Left: back button — same style as X, invisible when not shown */}
+            {/* Left: back button — invisible when not shown but holds layout */}
             <div>
-              <button
-                type="button"
+              <IconButton
+                label="Go back"
                 onClick={(e) => {
                   onBack?.();
                   (e.currentTarget as HTMLButtonElement).blur();
                 }}
-                aria-label="Go back"
-                className={`flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#E4E4E1] hover:bg-[#F7F7F5] transition-colors ${
-                  showBack ? "" : "pointer-events-none opacity-0"
-                }`}
+                className={showBack ? "" : "pointer-events-none opacity-0"}
               >
                 <ChevronLeft size={24} strokeWidth={1.5} />
-              </button>
+              </IconButton>
             </div>
 
             {/* Center: progress dots or other slot */}
@@ -73,14 +71,9 @@ export function FullPageModal({
 
             {/* Right: close button */}
             <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#E4E4E1] hover:bg-[#F7F7F5] transition-colors"
-              >
+              <IconButton label="Close" onClick={onClose}>
                 <X size={24} strokeWidth={1.5} />
-              </button>
+              </IconButton>
             </div>
           </div>
 

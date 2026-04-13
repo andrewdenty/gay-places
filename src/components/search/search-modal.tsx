@@ -222,8 +222,8 @@ export function SearchModal({
               className="relative flex flex-1 items-center rounded-[80px]"
               style={{
                 height: "56px",
-                backgroundColor: "#F7F7F5",
-                border: focused ? "1px solid #E4E4E1" : "1px solid #F0F0ED",
+                backgroundColor: "var(--hover-bg)",
+                border: focused ? "1px solid var(--border)" : "1px solid var(--muted)",
                 paddingLeft: "16px",
                 paddingRight: "8px",
               }}
@@ -232,7 +232,7 @@ export function SearchModal({
                 className="shrink-0 pointer-events-none"
                 size={20}
                 strokeWidth={1.5}
-                color="#6E6E6D"
+                color="var(--muted-foreground)"
               />
               <input
                 ref={setInputRef}
@@ -242,17 +242,17 @@ export function SearchModal({
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 placeholder="Search gay places..."
-                className="flex-1 min-w-0 ml-2 bg-transparent text-[15px] outline-none transition-colors placeholder:text-[#6E6E6D]"
+                className="flex-1 min-w-0 ml-2 bg-transparent text-[15px] outline-none transition-colors placeholder:text-[var(--muted-foreground)]"
                 style={{
-                  color: "#171717",
-                  caretColor: "#171717",
+                  color: "var(--foreground)",
+                  caretColor: "var(--foreground)",
                 }}
               />
               {query ? (
                 <button
                   type="button"
                   onClick={() => { setQuery(""); inputRef.current?.focus(); }}
-                  className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#6E6E6D] hover:text-[#171717] transition-colors mr-2"
+                  className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors mr-2"
                   aria-label="Clear search"
                 >
                   <X size={16} strokeWidth={1.5} />
@@ -260,7 +260,7 @@ export function SearchModal({
               ) : (
                 <>
                   {loading && (
-                    <div className="shrink-0 h-3.5 w-3.5 animate-spin rounded-full border border-[#E4E4E1] border-t-[#6E6E6D] mr-2" />
+                    <div className="shrink-0 h-3.5 w-3.5 animate-spin rounded-full border border-[var(--border)] border-t-[var(--muted-foreground)] mr-2" />
                   )}
                   <NearMeFieldButton hideTextOnMobile onClick={() => navigate("/near-me")} />
                 </>
@@ -289,7 +289,7 @@ export function SearchModal({
 
               {countries.length > 0 && (
                 <div>
-                  <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[#E4E4E1]">
+                  <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[var(--border)]">
                     Countries
                   </div>
                   {countries.map((country, i) => {
@@ -301,7 +301,7 @@ export function SearchModal({
                       onClick={() => navigate(href)}
                       onMouseEnter={() => router.prefetch(href)}
                       aria-current={selectedIndex === i ? true : undefined}
-                      className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === i ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
+                      className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === i ? "bg-[var(--hover-bg)]" : "hover:bg-[var(--hover-bg)]"}`}
                     >
                       <div className="flex flex-col gap-1">
                         <div className="text-[15px] font-semibold text-[var(--foreground)]">
@@ -320,7 +320,7 @@ export function SearchModal({
 
               {cities.length > 0 && (
                 <div>
-                  <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[#E4E4E1]">
+                  <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[var(--border)]">
                     Cities
                   </div>
                   {cities.map((city, i) => {
@@ -333,7 +333,7 @@ export function SearchModal({
                         onClick={() => navigate(href)}
                         onMouseEnter={() => router.prefetch(href)}
                         aria-current={selectedIndex === cityIndex ? true : undefined}
-                        className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === cityIndex ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
+                        className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === cityIndex ? "bg-[var(--hover-bg)]" : "hover:bg-[var(--hover-bg)]"}`}
                       >
                         <div className="flex flex-col gap-1">
                           <div className="text-[15px] font-semibold text-[var(--foreground)]">
@@ -352,7 +352,7 @@ export function SearchModal({
 
               {venues.length > 0 && (
                 <div>
-                  <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[#E4E4E1]">
+                  <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[var(--border)]">
                     Places
                   </div>
                   {venues.map((venue, i) => {
@@ -365,7 +365,7 @@ export function SearchModal({
                         onClick={() => navigate(href)}
                         onMouseEnter={() => router.prefetch(href)}
                         aria-current={selectedIndex === venueIndex ? true : undefined}
-                        className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === venueIndex ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
+                        className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === venueIndex ? "bg-[var(--hover-bg)]" : "hover:bg-[var(--hover-bg)]"}`}
                       >
                         <div className="flex flex-col gap-1">
                           <div className="text-[15px] font-semibold text-[var(--foreground)]">
@@ -386,7 +386,7 @@ export function SearchModal({
 
               {articles.length > 0 && (
                 <div>
-                  <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[#E4E4E1]">
+                  <div className="pb-2 label-mono text-[var(--foreground)] border-b border-[var(--border)]">
                     Articles
                   </div>
                   {articles.map((article, i) => {
@@ -399,7 +399,7 @@ export function SearchModal({
                         onClick={() => navigate(href)}
                         onMouseEnter={() => router.prefetch(href)}
                         aria-current={selectedIndex === articleIndex ? true : undefined}
-                        className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === articleIndex ? "bg-[#F7F7F5]" : "hover:bg-[#F7F7F5]"}`}
+                        className={`flex w-full items-center justify-between px-2 py-4 text-left transition-colors rounded-sm ${selectedIndex === articleIndex ? "bg-[var(--hover-bg)]" : "hover:bg-[var(--hover-bg)]"}`}
                       >
                         <div className="flex flex-col gap-1">
                           <div className="text-[15px] font-semibold text-[var(--foreground)]">

@@ -18,19 +18,19 @@ export function HeroSearch() {
           onClick={() => setOpen(true)}
           className="group flex w-full items-center rounded-full border text-left transition-colors cursor-text"
           style={{
-            backgroundColor: "#F7F7F5",
-            borderColor: "#F0F0ED",
+            backgroundColor: "var(--hover-bg)",
+            borderColor: "var(--muted)",
             height: "56px",
             paddingLeft: "16px",
             paddingRight: "8px",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F0F0ED";
-            e.currentTarget.style.borderColor = "#E4E4E1";
+            e.currentTarget.style.backgroundColor = "var(--muted)";
+            e.currentTarget.style.borderColor = "var(--border)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#F7F7F5";
-            e.currentTarget.style.borderColor = "#F0F0ED";
+            e.currentTarget.style.backgroundColor = "var(--hover-bg)";
+            e.currentTarget.style.borderColor = "var(--muted)";
           }}
         >
           <Search size={20} strokeWidth={1.5} className="shrink-0 text-[var(--muted-foreground)]" />

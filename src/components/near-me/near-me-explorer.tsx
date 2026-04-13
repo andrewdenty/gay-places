@@ -177,14 +177,14 @@ export function NearMeExplorer({ venues, userLat, userLng }: Props) {
                   </h3>
                   {v.closed ? (
                     <span className="status-mono shrink-0 flex items-center gap-[6px] text-[var(--muted-foreground)] mt-[6px]">
-                      <span className="h-2 w-2 rounded-full shrink-0 bg-[#E63946]" />
+                      <span className="h-2 w-2 rounded-full shrink-0 bg-[var(--closed)]" />
                       Permanently closed
                     </span>
                   ) : (
                     <span className="status-mono shrink-0 flex items-center gap-[6px] text-[var(--foreground)] mt-[6px]">
                       <span
                         className="h-2 w-2 rounded-full shrink-0"
-                        style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+                        style={{ backgroundColor: open ? "var(--open)" : "var(--closed)" }}
                       />
                       {open ? "Open now" : "Closed"}
                     </span>

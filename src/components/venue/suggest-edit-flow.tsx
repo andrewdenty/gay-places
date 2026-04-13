@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
+import { FormInput } from "@/components/ui/form-input";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -207,7 +208,7 @@ export function SuggestEditFlow({
                   key={value}
                   type="button"
                   onClick={() => selectType(value)}
-                  className="flex w-full items-center gap-3 rounded-2xl border border-[var(--border)] px-4 py-4 text-left text-sm font-normal text-[var(--foreground)] transition-colors hover:border-[var(--foreground)] hover:bg-[#F7F7F5] active:bg-[#F0F0EC]"
+                  className="flex w-full items-center gap-3 rounded-2xl border border-[var(--border)] px-4 py-4 text-left text-sm font-normal text-[var(--foreground)] transition-colors hover:border-[var(--foreground)] hover:bg-[var(--hover-bg)] active:bg-[var(--muted)]"
                 >
                   <Icon
                     size={16}
@@ -253,13 +254,12 @@ export function SuggestEditFlow({
                     (optional)
                   </span>
                 </label>
-                <input
+                <FormInput
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   autoComplete="email"
-                  className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] transition-colors placeholder:text-[var(--muted-foreground)]"
                 />
                 <p className="mt-1.5 text-xs text-[var(--muted-foreground)]">
                   Only if you&rsquo;d like us to follow up.
@@ -267,7 +267,7 @@ export function SuggestEditFlow({
               </div>
 
               {error && (
-                <p className="text-sm text-[var(--red,#E63946)]">{error}</p>
+                <p className="text-sm text-[var(--red)]">{error}</p>
               )}
 
               <div className="mt-2">

@@ -18,12 +18,12 @@ export function Tag({
   const dot = dotColors[tone] ?? dotColors.neutral;
 
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-[#efefeb] px-3 py-1">
+    <span className="inline-flex items-center gap-2 rounded-full bg-[var(--tag-bg)] px-3 py-1">
       <span
         className="h-1.5 w-1.5 rounded-full"
         style={{ backgroundColor: dot }}
       />
-      <span className="label-small text-[11px] uppercase tracking-[0.16em] text-[#333333]">
+      <span className="label-small text-[11px] uppercase tracking-[0.16em] text-[var(--tag-foreground)]">
         {children}
       </span>
     </span>

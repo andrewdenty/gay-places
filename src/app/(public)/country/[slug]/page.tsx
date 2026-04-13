@@ -244,8 +244,8 @@ export default async function CountryPage({
           </div>
           <Link
             href="/suggest"
-            className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[#F7F7F5] shrink-0"
-            style={{ borderColor: "#E4E4E1", color: "#171717" }}
+            className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[var(--hover-bg)] shrink-0"
+            style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
           >
             Add a place
           </Link>

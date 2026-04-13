@@ -83,7 +83,7 @@ export function VenueTagPicker({
                 type="button"
                 title={`Remove "${tag}"`}
                 onClick={() => toggle(key, tag)}
-                className="inline-flex items-center gap-1 rounded-full bg-[#171717] px-2.5 py-0.5 text-xs text-white transition-opacity hover:opacity-75"
+                className="inline-flex items-center gap-1 rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-xs text-white transition-opacity hover:opacity-75"
               >
                 {tag}
                 <span className="ml-0.5 opacity-50">×</span>
@@ -142,8 +142,8 @@ export function VenueTagPicker({
                         onClick={() => toggle(key, tag)}
                         className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${
                           active
-                            ? "border-[#171717] bg-[#171717] text-white"
-                            : "border-border text-muted-foreground hover:border-[#171717] hover:text-[#171717]"
+                            ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                            : "border-border text-muted-foreground hover:border-[var(--accent)] hover:text-[var(--accent)]"
                         }`}
                       >
                         {tag}

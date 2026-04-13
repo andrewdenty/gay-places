@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
+import { FormInput } from "@/components/ui/form-input";
 import { CityAutocomplete } from "./city-autocomplete";
 import type { VenueTypeValue } from "@/lib/venue-types";
 
@@ -202,7 +203,7 @@ export function SuggestFlow() {
             <StepHeading>What&rsquo;s this place called?</StepHeading>
             {/* mt-4: 8px closer to input than the previous mt-6 */}
             <div className="mt-4">
-              <input
+              <FormInput
                 ref={nameRef}
                 type="text"
                 value={form.name}
@@ -212,7 +213,6 @@ export function SuggestFlow() {
                 }}
                 placeholder="e.g. Eagle Bar"
                 autoComplete="off"
-                className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] transition-colors placeholder:text-[var(--muted-foreground)]"
               />
             </div>
             <div className="mt-4">
@@ -293,7 +293,7 @@ export function SuggestFlow() {
                 <label className="mb-1.5 block text-sm font-medium">
                   Instagram
                 </label>
-                <input
+                <FormInput
                   ref={instagramRef}
                   type="text"
                   value={form.instagram}
@@ -302,14 +302,13 @@ export function SuggestFlow() {
                   }
                   placeholder="@handle or instagram.com/…"
                   autoComplete="off"
-                  className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] transition-colors placeholder:text-[var(--muted-foreground)]"
                 />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium">
                   Website
                 </label>
-                <input
+                <FormInput
                   type="url"
                   value={form.website}
                   onChange={(e) =>
@@ -317,7 +316,6 @@ export function SuggestFlow() {
                   }
                   placeholder="https://…"
                   autoComplete="off"
-                  className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] transition-colors placeholder:text-[var(--muted-foreground)]"
                 />
               </div>
             </div>

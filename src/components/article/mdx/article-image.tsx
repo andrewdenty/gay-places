@@ -11,7 +11,7 @@ export function ArticleImage({
 }) {
   return (
     <figure className="my-8">
-      <div className="relative aspect-[3/2] overflow-hidden bg-[#f7f7f5]">
+      <div className="relative aspect-[3/2] overflow-hidden bg-[var(--hover-bg)]">
         <Image
           src={src}
           alt={alt}

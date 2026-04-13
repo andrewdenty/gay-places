@@ -97,7 +97,7 @@ export function CityExplorer({ city, venues, initialType }: Props) {
   return (
     <div className="space-y-0">
       {/* Filters + Search section */}
-      <div className="border-b-[1.5px] border-[#171717]">
+      <div className="border-b-[1.5px] border-[var(--foreground)]">
         {/* Pill row */}
         <div className={`flex gap-[6px] overflow-x-auto scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6 ${searchOpen ? "pb-[16px]" : "pb-[32px]"}`}>
           {/* Search icon pill */}
@@ -107,8 +107,8 @@ export function CityExplorer({ city, venues, initialType }: Props) {
             aria-label="Search places"
             className={`h-[38px] w-[38px] shrink-0 rounded-full flex items-center justify-center transition-colors ${
               searchOpen
-                ? "bg-[#171717] text-white"
-                : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717]"
+                ? "bg-[var(--accent)] text-white"
+                : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
             }`}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -140,8 +140,8 @@ export function CityExplorer({ city, venues, initialType }: Props) {
               className="relative flex flex-1 items-center rounded-[80px]"
               style={{
                 height: "56px",
-                backgroundColor: "#F7F7F5",
-                border: searchFocused ? "1px solid #E4E4E1" : "1px solid #F0F0ED",
+                backgroundColor: "var(--hover-bg)",
+                border: searchFocused ? "1px solid var(--border)" : "1px solid var(--muted)",
                 paddingLeft: "16px",
                 paddingRight: "8px",
               }}
@@ -150,7 +150,7 @@ export function CityExplorer({ city, venues, initialType }: Props) {
                 className="shrink-0 pointer-events-none"
                 size={20}
                 strokeWidth={1.5}
-                color="#6E6E6D"
+                color="var(--muted-foreground)"
               />
               <input
                 ref={searchInputRef}
@@ -160,17 +160,17 @@ export function CityExplorer({ city, venues, initialType }: Props) {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
                 placeholder="Search places…"
-                className="flex-1 min-w-0 ml-2 bg-transparent text-[15px] outline-none transition-colors placeholder:text-[#6E6E6D]"
+                className="flex-1 min-w-0 ml-2 bg-transparent text-[15px] outline-none transition-colors placeholder:text-[var(--muted-foreground)]"
                 style={{
-                  color: "#171717",
-                  caretColor: "#171717",
+                  color: "var(--foreground)",
+                  caretColor: "var(--foreground)",
                 }}
               />
               {query ? (
                 <button
                   type="button"
                   onClick={clearQuery}
-                  className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#6E6E6D] hover:text-[#171717] transition-colors mr-2"
+                  className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors mr-2"
                   aria-label="Clear search"
                 >
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
@@ -203,7 +203,7 @@ export function CityExplorer({ city, venues, initialType }: Props) {
               href={venueUrlPath(city.slug, v.venue_type, v.slug)}
               className="block"
             >
-              <article className="border-b-[1.5px] border-[#171717] py-[40px]">
+              <article className="border-b-[1.5px] border-[var(--foreground)] py-[40px]">
                 {/* Row 1: Name + open status */}
                 <div className="flex items-start justify-between gap-3">
                   <h3
@@ -220,14 +220,14 @@ export function CityExplorer({ city, venues, initialType }: Props) {
                   </h3>
                   {v.closed ? (
                     <span className="status-mono shrink-0 flex items-center gap-[6px] text-[var(--muted-foreground)] mt-[6px]">
-                      <span className="h-2 w-2 rounded-full shrink-0 bg-[#E63946]" />
+                      <span className="h-2 w-2 rounded-full shrink-0 bg-[var(--closed)]" />
                       Permanently closed
                     </span>
                   ) : (
                     <span className="status-mono shrink-0 flex items-center gap-[6px] text-[var(--foreground)] mt-[6px]">
                       <span
                         className="h-2 w-2 rounded-full shrink-0"
-                        style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+                        style={{ backgroundColor: open ? "var(--open)" : "var(--closed)" }}
                       />
                       {open ? "Open now" : "Closed"}
                     </span>
