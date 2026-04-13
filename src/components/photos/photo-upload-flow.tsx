@@ -296,6 +296,18 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
               {state.kind === "uploading" ? "Uploading…" : "Something went wrong"}
             </Heading>
 
+            {/* Preview */}
+            {previewUrl && (
+              <div className="mt-6 overflow-hidden rounded-2xl bg-[var(--hover-bg)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrl}
+                  alt="Photo preview"
+                  className="max-h-72 w-full object-contain"
+                />
+              </div>
+            )}
+
             {/* Email input for anonymous users (uploading state) */}
             {state.kind === "uploading" && isAnonymous && (
               <div className="mt-4">
@@ -308,24 +320,12 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
                   className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                   value={state.contactEmail}
                   onChange={(e) => {
-                    setState(prev => 
-                      prev.kind === "uploading" 
+                    setState(prev =>
+                      prev.kind === "uploading"
                         ? { ...prev, contactEmail: e.target.value }
                         : prev
                     );
                   }}
-                />
-              </div>
-            )}
-
-            {/* Preview */}
-            {previewUrl && (
-              <div className="mt-6 overflow-hidden rounded-2xl bg-[var(--hover-bg)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={previewUrl}
-                  alt="Photo preview"
-                  className="max-h-72 w-full object-contain"
                 />
               </div>
             )}
