@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { FormInput } from "@/components/ui/form-input";
 
 type City = {
   id: string;
@@ -80,7 +81,7 @@ export function CityAutocomplete({ value, onChange, onSubmit, inputRef }: Props)
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <input
+      <FormInput
         ref={inputRef}
         type="text"
         value={value}
@@ -95,7 +96,7 @@ export function CityAutocomplete({ value, onChange, onSubmit, inputRef }: Props)
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
-        className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] focus:ring-0 transition-colors placeholder:text-[var(--muted-foreground)]"
+        className="focus:ring-0"
       />
 
       {showDropdown && (

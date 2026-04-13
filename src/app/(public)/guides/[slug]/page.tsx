@@ -144,7 +144,7 @@ export default async function ArticlePage({
         <header className="mb-10 sm:mb-14 flex flex-col">
           {/* Cover image — first on mobile (natural order), second on desktop */}
           {meta.coverImage && (
-            <div className="relative aspect-square overflow-hidden bg-[#f7f7f5] mb-8 sm:order-2 sm:mt-10 sm:mb-0">
+            <div className="relative aspect-square overflow-hidden bg-[var(--hover-bg)] mb-8 sm:order-2 sm:mt-10 sm:mb-0">
               <Image
                 src={meta.coverImage}
                 alt={meta.title}
@@ -175,7 +175,7 @@ export default async function ArticlePage({
                   <Link
                     key={city}
                     href={`/city/${city}`}
-                    className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
+                    className="inline-flex items-center rounded-full bg-[var(--tag-bg)] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[var(--tag-foreground)] hover:bg-[var(--border)] transition-colors"
                   >
                     {city.replace(/-/g, " ")}
                   </Link>
@@ -184,7 +184,7 @@ export default async function ArticlePage({
                   <Link
                     key={venue.slug}
                     href={venueUrlPath(venue.city, venue.type, venue.slug)}
-                    className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333] hover:bg-[#e4e4e1] transition-colors"
+                    className="inline-flex items-center rounded-full bg-[var(--tag-bg)] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[var(--tag-foreground)] hover:bg-[var(--border)] transition-colors"
                   >
                     {venue.slug.replace(/-/g, " ")}
                   </Link>

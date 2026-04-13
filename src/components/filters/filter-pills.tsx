@@ -44,8 +44,8 @@ export function FilterPills({
             }}
             className={`h-[38px] shrink-0 rounded-full px-[12px] text-[12px] font-medium transition-colors ${
               isActive
-                ? "bg-[#171717] text-white"
-                : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#171717] hover:text-[#171717]"
+                ? "bg-[var(--accent)] text-white"
+                : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
             }${className ? ` ${className}` : ""}`}
           >
             {pill.label}

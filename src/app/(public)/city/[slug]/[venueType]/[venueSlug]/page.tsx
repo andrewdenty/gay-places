@@ -346,16 +346,16 @@ export default async function VenuePage({
           </div>
           {/* Open status — top right */}
           {permanentlyClosed ? (
-            <span className="label-xs shrink-0 rounded-full border border-[#E63946]/30 bg-red-50 px-[8px] py-[3px] text-red-600">
+            <span className="label-xs shrink-0 rounded-full border border-[var(--closed)]/30 bg-red-50 px-[8px] py-[3px] text-red-600">
               PERMANENTLY CLOSED
             </span>
           ) : (
             <a href="#opening-hours" className="flex shrink-0 items-center gap-[6px]">
               <span
                 className="h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: open ? "#22C55E" : "#E63946" }}
+                style={{ backgroundColor: open ? "var(--open)" : "var(--closed)" }}
               />
-              <span className="open-status-text text-[var(--foreground)]">
+              <span className="status-mono text-[var(--foreground)]">
                 {open ? "Open now" : "Closed"}
               </span>
             </a>
@@ -568,7 +568,7 @@ export default async function VenuePage({
           {venue.claimed ? (
             <span
               title="This place's details have been updated and verified by the venue's team"
-              className="inline-flex items-center rounded-full bg-[#efefeb] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#333333]"
+              className="inline-flex items-center rounded-full bg-[var(--tag-bg)] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[var(--tag-foreground)]"
             >
               Claimed Place
             </span>

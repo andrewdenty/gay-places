@@ -51,7 +51,7 @@ export function OpeningHoursView({ hours }: { hours: OpeningHours | null }) {
         return (
           <div
             key={d.key}
-            className={`flex flex-col items-start pl-[4px]${isLast ? "" : " border-b border-[var(--row-separator)]"}`}
+            className={`flex flex-col items-start pl-[4px]${isLast ? "" : " border-b border-[var(--muted)]"}`}
           >
             <div
               className={`flex w-full items-center gap-[14px] pb-[8px] tag-mono${

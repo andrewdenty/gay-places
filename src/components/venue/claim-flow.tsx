@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
+import { FormInput } from "@/components/ui/form-input";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -118,7 +119,7 @@ export function ClaimFlow({
                 <label className="mb-1.5 block text-sm font-medium">
                   Name <span aria-hidden="true" className="text-[var(--muted-foreground)]">*</span>
                 </label>
-                <input
+                <FormInput
                   ref={nameRef}
                   type="text"
                   value={form.name}
@@ -126,7 +127,6 @@ export function ClaimFlow({
                   placeholder="Your name"
                   autoComplete="name"
                   required
-                  className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] transition-colors placeholder:text-[var(--muted-foreground)]"
                 />
               </div>
 
@@ -134,14 +134,13 @@ export function ClaimFlow({
                 <label className="mb-1.5 block text-sm font-medium">
                   Email <span aria-hidden="true" className="text-[var(--muted-foreground)]">*</span>
                 </label>
-                <input
+                <FormInput
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   placeholder="you@example.com"
                   autoComplete="email"
                   required
-                  className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] transition-colors placeholder:text-[var(--muted-foreground)]"
                 />
               </div>
 
@@ -152,18 +151,17 @@ export function ClaimFlow({
                     (optional)
                   </span>
                 </label>
-                <input
+                <FormInput
                   type="text"
                   value={form.role}
                   onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
                   placeholder="e.g. Owner, manager, PR contact…"
                   autoComplete="organization-title"
-                  className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-base outline-none focus:border-[var(--foreground)] transition-colors placeholder:text-[var(--muted-foreground)]"
                 />
               </div>
 
               {error && (
-                <p className="text-sm text-[var(--red,#E63946)]">{error}</p>
+                <p className="text-sm text-[var(--red)]">{error}</p>
               )}
 
               <div className="mt-2">

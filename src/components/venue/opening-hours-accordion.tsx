@@ -119,8 +119,8 @@ export function OpeningHoursAccordion({ hours, openUntilLabel }: Props) {
           <div className="flex items-center gap-[6px]">
             {openUntilLabel ? (
               <>
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[#22C55E]" />
-                <span className="open-status-text whitespace-nowrap text-[var(--foreground)]">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-[var(--open)]" />
+                <span className="status-mono whitespace-nowrap text-[var(--foreground)]">
                   {openUntilLabel}
                 </span>
               </>
@@ -162,7 +162,7 @@ export function OpeningHoursAccordion({ hours, openUntilLabel }: Props) {
                 <div
                   key={d.key}
                   className={`flex flex-col items-start pl-[4px]${
-                    isLast ? "" : " border-b border-[var(--row-separator)]"
+                    isLast ? "" : " border-b border-[var(--muted)]"
                   }`}
                 >
                   <div

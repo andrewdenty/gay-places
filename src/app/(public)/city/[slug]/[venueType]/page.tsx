@@ -156,7 +156,7 @@ export default async function CityVenueTypePage({
           {/* Header */}
           {cityImageUrl ? (
             <div className="mb-10 sm:mb-14 flex flex-col">
-              <div className="relative bg-[#f7f7f5] aspect-square overflow-hidden mb-10 sm:order-2 sm:mt-10 sm:mb-0">
+              <div className="relative bg-[var(--hover-bg)] aspect-square overflow-hidden mb-10 sm:order-2 sm:mt-10 sm:mb-0">
                 <Image
                   src={cityImageUrl}
                   alt={`Gay ${pluralLabel.toLowerCase()} and queer spaces in ${city.name}`}
