@@ -231,7 +231,7 @@ export default async function CountryPage({
       <div className="pt-8 pb-6 sm:pt-10 sm:pb-8">
         {/* Hero */}
       <header className="mb-10 sm:mb-14 flex items-start justify-between gap-4">
-        <div>
+        <div className="flex-1 min-w-0">
           {region && (
             <div className="label-mono text-[var(--muted-foreground)] mb-1">
               <Link href="/" className="text-[var(--foreground)] hover:opacity-70 transition-opacity">
@@ -241,7 +241,7 @@ export default async function CountryPage({
           )}
           <h1 className="h1-editorial mb-0">{country.name}</h1>
           {(country.intro ?? "").trim().length > 0 && (
-            <p className="mt-4 text-[15px] text-[var(--foreground)] leading-[1.4] max-w-[480px]">
+            <p className="mt-4 text-[15px] text-[var(--foreground)] leading-[1.4]">
               {country.intro}
             </p>
           )}

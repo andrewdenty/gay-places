@@ -160,7 +160,7 @@ export default async function CityPage({
 
             {/* City text — above image on desktop, below on mobile */}
             <div className="flex items-start justify-between gap-4 sm:order-1">
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 flex-1 min-w-0">
                 <div className="flex flex-col gap-1">
                   <div className="label-mono text-[var(--muted-foreground)]">
                     {countryPublished ? (
@@ -194,7 +194,7 @@ export default async function CityPage({
         ) : (
           /* No image: standard stacked layout */
           <div className="mb-8 flex items-start justify-between gap-4">
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="label-mono text-[var(--muted-foreground)] mb-1">
                 {countryPublished ? (
                   <Link
