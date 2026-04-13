@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
 import { FullPageModal } from "@/components/ui/full-page-modal";
 import { Button } from "@/components/ui/button";
+import { createSubmissionSessionId, getSubmissionSessionId } from "@/lib/uploads/session";
 
 // ─── Upload config ─────────────────────────────────────────────────────────────
 
@@ -76,7 +77,7 @@ async function compressImage(file: File): Promise<File> {
 
 type FlowState =
   | { kind: "idle" }
-  | { kind: "uploading"; file: File; previewUrl: string; caption: string }
+  | { kind: "uploading"; file: File; previewUrl: string; caption: string; contactEmail: string }
   | { kind: "done"; previewUrl: string; approved: boolean }
   | { kind: "error"; message: string; file: File; previewUrl: string; caption: string };
 
@@ -116,6 +117,27 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
   const fileInputRef = useRef<HTMLInputElement>(null);
   const currentPreviewUrl = useRef<string | null>(null);
   const [state, setState] = useState<FlowState>({ kind: "idle" });
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
+  // Initialize session ID on mount, determine if user is authenticated
+  useEffect(() => {
+    const sessionIdFromStorage = getSubmissionSessionId();
+    setSessionId(sessionIdFromStorage);
+    
+    // Check if user is logged in
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/user");
+        const data = await res.json() as { user: { id: string } | null };
+        setIsAnonymous(!data.user);
+      } catch {
+        setIsAnonymous(true);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   // Escape closes the modal
   useEffect(() => {
@@ -140,7 +162,7 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
     const previewUrl = URL.createObjectURL(file);
     currentPreviewUrl.current = previewUrl;
     if (fileInputRef.current) fileInputRef.current.value = "";
-    upload(file, previewUrl);
+    upload(file, previewUrl, "");
   }
 
   function reset() {
@@ -151,8 +173,8 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
     setState({ kind: "idle" });
   }
 
-  async function upload(file: File, previewUrl: string) {
-    setState({ kind: "uploading", file, previewUrl, caption: "" });
+  async function upload(file: File, previewUrl: string, contactEmail: string = "") {
+    setState({ kind: "uploading", file, previewUrl, caption: "", contactEmail });
 
     try {
       if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
@@ -161,11 +183,32 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
 
       const compressed = await compressImage(file);
 
+      // Ensure session ID exists even for anonymous uploads
+      let sessionIdToUse = sessionId;
+      if (!sessionIdToUse && isAnonymous) {
+        sessionIdToUse = createSubmissionSessionId();
+        setSessionId(sessionIdToUse);
+      }
+
       // Step 1: create submission record
+      const submissionPayload: Record<string, unknown> = {
+        venue_id: venueId,
+        caption: "",
+        filename: compressed.name,
+      };
+      
+      // Add session_id and optional contact_email for anonymous users
+      if (isAnonymous && sessionIdToUse) {
+        submissionPayload.session_id = sessionIdToUse;
+        if (contactEmail.trim()) {
+          submissionPayload.contact_email = contactEmail.trim();
+        }
+      }
+
       const createRes = await fetch("/api/submissions/photo", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ venue_id: venueId, caption: "", filename: compressed.name }),
+        body: JSON.stringify(submissionPayload),
       });
       const created = (await createRes.json()) as
         | { submission_id: string; upload_path: string }
@@ -179,6 +222,12 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
       uploadForm.append("file", compressed);
       uploadForm.append("submission_id", created.submission_id);
       uploadForm.append("upload_path", created.upload_path);
+      
+      // Add session_id for anonymous users
+      if (isAnonymous && sessionIdToUse) {
+        uploadForm.append("session_id", sessionIdToUse);
+      }
+
       const uploadRes = await fetch("/api/upload/photo", { method: "POST", body: uploadForm });
       const uploaded: { success?: boolean; error?: string } = await uploadRes.json().catch(() => ({}));
       if (!uploadRes.ok || uploaded.error) throw new Error(uploaded.error ?? "Upload failed");
@@ -259,6 +308,28 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
               </div>
             )}
 
+            {/* Email input for anonymous users (uploading state) */}
+            {state.kind === "uploading" && isAnonymous && (
+              <div className="mt-4">
+                <p className="mb-2 text-sm text-[var(--muted-foreground)]">
+                  Want us to contact you about this photo? (Optional)
+                </p>
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  value={state.contactEmail}
+                  onChange={(e) => {
+                    setState(prev =>
+                      prev.kind === "uploading"
+                        ? { ...prev, contactEmail: e.target.value }
+                        : prev
+                    );
+                  }}
+                />
+              </div>
+            )}
+
             {/* Error message + retry */}
             {state.kind === "error" && (
               <>
@@ -266,7 +337,7 @@ export function PhotoUploadFlow({ venueId, venueName, onUpdateSubmission }: Phot
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                   <Button
                     className="w-full sm:w-auto"
-                    onClick={() => upload(state.file, state.previewUrl)}
+                    onClick={() => upload(state.file, state.previewUrl, "")}
                   >
                     Try again
                   </Button>
