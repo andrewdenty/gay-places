@@ -481,9 +481,9 @@ export function EditDraftForm({
               variant="secondary"
               onClick={handleSave}
               disabled={isPending || !name.trim()}
-              aria-label="Save changes"
+              aria-label="Save"
             >
-              {isPending ? "Saving…" : "Save changes"}
+              {isPending ? "Saving…" : "Save"}
             </Button>
             {publishedVenueId ? (
               <div className="flex items-center gap-2">

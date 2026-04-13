@@ -554,7 +554,7 @@ export function VenueEditForm({
             </label>
           </div>
 
-          {/* Right: dirty indicator + save button */}
+          {/* Right: dirty indicator + save button + back */}
           <div className="flex items-center gap-3">
             {isDirty && (
               <span className="hidden text-xs text-muted-foreground sm:block" aria-live="polite">
@@ -568,9 +568,16 @@ export function VenueEditForm({
               type="button"
               onClick={handleSave}
               disabled={isPending || !name.trim()}
-              aria-label="Save changes"
+              aria-label="Save"
             >
-              {isPending ? "Saving…" : "Save changes"}
+              {isPending ? "Saving…" : "Save"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => navigate("/admin/venues")}
+            >
+              Back
             </Button>
           </div>
         </div>

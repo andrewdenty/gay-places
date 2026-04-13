@@ -6,6 +6,7 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { COMMON_TIMEZONES } from "@/components/admin/opening-hours-editor";
 import { useToast } from "@/components/ui/toast";
@@ -48,6 +49,7 @@ interface Props {
 
 export function CityEditForm({ city, countryOptions, onSave }: Props) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   // ── Controlled fields ──────────────────────────────────────────────────────
@@ -270,7 +272,7 @@ export function CityEditForm({ city, countryOptions, onSave }: Props) {
             Published
           </label>
 
-          {/* Right: dirty indicator + save */}
+          {/* Right: dirty indicator + save + back */}
           <div className="flex items-center gap-3">
             {isDirty && (
               <span
@@ -287,9 +289,16 @@ export function CityEditForm({ city, countryOptions, onSave }: Props) {
               type="button"
               onClick={handleSave}
               disabled={isPending || !name.trim()}
-              aria-label="Save changes"
+              aria-label="Save"
             >
-              {isPending ? "Saving…" : "Save changes"}
+              {isPending ? "Saving…" : "Save"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => router.push("/admin/cities")}
+            >
+              Back
             </Button>
           </div>
         </div>
