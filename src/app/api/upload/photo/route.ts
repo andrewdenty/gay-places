@@ -5,6 +5,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 export async function POST(request: Request) {
   // Authenticate the requesting user (if logged in)
   const supabase = await createSupabaseServerClient();
+  const adminSupabase = createSupabaseAdminClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   }
 
   // Verify the submission belongs to this user/session and is still pending
-  let submissionQuery = supabase
+  let submissionQuery = adminSupabase
     .from("submissions")
     .select("id")
     .eq("id", submissionId)
@@ -51,8 +52,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Submission not found" }, { status: 404 });
   }
 
-  // Use the service-role client to bypass Storage RLS
-  const adminSupabase = createSupabaseAdminClient();
   let bytes: ArrayBuffer;
   try {
     bytes = await file.arrayBuffer();

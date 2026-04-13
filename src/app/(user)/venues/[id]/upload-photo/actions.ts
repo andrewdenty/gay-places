@@ -13,12 +13,13 @@ export async function updateSubmissionWithData(
   },
 ): Promise<{ approved: boolean }> {
   const supabase = await createSupabaseServerClient();
+  const admin = createSupabaseAdminClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   // Build the query to find the submission
-  let query = supabase
+  let query = admin
     .from("submissions")
     .select("id, submitter_id, status")
     .eq("id", submissionId)
@@ -39,7 +40,7 @@ export async function updateSubmissionWithData(
   }
 
   // Update the submission with proposed data
-  const { error: updateError } = await supabase
+  const { error: updateError } = await admin
     .from("submissions")
     .update({ proposed_data: proposedData })
     .eq("id", submissionId)
@@ -53,7 +54,6 @@ export async function updateSubmissionWithData(
   if (user && submission.submitter_id === user.id) {
     const { data: isAdmin } = await supabase.rpc("is_admin");
     if (isAdmin === true) {
-      const admin = createSupabaseAdminClient();
       const dest = `public/${proposedData.venue_id}/${proposedData.filename}`;
 
       const { error: copyError } = await admin.storage
