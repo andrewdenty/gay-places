@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
+  const admin = createSupabaseAdminClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -33,7 +35,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: venue } = await supabase
+  const { data: venue } = await admin
     .from("venues")
     .select("id,city_id")
     .eq("id", venue_id)
@@ -58,7 +60,7 @@ export async function POST(request: Request) {
     approval_required: !user, // true for anonymous, false for authenticated
   };
 
-  const { data: submission, error } = await supabase
+  const { data: submission, error } = await admin
     .from("submissions")
     .insert(submission_payload)
     .select("id")
