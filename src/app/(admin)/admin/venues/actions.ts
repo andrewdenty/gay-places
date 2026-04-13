@@ -38,6 +38,14 @@ export async function createVenue(formData: FormData) {
     .trim()
     .replace(/\s+/g, "-");
 
+  // Inherit timezone from the parent city so opening hours display correctly.
+  const { data: city } = await supabase
+    .from("cities")
+    .select("timezone")
+    .eq("id", city_id)
+    .maybeSingle();
+  const tz = city?.timezone ?? "UTC";
+
   const { error } = await supabase.from("venues").insert({
     city_id,
     name,
@@ -49,7 +57,7 @@ export async function createVenue(formData: FormData) {
     description,
     website_url,
     google_maps_url,
-    opening_hours: {},
+    opening_hours: { tz },
     published,
   });
   if (error) throw error;
