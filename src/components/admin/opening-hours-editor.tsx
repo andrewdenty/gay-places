@@ -287,27 +287,14 @@ export function OpeningHoursEditor({
 
   return (
     <div className="space-y-3">
-      {/* Timezone */}
-      {!readOnly ? (
-        <div className="flex items-center gap-2">
-          <span className="w-[52px] shrink-0 text-[11px] text-muted-foreground">Timezone</span>
-          <select
-            value={hours.tz}
-            onChange={(e) => update((prev) => ({ ...prev, tz: e.target.value }))}
-            className="h-8 rounded-lg border border-border bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-          >
-            {COMMON_TIMEZONES.map((tz) => (
-              <option key={tz} value={tz}>
-                {tz}
-              </option>
-            ))}
-          </select>
-        </div>
-      ) : (
-        <div className="text-xs text-muted-foreground">
-          Timezone: <span className="font-medium text-foreground">{hours.tz}</span>
-        </div>
-      )}
+      {/* Timezone — read-only, inherited from the parent city */}
+      <div className="text-xs text-muted-foreground">
+        Timezone:{" "}
+        <span className="font-medium text-foreground">{hours.tz}</span>
+        {!readOnly && (
+          <span className="ml-1 text-muted-foreground">(set on city)</span>
+        )}
+      </div>
 
       {/* Day rows */}
       <div className="divide-y divide-border rounded-xl border border-border">

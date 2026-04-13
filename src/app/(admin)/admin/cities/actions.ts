@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { geocodeCity } from "@/lib/utils/geocode";
+import { getTimezoneForCoordinates } from "@/lib/utils/timezone";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -45,6 +46,8 @@ export async function createCity(formData: FormData) {
     center_lng = coords.lng;
   }
 
+  const timezone = await getTimezoneForCoordinates(center_lat, center_lng);
+
   const { error } = await supabase.from("cities").insert({
     slug,
     name,
@@ -53,6 +56,7 @@ export async function createCity(formData: FormData) {
     center_lng,
     published,
     description,
+    timezone,
   });
   if (error) throw error;
 }
@@ -75,6 +79,11 @@ export async function updateCity(formData: FormData) {
     .update({ name, country, center_lat, center_lng, published, description, seo_title, seo_description, timezone })
     .eq("id", id);
   if (error) throw error;
+
+  // Cascade timezone to all venues in this city so they stay in sync.
+  if (timezone) {
+    await supabase.rpc("cascade_city_timezone", { p_city_id: id, p_tz: timezone });
+  }
 
   revalidatePath("/admin/cities");
   // Also revalidate the edit page in case the admin stays on it
