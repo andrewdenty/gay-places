@@ -42,7 +42,7 @@ export default async function AboutPage() {
       <div className="pt-12 sm:pt-16 pb-16 sm:pb-24">
 
         {/* ── Hero ── */}
-        <div className="text-center mb-12 sm:mb-16">
+        <div className="text-center mb-16 sm:mb-24">
           <p
             className="label-mono text-[var(--muted-foreground)] mb-5"
           >
@@ -50,12 +50,12 @@ export default async function AboutPage() {
           </p>
           <h1
             className="h1-editorial text-[var(--foreground)] mb-6"
-            style={{ fontSize: "clamp(36px, 9vw, 48px)" }}
+            style={{ fontSize: "clamp(42px, 10vw, 56px)" }}
           >
-            Finding gay life in a city<br />
-            <em style={{ fontStyle: "italic" }}>should not feel like guesswork.</em>
+            We&rsquo;re building the <em style={{ fontStyle: "italic" }}>definitive</em><br />
+            guide to gay places.
           </h1>
-          <p className="text-[15px] text-[var(--muted-foreground)] leading-[1.6] max-w-[480px] mx-auto">
+          <p className="leading-[1.6] max-w-[480px] mx-auto text-[var(--foreground)]" style={{ fontSize: "17px" }}>
             Gay Places is building a better way to discover where to go, what
             is happening, and how to find the venues, events, and communities
             that feel right for you.
@@ -143,14 +143,14 @@ export default async function AboutPage() {
 
         {/* ── Explore now ── */}
         {featuredCities.length > 0 && (
-          <div className="mt-16 sm:mt-20">
+          <div className="mt-24 sm:mt-32">
             <CityExploreCarousel cities={featuredCities} />
           </div>
         )}
 
         {/* ── CTA ── */}
         <div
-          className="mt-16 sm:mt-20 text-center"
+          className="mt-24 sm:mt-32 text-center"
         >
           <h2
             className="h2-editorial text-[var(--foreground)] mb-8"

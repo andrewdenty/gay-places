@@ -98,7 +98,7 @@ export function SiteFooter() {
         style={{ minHeight: "inherit" }}
       >
         {/* Nav links — above the logo */}
-        <div className="flex gap-5 mb-8">
+        <div className="flex gap-5 mb-14">
           <Link href="/about" className="label-xs text-white/40 hover:text-white/60 transition-colors">
             About
           </Link>

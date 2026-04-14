@@ -9,7 +9,6 @@ const STORAGE_BASE =
 
 const GAP = 12;
 // Cards are 44 vw wide, capped at 260 px.
-// calc(50vw - CARD_HALF_MAX) centres the first card in the viewport at max width.
 const CARD_HALF_MAX = 130; // half of 260px max-width
 const SCROLL_SPEED = 25; // px/s — slow, gentle auto-scroll
 
@@ -39,30 +38,38 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || !el.children.length) return;
+    if (!el) return;
 
-    const cardWidth = (el.children[0] as HTMLElement).offsetWidth;
-    const oneSetWidth = shuffled.length * (cardWidth + GAP);
+    // Defer until after first paint so offsetWidth is fully calculated
+    const initId = requestAnimationFrame(() => {
+      if (!el.children.length) return;
+      const cardWidth = (el.children[0] as HTMLElement).offsetWidth;
+      if (!cardWidth) return;
 
-    // Start scrolled to the first card of the middle set so items peek on both sides
-    el.scrollLeft = oneSetWidth;
+      const oneSetWidth = shuffled.length * (cardWidth + GAP);
 
-    const tick = (time: number) => {
-      if (!pausedRef.current && el) {
-        const delta =
-          lastTimeRef.current !== null ? (time - lastTimeRef.current) / 1000 : 0;
-        el.scrollLeft += SCROLL_SPEED * delta;
-        // Seamlessly loop: when we enter the third set, jump back to the second set
-        if (el.scrollLeft >= 2 * oneSetWidth) {
-          el.scrollLeft -= oneSetWidth;
+      // Start scrolled to the first card of the middle set so items peek on both sides
+      el.scrollLeft = oneSetWidth;
+
+      const tick = (time: number) => {
+        if (!pausedRef.current) {
+          const delta =
+            lastTimeRef.current !== null ? (time - lastTimeRef.current) / 1000 : 0;
+          el.scrollLeft += SCROLL_SPEED * delta;
+          // Seamlessly loop: when we enter the third set, jump back to the second set
+          if (el.scrollLeft >= 2 * oneSetWidth) {
+            el.scrollLeft -= oneSetWidth;
+          }
         }
-      }
-      lastTimeRef.current = time;
-      rafRef.current = requestAnimationFrame(tick);
-    };
+        lastTimeRef.current = time;
+        rafRef.current = requestAnimationFrame(tick);
+      };
 
-    rafRef.current = requestAnimationFrame(tick);
+      rafRef.current = requestAnimationFrame(tick);
+    });
+
     return () => {
+      cancelAnimationFrame(initId);
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
     // shuffled is produced by a lazy useState initializer and never changes;
@@ -115,6 +122,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
         className="explore-carousel-rail"
         style={{
           display: "flex",
+          alignItems: "flex-start",
           overflowX: "scroll",
           scrollbarWidth: "none",
           gap: `${GAP}px`,
@@ -122,27 +130,38 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
         }}
       >
         {tripled.map((city, i) => (
-          <Link
+          <div
             key={`${city.slug}-${i}`}
-            href={`/city/${city.slug}`}
-            className="relative block shrink-0 w-[44vw] max-w-[260px]"
-            style={{
-              aspectRatio: "1 / 1",
-              overflow: "hidden",
-              background: "var(--hover-bg)",
-              border: "1px solid var(--muted)",
-              borderRadius: "4px",
-            }}
+            className="shrink-0 flex flex-col items-center w-[44vw] max-w-[260px]"
           >
-            <Image
-              src={`${STORAGE_BASE}/${city.cover_image_path}`}
-              alt={city.name}
-              fill
-              className="object-cover"
-              priority={i < 3}
-              sizes="(max-width: 591px) 44vw, 260px"
-            />
-          </Link>
+            <Link
+              href={`/city/${city.slug}`}
+              className="relative block w-full"
+              style={{
+                aspectRatio: "1 / 1",
+                overflow: "hidden",
+                background: "var(--hover-bg)",
+                border: "1px solid var(--muted)",
+                borderRadius: "4px",
+              }}
+            >
+              <Image
+                src={`${STORAGE_BASE}/${city.cover_image_path}`}
+                alt={city.name}
+                fill
+                className="object-cover"
+                priority={i < 3}
+                sizes="(max-width: 591px) 44vw, 260px"
+              />
+            </Link>
+            {/* City label — 8px below card */}
+            <p
+              className="label-mono text-[var(--muted-foreground)] text-center uppercase mt-2"
+              style={{ fontSize: "10px", letterSpacing: "0.08em" }}
+            >
+              {city.name}
+            </p>
+          </div>
         ))}
       </div>
     </div>
