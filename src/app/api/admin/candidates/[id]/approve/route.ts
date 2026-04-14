@@ -1,31 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-type VenueType =
-  | "bar"
-  | "club"
-  | "restaurant"
-  | "cafe"
-  | "sauna"
-  | "event_space"
-  | "other"
-  | "cruising";
-
-const VALID_VENUE_TYPES = new Set<string>([
-  "bar",
-  "club",
-  "restaurant",
-  "cafe",
-  "sauna",
-  "event_space",
-  "other",
-  "cruising",
-]);
-
-function toVenueType(v: unknown): VenueType {
+import { VENUE_TYPE_SET, type VenueTypeValue } from "@/lib/venue-types";
+function toVenueType(v: unknown): VenueTypeValue {
   const s = typeof v === "string" ? v : "other";
-  return VALID_VENUE_TYPES.has(s) ? (s as VenueType) : "other";
+  return VENUE_TYPE_SET.has(s) ? (s as VenueTypeValue) : "other";
 }
 
 export async function POST(

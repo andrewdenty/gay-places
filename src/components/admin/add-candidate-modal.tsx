@@ -4,20 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminModal } from "@/components/admin/admin-modal";
 import { Button } from "@/components/ui/button";
-
-const VENUE_TYPES = [
-  "bar",
-  "cafe",
-  "club",
-  "cocktail_bar",
-  "dance_club",
-  "drag_bar",
-  "leather_bar",
-  "restaurant",
-  "sauna",
-  "sex_club",
-  "other",
-];
+import { VENUE_TYPES } from "@/lib/venue-types";
 
 const INPUT =
   "h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-1 focus:ring-[var(--accent)]";
@@ -123,9 +110,9 @@ export function AddCandidateModal({ cities }: Props) {
             </label>
             <select name="venue_type" required className={SELECT} disabled={busy}>
               <option value="">Select type…</option>
-              {VENUE_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t.replace(/_/g, " ")}
+              {VENUE_TYPES.map((vt) => (
+                <option key={vt.value} value={vt.value}>
+                  {vt.label}
                 </option>
               ))}
             </select>

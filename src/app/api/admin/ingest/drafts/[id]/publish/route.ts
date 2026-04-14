@@ -3,34 +3,14 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { VenueTags } from "@/lib/venue-tags";
 import { extractListingSentence } from "@/lib/ai/prompts";
+import { VENUE_TYPE_SET, type VenueTypeValue } from "@/lib/venue-types";
 
-type VenueType =
-  | "bar"
-  | "club"
-  | "restaurant"
-  | "cafe"
-  | "sauna"
-  | "event_space"
-  | "other"
-  | "cruising";
-
-const VALID_VENUE_TYPES = new Set<string>([
-  "bar",
-  "club",
-  "restaurant",
-  "cafe",
-  "sauna",
-  "event_space",
-  "other",
-  "cruising",
-]);
-
-function toVenueType(v: unknown): VenueType {
+function toVenueType(v: unknown): VenueTypeValue {
   const s = typeof v === "string" ? v : "other";
   if (s === "dance club" || s === "dance_club") return "club";
   if (s === "cruising club" || s === "cruising_club") return "cruising";
   if (s === "sex_club" || s === "sex club") return "cruising";
-  return VALID_VENUE_TYPES.has(s) ? (s as VenueType) : "other";
+  return VENUE_TYPE_SET.has(s) ? (s as VenueTypeValue) : "other";
 }
 
 function buildSlug(name: string): string {
