@@ -9,6 +9,19 @@ const STORAGE_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
 const GAP = 12;
+// Cards are 62 vw wide, capped at 380 px.
+// Padding = 50vw - half of card max-width gives centering; using slightly less
+// (~15 vw / 175 px) keeps ~4 vw of adjacent cards peeking on each side.
+const CARD_HALF_MAX = 190; // half of 380
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 
 export type CarouselCity = {
   slug: string;
@@ -20,16 +33,18 @@ export type CarouselCity = {
 export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
+  // Randomise once on mount via lazy state initializer (never re-shuffled)
+  const [shuffled] = useState(() => shuffleArray(cities));
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el || !el.children.length) return;
     const cardWidth = (el.children[0] as HTMLElement).offsetWidth;
     const idx = Math.round(el.scrollLeft / (cardWidth + GAP));
-    setCurrent(Math.max(0, Math.min(idx, cities.length - 1)));
-  }, [cities.length]);
+    setCurrent(Math.max(0, Math.min(idx, shuffled.length - 1)));
+  }, [shuffled.length]);
 
-  if (!cities.length) return null;
+  if (!shuffled.length) return null;
 
   const scrollTo = (index: number) => {
     const el = scrollRef.current;
@@ -40,7 +55,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
   };
 
   const prev = () => scrollTo(Math.max(0, current - 1));
-  const next = () => scrollTo(Math.min(cities.length - 1, current + 1));
+  const next = () => scrollTo(Math.min(shuffled.length - 1, current + 1));
 
   return (
     <div
@@ -50,11 +65,8 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
         width: "100vw",
       }}
     >
-      {/* Section header — constrained to reading width */}
-      <div
-        className="mx-auto px-4 sm:px-6 mb-5"
-        style={{ maxWidth: 720 }}
-      >
+      {/* Section header — centred */}
+      <div className="text-center mb-5 px-4">
         <h2
           style={{
             fontFamily: "var(--font-instrument-serif), Georgia, serif",
@@ -79,14 +91,14 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
           scrollSnapType: "x mandatory",
           scrollbarWidth: "none",
           gap: `${GAP}px`,
-          paddingInline: "max(12.5vw, calc(50vw - 260px))",
+          paddingInline: `max(15vw, calc(50vw - ${CARD_HALF_MAX}px))`,
         }}
       >
-        {cities.map((city, i) => (
+        {shuffled.map((city, i) => (
           <Link
             key={city.slug}
             href={`/city/${city.slug}`}
-            className="relative block shrink-0 w-[75vw] max-w-[520px]"
+            className="relative block shrink-0 w-[62vw] max-w-[380px]"
             style={{
               aspectRatio: "1 / 1",
               scrollSnapAlign: "center",
@@ -99,7 +111,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
               fill
               className="object-cover"
               priority={i === 0}
-              sizes="(max-width: 693px) 75vw, 520px"
+              sizes="(max-width: 613px) 62vw, 380px"
             />
 
             {/* Gradient overlay */}
@@ -117,7 +129,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
                 style={{
                   fontFamily:
                     "var(--font-instrument-serif), Georgia, serif",
-                  fontSize: "clamp(22px, 4.5vw, 34px)",
+                  fontSize: "clamp(20px, 4vw, 28px)",
                   fontWeight: 400,
                   lineHeight: 1.1,
                   letterSpacing: "-0.4px",
@@ -156,7 +168,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
           <ChevronLeft size={20} strokeWidth={1.5} color="#171717" />
         </button>
       )}
-      {current < cities.length - 1 && (
+      {current < shuffled.length - 1 && (
         <button
           onClick={next}
           aria-label="Next city"

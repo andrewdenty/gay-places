@@ -63,7 +63,10 @@ export default async function AboutPage() {
         </div>
 
         {/* ── Body copy ── */}
-        <div className="max-w-[600px] mx-auto flex flex-col gap-10">
+        <div className="max-w-[600px] mx-auto flex flex-col gap-10 text-center">
+
+          {/* Bold divider above first section */}
+          <hr className="border-0 border-t-2 border-[var(--foreground)]" />
 
           {/* Section 1 */}
           <section>
@@ -130,6 +133,9 @@ export default async function AboutPage() {
             </div>
           </section>
 
+          {/* Bold divider below last section */}
+          <hr className="border-0 border-t-2 border-[var(--foreground)]" />
+
         </div>
 
         {/* ── Explore now ── */}
@@ -143,30 +149,16 @@ export default async function AboutPage() {
         <div
           className="mt-16 sm:mt-20 text-center"
         >
-          <p className="text-[15px] text-[var(--muted-foreground)] leading-[1.6] mb-6">
+          <h2
+            className="h2-editorial text-[var(--foreground)] mb-8"
+          >
             Know a place that belongs here?
-          </p>
+          </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/suggest"
-              className="btn-sm"
-              style={{
-                backgroundColor: "var(--foreground)",
-                color: "var(--background)",
-                border: "1px solid var(--foreground)",
-              }}
-            >
+            <Link href="/suggest" className="btn-sm btn-sm-primary">
               Suggest a place
             </Link>
-            <Link
-              href="/#destinations"
-              className="btn-sm"
-              style={{
-                backgroundColor: "transparent",
-                color: "var(--foreground)",
-                border: "1px solid var(--border)",
-              }}
-            >
+            <Link href="/#destinations" className="btn-sm btn-sm-secondary">
               Explore destinations
             </Link>
           </div>
