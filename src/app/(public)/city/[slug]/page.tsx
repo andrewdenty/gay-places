@@ -17,6 +17,7 @@ const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
 
+
 export async function generateMetadata({
   params,
 }: {
@@ -28,7 +29,8 @@ export async function generateMetadata({
   const { slug } = await params;
   const city = await getCityBySlug(slug);
   if (!city) return {};
-  const title = city.seo_title || `Gay ${city.name}`;
+  const year = new Date().getFullYear();
+  const title = city.seo_title || `Gay ${city.name} – Bars, Clubs & Queer Spaces (${year})`;
   const description =
     city.seo_description ||
     city.description ||

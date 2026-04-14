@@ -23,10 +23,10 @@ import { TAG_CATEGORIES } from "@/lib/venue-tags";
 import type { OpeningHours, OpeningHoursRange } from "@/lib/types/opening-hours";
 import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs";
 
+
 // Revalidate every 24 hours. The is_admin check has been moved to a client
 // component (AdminVenueLink) so no user-specific data is baked into the cached HTML.
 export const revalidate = 86400;
-
 
 
 const CITY_IMAGES_BASE =
@@ -237,13 +237,31 @@ export default async function VenuePage({
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: city.name,
-        item: `${BASE_URL}/city/${city.slug}`,
-      },
-      { "@type": "ListItem", position: 3, name: venue.name, item: placeUrl },
+      ...(countryPublished
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: city.country,
+              item: `${BASE_URL}/country/${countrySlug}`,
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: city.name,
+              item: `${BASE_URL}/city/${city.slug}`,
+            },
+            { "@type": "ListItem", position: 4, name: venue.name, item: placeUrl },
+          ]
+        : [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: city.name,
+              item: `${BASE_URL}/city/${city.slug}`,
+            },
+            { "@type": "ListItem", position: 3, name: venue.name, item: placeUrl },
+          ]),
     ],
   };
 
