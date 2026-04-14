@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getCities, getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
 import { getArticlesByCitySlug } from "@/lib/articles";
 import { CityExplorer } from "@/components/city/city-explorer";
 import { CityAdminToggle } from "@/components/city/city-admin-toggle";
@@ -29,13 +29,6 @@ const VENUE_TYPE_LABEL: Record<string, string> = {
   shop: "Shop",
 };
 
-export async function generateStaticParams() {
-  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return [];
-  }
-  const cities = await getCities().catch(() => []);
-  return cities.map((city) => ({ slug: city.slug }));
-}
 
 export async function generateMetadata({
   params,

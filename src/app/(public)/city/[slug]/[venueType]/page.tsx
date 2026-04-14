@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getCities, getCityBySlug, getVenuesByCitySlug, getAllPublishedVenuesForSitemap, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
 import { CityExplorer } from "@/components/city/city-explorer";
 import { CityAdminToggle } from "@/components/city/city-admin-toggle";
 import { env } from "@/lib/env";
-import { toCountrySlug, urlSegmentToVenueType, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs";
+import { toCountrySlug, urlSegmentToVenueType, venueUrlPath } from "@/lib/slugs";
 import type { VenueType } from "@/components/filters/filter-pills";
 
 export const revalidate = 86400;
@@ -25,26 +25,6 @@ const VENUE_TYPE_PLURAL: Record<string, string> = {
   cruising: "Cruising Venues",
 };
 
-export async function generateStaticParams() {
-  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return [];
-  }
-  const [cities, venues] = await Promise.all([
-    getCities().catch(() => []),
-    getAllPublishedVenuesForSitemap().catch(() => []),
-  ]);
-  const citySet = new Set(cities.map((c) => c.slug));
-  const uniquePairs = new Set<string>();
-  for (const v of venues) {
-    if (v.city_slug && citySet.has(v.city_slug)) {
-      uniquePairs.add(`${v.city_slug}::${v.venue_type}`);
-    }
-  }
-  return Array.from(uniquePairs).map((key) => {
-    const [slug, venueType] = key.split("::");
-    return { slug, venueType: venueTypeToUrlSegment(venueType) };
-  });
-}
 
 export async function generateMetadata({
   params,
