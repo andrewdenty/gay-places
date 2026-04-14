@@ -13,11 +13,11 @@ const DESCRIPTION =
   "Gay Places is building a better way to discover gay venues, events, and communities around the world. Find out what we're building and why it matters.";
 
 export const metadata: Metadata = {
-  title: "About — Gay Places",
+  title: "About Gay Places | Gay Places",
   description: DESCRIPTION,
   alternates: { canonical: "/about" },
   openGraph: {
-    title: "About — Gay Places",
+    title: "About Gay Places | Gay Places",
     description: DESCRIPTION,
   },
 };
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 const aboutPageJsonLd = {
   "@context": "https://schema.org",
   "@type": "AboutPage",
-  name: "About — Gay Places",
+  name: "About Gay Places | Gay Places",
   description: DESCRIPTION,
   url: `${BASE_URL}/about`,
 };
@@ -76,7 +76,7 @@ export default async function AboutPage() {
 
             {/* Section 1 */}
             <section>
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-6">
                 <Image
                   src="/rainbow-logo.svg"
                   alt=""
@@ -87,7 +87,7 @@ export default async function AboutPage() {
               <h2 className="h2-editorial text-[var(--foreground)] mb-4">
                 What&rsquo;s missing
               </h2>
-              <div className="flex flex-col gap-4 leading-[1.6] text-[var(--muted-foreground)]" style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace", fontSize: "13px" }}>
+              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
                 <p>
                   Too much of the information around gay life is flat, outdated,
                   or built around the wrong incentives. Some platforms give you
@@ -105,7 +105,7 @@ export default async function AboutPage() {
               <h2 className="h2-editorial text-[var(--foreground)] mb-4">
                 Why it matters
               </h2>
-              <div className="flex flex-col gap-4 leading-[1.6] text-[var(--muted-foreground)]" style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace", fontSize: "13px" }}>
+              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
                 <p>
                   Gay life is not just a directory. It is local, social,
                   fast-changing, and diverse. People need more than names and
@@ -117,10 +117,11 @@ export default async function AboutPage() {
                   style={{
                     fontFamily:
                       "var(--font-instrument-serif), Georgia, serif",
-                    fontSize: "20px",
+                    fontSize: "24px",
                     lineHeight: 1.4,
                     letterSpacing: "-0.3px",
                     fontWeight: 400,
+                    fontStyle: "italic",
                   }}
                 >
                   That is what we are building.
@@ -133,7 +134,7 @@ export default async function AboutPage() {
               <h2 className="h2-editorial text-[var(--foreground)] mb-4">
                 Where we start
               </h2>
-              <div className="flex flex-col gap-4 leading-[1.6] text-[var(--muted-foreground)]" style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace", fontSize: "13px" }}>
+              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
                 <p>
                   Today, Gay Places starts with a clean, user-oriented guide to
                   gay venues. Over time, we want to expand into events, community
