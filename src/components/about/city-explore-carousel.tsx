@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -9,6 +9,14 @@ const STORAGE_BASE =
 
 // Auto-scroll speed in pixels per rAF frame (≈60 fps → ~30 px/s)
 const AUTO_SPEED = 0.5;
+// Maximum momentum velocity after touch release (px per frame)
+const MAX_MOMENTUM = 20;
+// Friction multiplier applied each frame during momentum (0–1)
+const MOMENTUM_FRICTION = 0.95;
+// Minimum velocity before momentum stops (px per frame)
+const MOMENTUM_THRESHOLD = 0.5;
+// Smoothing factor for touch velocity (0–1, higher = more responsive)
+const VELOCITY_SMOOTHING = 0.3;
 
 function shuffleArray<T>(arr: T[]): T[] {
   const result = [...arr];
@@ -29,49 +37,67 @@ export type CarouselCity = {
 export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
   const [shuffled] = useState(() => shuffleArray(cities));
   const railRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
 
-  // All mutable scroll state lives in a ref so it never causes re-renders.
+  // All mutable state lives in a ref so it never causes re-renders.
   const s = useRef({
+    offset: 0,                // current translateX offset (px)
     speed: 0,                 // current px/frame (eases toward targetSpeed)
     targetSpeed: AUTO_SPEED,  // what speed we're easing toward
     raf: null as number | null,
+    // Drag state (shared by touch + pointer)
     isDragging: false,
-    pointerStartX: 0,
-    scrollAtDragStart: 0,
+    startX: 0,
+    offsetAtDragStart: 0,
     dragDistance: 0,          // tracks how far pointer moved (suppresses link clicks)
-    singleWidth: 0,           // width of one copy of the card set
+    // Touch velocity tracking for momentum
+    lastTouchX: 0,
+    lastTouchTime: 0,
+    velocity: 0,              // px per frame after release
+    // Dimensions
+    singleWidth: 0,
   });
 
   useEffect(() => {
+    const inner = innerRef.current;
     const rail = railRef.current;
-    if (!rail) return;
+    if (!inner || !rail) return;
     const st = s.current;
 
     const updateWidth = () => {
-      st.singleWidth = rail.scrollWidth / 2;
+      st.singleWidth = inner.scrollWidth / 2;
     };
     updateWidth();
     window.addEventListener("resize", updateWidth);
 
+    const applyTransform = () => {
+      inner.style.transform = `translateX(${-st.offset}px)`;
+    };
+
+    const wrapOffset = () => {
+      if (st.singleWidth > 0) {
+        st.offset =
+          ((st.offset % st.singleWidth) + st.singleWidth) % st.singleWidth;
+      }
+    };
+
     const tick = () => {
       if (!st.isDragging) {
-        // Smoothly ease current speed toward the target (decelerate on hover,
-        // accelerate back on mouse-leave).
-        st.speed += (st.targetSpeed - st.speed) * 0.04;
-
-        if (Math.abs(st.speed) > 0.005) {
-          rail.scrollLeft += st.speed;
-        }
-
-        // Seamless infinite loop: once we've scrolled past one full copy,
-        // jump back by exactly that amount — visually imperceptible.
-        if (st.singleWidth > 0) {
-          if (rail.scrollLeft >= st.singleWidth) {
-            rail.scrollLeft -= st.singleWidth;
-          } else if (rail.scrollLeft < 0) {
-            rail.scrollLeft += st.singleWidth;
+        // If we have momentum velocity from a touch flick, apply it
+        if (Math.abs(st.velocity) > MOMENTUM_THRESHOLD) {
+          st.offset += st.velocity;
+          st.velocity *= MOMENTUM_FRICTION;
+        } else {
+          st.velocity = 0;
+          // Auto-scroll: ease current speed toward target
+          st.speed += (st.targetSpeed - st.speed) * 0.02;
+          if (Math.abs(st.speed) > 0.005) {
+            st.offset += st.speed;
           }
         }
+
+        wrapOffset();
+        applyTransform();
       }
 
       st.raf = requestAnimationFrame(tick);
@@ -79,11 +105,98 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
 
     st.raf = requestAnimationFrame(tick);
 
+    /* ── Native touch events (more reliable than pointer events on iOS) ── */
+    const onTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      st.isDragging = true;
+      st.dragDistance = 0;
+      st.velocity = 0;
+      st.startX = touch.clientX;
+      st.offsetAtDragStart = st.offset;
+      st.lastTouchX = touch.clientX;
+      st.lastTouchTime = performance.now();
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!st.isDragging) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - st.startX;
+      st.dragDistance = Math.abs(dx);
+
+      // Smooth velocity with exponential moving average to avoid jitter
+      const now = performance.now();
+      const dt = now - st.lastTouchTime;
+      if (dt > 0) {
+        const instantVelocity = ((st.lastTouchX - touch.clientX) / dt) * 16;
+        st.velocity =
+          VELOCITY_SMOOTHING * instantVelocity +
+          (1 - VELOCITY_SMOOTHING) * st.velocity;
+      }
+      st.lastTouchX = touch.clientX;
+      st.lastTouchTime = now;
+
+      let newOffset = st.offsetAtDragStart - dx;
+      if (st.singleWidth > 0) {
+        newOffset =
+          ((newOffset % st.singleWidth) + st.singleWidth) % st.singleWidth;
+      }
+      st.offset = newOffset;
+      applyTransform();
+    };
+
+    const onTouchEnd = () => {
+      st.isDragging = false;
+      st.velocity = Math.max(-MAX_MOMENTUM, Math.min(MAX_MOMENTUM, st.velocity));
+    };
+
+    rail.addEventListener("touchstart", onTouchStart, { passive: true });
+    rail.addEventListener("touchmove", onTouchMove, { passive: true });
+    rail.addEventListener("touchend", onTouchEnd);
+    rail.addEventListener("touchcancel", onTouchEnd);
+
     return () => {
       if (st.raf) cancelAnimationFrame(st.raf);
       window.removeEventListener("resize", updateWidth);
+      rail.removeEventListener("touchstart", onTouchStart);
+      rail.removeEventListener("touchmove", onTouchMove);
+      rail.removeEventListener("touchend", onTouchEnd);
+      rail.removeEventListener("touchcancel", onTouchEnd);
     };
   }, [shuffled.length]);
+
+  /* ── Desktop-only pointer handlers (skip touch to avoid double-handling) ── */
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
+    const st = s.current;
+    st.isDragging = true;
+    st.dragDistance = 0;
+    st.velocity = 0;
+    st.startX = e.clientX;
+    st.offsetAtDragStart = st.offset;
+    railRef.current?.setPointerCapture(e.pointerId);
+  }, []);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
+    const st = s.current;
+    if (!st.isDragging) return;
+    const dx = e.clientX - st.startX;
+    st.dragDistance = Math.abs(dx);
+    let newOffset = st.offsetAtDragStart - dx;
+    if (st.singleWidth > 0) {
+      newOffset =
+        ((newOffset % st.singleWidth) + st.singleWidth) % st.singleWidth;
+    }
+    st.offset = newOffset;
+    if (innerRef.current) {
+      innerRef.current.style.transform = `translateX(${-st.offset}px)`;
+    }
+  }, []);
+
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
+    s.current.isDragging = false;
+  }, []);
 
   if (!shuffled.length) return null;
 
@@ -101,45 +214,35 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
         <h2 className="h2-editorial text-[var(--foreground)]">Explore now</h2>
       </div>
 
-      {/* Scrollable rail — overflow-x: scroll with scrollbar hidden via CSS */}
+      {/* Rail — overflow hidden; CSS transform drives horizontal position */}
       <div
         ref={railRef}
         className="explore-carousel-rail"
-        style={{ overflowX: "scroll", touchAction: "pan-y", userSelect: "none" }}
-        onMouseEnter={() => { s.current.targetSpeed = 0; }}
-        onMouseLeave={() => { s.current.targetSpeed = AUTO_SPEED; }}
-        onPointerDown={(e) => {
-          const rail = railRef.current;
-          if (!rail) return;
-          s.current.isDragging = true;
-          s.current.dragDistance = 0;
-          s.current.pointerStartX = e.clientX;
-          s.current.scrollAtDragStart = rail.scrollLeft;
-          rail.setPointerCapture(e.pointerId);
+        style={{
+          overflow: "hidden",
+          touchAction: "pan-y pinch-zoom",
+          userSelect: "none",
         }}
-        onPointerMove={(e) => {
-          const st = s.current;
-          if (!st.isDragging) return;
-          const rail = railRef.current;
-          if (!rail) return;
-          const dx = e.clientX - st.pointerStartX;
-          st.dragDistance = Math.abs(dx);
-          // Wrap the scroll position for a seamless loop during drag.
-          let newScroll = st.scrollAtDragStart - dx;
-          if (st.singleWidth > 0) {
-            newScroll = ((newScroll % st.singleWidth) + st.singleWidth) % st.singleWidth;
-          }
-          rail.scrollLeft = newScroll;
+        onMouseEnter={() => {
+          s.current.targetSpeed = 0;
         }}
-        onPointerUp={() => { s.current.isDragging = false; }}
-        onPointerCancel={() => { s.current.isDragging = false; }}
+        onMouseLeave={() => {
+          s.current.targetSpeed = AUTO_SPEED;
+        }}
+        onDragStart={(e) => e.preventDefault()}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       >
         <div
+          ref={innerRef}
           style={{
             display: "flex",
             alignItems: "flex-start",
             gap: "12px",
             width: "max-content",
+            willChange: "transform",
           }}
         >
           {doubled.map((city, i) => (
@@ -166,7 +269,8 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
                   src={`${STORAGE_BASE}/${city.cover_image_path}`}
                   alt={city.name}
                   fill
-                  className="object-cover"
+                  className="object-cover pointer-events-none"
+                  draggable={false}
                   priority={i < 3}
                   sizes="(max-width: 591px) 44vw, 260px"
                 />
