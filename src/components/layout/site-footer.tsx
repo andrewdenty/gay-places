@@ -97,38 +97,39 @@ export function SiteFooter() {
         className="mx-auto w-full max-w-[720px] px-4 sm:px-6 pt-10 flex flex-col"
         style={{ minHeight: "inherit" }}
       >
-        {/* Top: logo */}
-        <Link href="/">
-          <Image
-            src="/logo-footer.svg"
-            alt="Gay Places"
-            width={87}
-            height={88}
-            style={{ height: 88, width: "auto" }}
-          />
-        </Link>
+        {/* Top: logo + nav side-by-side */}
+        <div className="flex items-start justify-between">
+          <Link href="/">
+            <Image
+              src="/logo-footer.svg"
+              alt="Gay Places"
+              width={87}
+              height={88}
+              style={{ height: 88, width: "auto" }}
+            />
+          </Link>
 
-        {/* Footer navigation */}
-        <nav aria-label="Site links" className="mt-8">
-          <ul className="flex flex-wrap gap-x-6 gap-y-1 text-[13px]">
-            <li>
-              <Link href="/#destinations" className="text-white/60 hover:text-white transition-colors">
-                All Destinations
-              </Link>
-            </li>
-            <li>
-              <Link href="/guides" className="text-white/60 hover:text-white transition-colors">
-                Guides
-              </Link>
-            </li>
-            <li>
-              <Link href="/suggest" className="text-white/60 hover:text-white transition-colors">
-                Add a Place
-              </Link>
-            </li>
-            {/* About page coming soon */}
-          </ul>
-        </nav>
+          <nav aria-label="Site links">
+            <ul className="flex flex-col items-end gap-2 text-[13px]">
+              <li>
+                <Link href="/#destinations" className="text-white/60 hover:text-white transition-colors">
+                  All Destinations
+                </Link>
+              </li>
+              <li>
+                <Link href="/guides" className="text-white/60 hover:text-white transition-colors">
+                  Guides
+                </Link>
+              </li>
+              <li>
+                <Link href="/suggest" className="text-white/60 hover:text-white transition-colors">
+                  Add a Place
+                </Link>
+              </li>
+              {/* About page coming soon */}
+            </ul>
+          </nav>
+        </div>
 
         {/* Bottom: rainbow + copyright */}
         <div className="mt-auto pt-8 flex items-end justify-between pb-8">
