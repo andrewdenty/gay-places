@@ -25,12 +25,6 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
 
-      // /about and /submit were crawled by Google but never existed as routes.
-      {
-        source: "/about",
-        destination: "/",
-        permanent: true,
-      },
       {
         source: "/submit",
         destination: "/suggest",
