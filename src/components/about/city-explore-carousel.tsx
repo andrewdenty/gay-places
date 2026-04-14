@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 const STORAGE_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
-// Seconds per city card — keeps apparent scroll speed consistent regardless
-// of how many cities are in the carousel.
-const SECONDS_PER_CARD = 5;
+// Auto-scroll speed in pixels per rAF frame (≈60 fps → ~30 px/s)
+const AUTO_SPEED = 0.5;
 
 function shuffleArray<T>(arr: T[]): T[] {
   const result = [...arr];
@@ -29,23 +28,72 @@ export type CarouselCity = {
 
 export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
   const [shuffled] = useState(() => shuffleArray(cities));
-  const [paused, setPaused] = useState(false);
+  const railRef = useRef<HTMLDivElement>(null);
+
+  // All mutable scroll state lives in a ref so it never causes re-renders.
+  const s = useRef({
+    speed: 0,                 // current px/frame (eases toward targetSpeed)
+    targetSpeed: AUTO_SPEED,  // what speed we're easing toward
+    raf: null as number | null,
+    isDragging: false,
+    pointerStartX: 0,
+    scrollAtDragStart: 0,
+    dragDistance: 0,          // tracks how far pointer moved (suppresses link clicks)
+    singleWidth: 0,           // width of one copy of the card set
+  });
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const st = s.current;
+
+    const updateWidth = () => {
+      st.singleWidth = rail.scrollWidth / 2;
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+
+    const tick = () => {
+      if (!st.isDragging) {
+        // Smoothly ease current speed toward the target (decelerate on hover,
+        // accelerate back on mouse-leave).
+        st.speed += (st.targetSpeed - st.speed) * 0.04;
+
+        if (Math.abs(st.speed) > 0.005) {
+          rail.scrollLeft += st.speed;
+        }
+
+        // Seamless infinite loop: once we've scrolled past one full copy,
+        // jump back by exactly that amount — visually imperceptible.
+        if (st.singleWidth > 0) {
+          if (rail.scrollLeft >= st.singleWidth) {
+            rail.scrollLeft -= st.singleWidth;
+          } else if (rail.scrollLeft < 0) {
+            rail.scrollLeft += st.singleWidth;
+          }
+        }
+      }
+
+      st.raf = requestAnimationFrame(tick);
+    };
+
+    st.raf = requestAnimationFrame(tick);
+
+    return () => {
+      if (st.raf) cancelAnimationFrame(st.raf);
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, [shuffled.length]);
 
   if (!shuffled.length) return null;
 
-  // Double the list: the CSS animation translates the track by -50% (one full
-  // set width), then loops — making the scroll seamless with no JS required.
   const doubled = [...shuffled, ...shuffled];
-
-  // Duration scales with card count so px/s speed is roughly constant.
-  const duration = Math.max(30, shuffled.length * SECONDS_PER_CARD);
 
   return (
     <div
       style={{
         marginLeft: "calc(-50vw + 50%)",
         width: "100vw",
-        overflow: "hidden",
       }}
     >
       {/* Section header — centred */}
@@ -53,12 +101,38 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
         <h2 className="h2-editorial text-[var(--foreground)]">Explore now</h2>
       </div>
 
-      {/* Card rail — CSS keyframe animation, pauses on hover/touch */}
+      {/* Scrollable rail — overflow-x: scroll with scrollbar hidden via CSS */}
       <div
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onTouchStart={() => setPaused(true)}
-        onTouchEnd={() => setPaused(false)}
+        ref={railRef}
+        className="explore-carousel-rail"
+        style={{ overflowX: "scroll", touchAction: "pan-y", userSelect: "none", WebkitUserSelect: "none" as React.CSSProperties["userSelect"] }}
+        onMouseEnter={() => { s.current.targetSpeed = 0; }}
+        onMouseLeave={() => { s.current.targetSpeed = AUTO_SPEED; }}
+        onPointerDown={(e) => {
+          const rail = railRef.current;
+          if (!rail) return;
+          s.current.isDragging = true;
+          s.current.dragDistance = 0;
+          s.current.pointerStartX = e.clientX;
+          s.current.scrollAtDragStart = rail.scrollLeft;
+          rail.setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          const st = s.current;
+          if (!st.isDragging) return;
+          const rail = railRef.current;
+          if (!rail) return;
+          const dx = e.clientX - st.pointerStartX;
+          st.dragDistance = Math.abs(dx);
+          // Wrap the scroll position for a seamless loop during drag.
+          let newScroll = st.scrollAtDragStart - dx;
+          if (st.singleWidth > 0) {
+            newScroll = ((newScroll % st.singleWidth) + st.singleWidth) % st.singleWidth;
+          }
+          rail.scrollLeft = newScroll;
+        }}
+        onPointerUp={() => { s.current.isDragging = false; }}
+        onPointerCancel={() => { s.current.isDragging = false; }}
       >
         <div
           style={{
@@ -66,8 +140,6 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
             alignItems: "flex-start",
             gap: "12px",
             width: "max-content",
-            animation: `carousel-scroll ${duration}s linear infinite`,
-            animationPlayState: paused ? "paused" : "running",
           }}
         >
           {doubled.map((city, i) => (
@@ -83,6 +155,11 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
                   overflow: "hidden",
                   background: "var(--hover-bg)",
                   border: "1px solid var(--border)",
+                }}
+                draggable={false}
+                onClick={(e) => {
+                  // Suppress navigation if the user was dragging rather than clicking.
+                  if (s.current.dragDistance > 5) e.preventDefault();
                 }}
               >
                 <Image
