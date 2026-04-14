@@ -108,6 +108,19 @@ export function SiteFooter() {
           />
         </Link>
 
+        {/* Nav links */}
+        <div className="mt-8 flex gap-5">
+          <Link href="/about" className="label-xs text-white/40 hover:text-white/60 transition-colors">
+            About
+          </Link>
+          <Link href="/guides" className="label-xs text-white/40 hover:text-white/60 transition-colors">
+            Guides
+          </Link>
+          <Link href="/suggest" className="label-xs text-white/40 hover:text-white/60 transition-colors">
+            Suggest a place
+          </Link>
+        </div>
+
         {/* Bottom: rainbow + copyright */}
         <div className="mt-auto pt-8 flex items-end justify-between pb-8">
           <div className="label-xs text-white/40">© 2026 Andrew Denty</div>

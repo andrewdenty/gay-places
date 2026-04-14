@@ -180,6 +180,14 @@ export function NavDrawer({
                 <ArrowRight size={16} strokeWidth={1.5} className="mr-2 text-[var(--foreground)]" />
               </Link>
 
+              {/* About */}
+              <Link href="/about" onClick={onClose} className="flex items-center justify-between">
+                <span className="font-mono text-[10px] uppercase text-[var(--foreground)]" style={{ letterSpacing: "1.2px" }}>
+                  About
+                </span>
+                <ArrowRight size={16} strokeWidth={1.5} className="mr-2 text-[var(--foreground)]" />
+              </Link>
+
               {/* Contribute */}
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[10px] uppercase text-[var(--foreground)]" style={{ letterSpacing: "1.2px" }}>
