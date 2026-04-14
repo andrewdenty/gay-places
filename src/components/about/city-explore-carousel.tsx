@@ -49,18 +49,8 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
       }}
     >
       {/* Section header — centred */}
-      <div className="text-center mb-5 px-4">
-        <h2
-          style={{
-            fontFamily: "var(--font-instrument-serif), Georgia, serif",
-            fontSize: "clamp(26px, 6vw, 34px)",
-            fontWeight: 400,
-            letterSpacing: "-0.5px",
-            lineHeight: 1.1,
-          }}
-        >
-          Explore now
-        </h2>
+      <div className="text-center mb-8 px-4">
+        <h2 className="h2-editorial text-[var(--foreground)]">Explore now</h2>
       </div>
 
       {/* Card rail — CSS keyframe animation, pauses on hover/touch */}
