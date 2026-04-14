@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CityExploreCarousel } from "@/components/about/city-explore-carousel";
+import { getTopCitiesWithImages } from "@/lib/data/public";
+import { env } from "@/lib/env";
 
 export const revalidate = 86400;
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
+const BASE_URL = env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
 
 const DESCRIPTION =
   "Gay Places is building a better way to discover gay venues, events, and communities around the world. Find out what we're building and why it matters.";
@@ -26,7 +29,9 @@ const aboutPageJsonLd = {
   url: `${BASE_URL}/about`,
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const hasSupa = !!(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const featuredCities = await (hasSupa ? getTopCitiesWithImages(8).catch(() => []) : Promise.resolve([]));
   return (
     <>
       <script
@@ -135,6 +140,14 @@ export default function AboutPage() {
           </section>
 
         </div>
+
+        {/* ── Explore now ── */}
+        {featuredCities.length > 0 && (
+          <div className="mt-16 sm:mt-20">
+            <hr className="border-0 border-t border-[var(--border)] mb-16 sm:mb-20" />
+            <CityExploreCarousel cities={featuredCities} />
+          </div>
+        )}
 
         {/* ── CTA ── */}
         <div
