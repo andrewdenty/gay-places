@@ -17,7 +17,13 @@ export type CarouselCity = {
   cover_image_path: string;
 };
 
-export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
+export function CityExploreCarousel({
+  cities,
+  dark = false,
+}: {
+  cities: CarouselCity[];
+  dark?: boolean;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
 
@@ -43,14 +49,10 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
   const next = () => scrollTo(Math.min(cities.length - 1, current + 1));
 
   return (
-    /* full-bleed break-out of the 720 px centred container */
-    <div
-      style={{
-        marginLeft: "calc(-50vw + 50%)",
-        width: "100vw",
-      }}
-    >
-      {/* Section header – re-constrained to the normal reading width */}
+    /* The parent in about/page.tsx provides the dark band wrapper.
+       Here we just render the header + rail without any outer background. */
+    <div>
+      {/* Section header */}
       <div
         className="mx-auto px-4 sm:px-6 mb-5 flex items-center justify-between"
         style={{ maxWidth: 720 }}
@@ -62,6 +64,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
             fontWeight: 400,
             letterSpacing: "-0.5px",
             lineHeight: 1.1,
+            color: dark ? "#fff" : "var(--foreground)",
           }}
         >
           Explore now
@@ -80,7 +83,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
               cursor: current === 0 ? "default" : "pointer",
               opacity: current === 0 ? 0.2 : 1,
               fontSize: 20,
-              color: "var(--foreground)",
+              color: dark ? "#fff" : "var(--foreground)",
               lineHeight: 1,
               transition: "opacity 0.2s",
             }}
@@ -89,7 +92,11 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
           </button>
           <span
             className="label-mono"
-            style={{ color: "var(--muted-foreground)", minWidth: 40, textAlign: "center" }}
+            style={{
+              color: dark ? "rgba(255,255,255,0.45)" : "var(--muted-foreground)",
+              minWidth: 40,
+              textAlign: "center",
+            }}
           >
             {current + 1} / {cities.length}
           </span>
@@ -104,7 +111,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
               cursor: current === cities.length - 1 ? "default" : "pointer",
               opacity: current === cities.length - 1 ? 0.2 : 1,
               fontSize: 20,
-              color: "var(--foreground)",
+              color: dark ? "#fff" : "var(--foreground)",
               lineHeight: 1,
               transition: "opacity 0.2s",
             }}
