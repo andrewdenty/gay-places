@@ -272,6 +272,10 @@ body {
 .explore-carousel-rail::-webkit-scrollbar {
   display: none;
 }
+.explore-carousel-rail img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
 
 /* MapLibre popup overrides — editorial, sharp edges */
 .gay-places-popup .maplibregl-popup-content {

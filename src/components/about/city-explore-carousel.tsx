@@ -56,8 +56,8 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
     const tick = () => {
       if (!st.isDragging) {
         // Smoothly ease current speed toward the target (decelerate on hover,
-        // accelerate back on mouse-leave).
-        st.speed += (st.targetSpeed - st.speed) * 0.04;
+        // accelerate back on mouse-leave).  Lower factor → more gradual.
+        st.speed += (st.targetSpeed - st.speed) * 0.02;
 
         if (Math.abs(st.speed) > 0.005) {
           rail.scrollLeft += st.speed;
@@ -101,13 +101,14 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
         <h2 className="h2-editorial text-[var(--foreground)]">Explore now</h2>
       </div>
 
-      {/* Scrollable rail — overflow-x: scroll with scrollbar hidden via CSS */}
+      {/* Scrollable rail — overflow hidden; JS drives scrollLeft directly */}
       <div
         ref={railRef}
         className="explore-carousel-rail"
-        style={{ overflowX: "scroll", touchAction: "pan-y", userSelect: "none" }}
+        style={{ overflowX: "hidden", touchAction: "pan-y pinch-zoom", userSelect: "none" }}
         onMouseEnter={() => { s.current.targetSpeed = 0; }}
         onMouseLeave={() => { s.current.targetSpeed = AUTO_SPEED; }}
+        onDragStart={(e) => e.preventDefault()}
         onPointerDown={(e) => {
           const rail = railRef.current;
           if (!rail) return;
@@ -166,7 +167,8 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
                   src={`${STORAGE_BASE}/${city.cover_image_path}`}
                   alt={city.name}
                   fill
-                  className="object-cover"
+                  className="object-cover pointer-events-none"
+                  draggable={false}
                   priority={i < 3}
                   sizes="(max-width: 591px) 44vw, 260px"
                 />
