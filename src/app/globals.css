@@ -260,6 +260,11 @@ body {
   opacity: 0.85;
 }
 
+/* Explore carousel — hide scrollbar in all browsers */
+.explore-carousel-rail::-webkit-scrollbar {
+  display: none;
+}
+
 /* MapLibre popup overrides — editorial, sharp edges */
 .gay-places-popup .maplibregl-popup-content {
   border-radius: 20px;

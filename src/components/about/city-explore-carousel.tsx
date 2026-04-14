@@ -7,6 +7,9 @@ import Link from "next/link";
 const STORAGE_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
+// Gap between cards in px
+const GAP = 12;
+
 export type CarouselCity = {
   slug: string;
   name: string;
@@ -20,17 +23,19 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
-    if (!el) return;
-    const idx = Math.round(el.scrollLeft / el.offsetWidth);
-    setCurrent(idx);
-  }, []);
+    if (!el || !el.children.length) return;
+    const cardWidth = (el.children[0] as HTMLElement).offsetWidth;
+    const idx = Math.round(el.scrollLeft / (cardWidth + GAP));
+    setCurrent(Math.max(0, Math.min(idx, cities.length - 1)));
+  }, [cities.length]);
 
   if (!cities.length) return null;
 
   const scrollTo = (index: number) => {
     const el = scrollRef.current;
-    if (!el) return;
-    el.scrollTo({ left: index * el.offsetWidth, behavior: "smooth" });
+    if (!el || !el.children.length) return;
+    const cardWidth = (el.children[0] as HTMLElement).offsetWidth;
+    el.scrollTo({ left: index * (cardWidth + GAP), behavior: "smooth" });
     setCurrent(index);
   };
 
@@ -47,7 +52,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
     >
       {/* Section header – re-constrained to the normal reading width */}
       <div
-        className="mx-auto px-4 sm:px-6 mb-6 flex items-end justify-between"
+        className="mx-auto px-4 sm:px-6 mb-5 flex items-center justify-between"
         style={{ maxWidth: 720 }}
       >
         <h2
@@ -61,151 +66,126 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
         >
           Explore now
         </h2>
-        <span className="label-mono text-[var(--muted-foreground)] pb-1">
-          {current + 1} / {cities.length}
-        </span>
-      </div>
 
-      {/* Scrollable rail */}
-      <div className="relative">
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="flex"
-          style={{
-            overflowX: "scroll",
-            scrollSnapType: "x mandatory",
-            scrollbarWidth: "none",
-            // Hide webkit scrollbar
-            msOverflowStyle: "none",
-          }}
-        >
-          {cities.map((city, i) => (
-            <Link
-              key={city.slug}
-              href={`/city/${city.slug}`}
-              className="relative block shrink-0"
-              style={{
-                width: "100%",
-                minWidth: "100%",
-                scrollSnapAlign: "start",
-                // 16:9 on desktop, slightly taller on mobile
-                aspectRatio: "16 / 9",
-              }}
-            >
-              <Image
-                src={`${STORAGE_BASE}/${city.cover_image_path}`}
-                alt={city.name}
-                fill
-                className="object-cover"
-                priority={i === 0}
-                sizes="100vw"
-              />
-
-              {/* Gradient overlay */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.18) 45%, transparent 100%)",
-                }}
-              />
-
-              {/* City label */}
-              <div className="absolute bottom-0 left-0 right-0 px-6 sm:px-10 pb-6 sm:pb-10">
-                <p
-                  style={{
-                    fontFamily:
-                      "var(--font-instrument-serif), Georgia, serif",
-                    fontSize: "clamp(28px, 5vw, 44px)",
-                    fontWeight: 400,
-                    lineHeight: 1.1,
-                    letterSpacing: "-0.5px",
-                    color: "#fff",
-                  }}
-                >
-                  {city.name}
-                </p>
-                <p
-                  className="label-mono mt-2"
-                  style={{ color: "rgba(255,255,255,0.6)" }}
-                >
-                  {city.country}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Prev button */}
-        {current > 0 && (
+        {/* Nav controls inline with header */}
+        <div className="flex items-center gap-3">
           <button
             onClick={prev}
             aria-label="Previous city"
-            className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full"
+            disabled={current === 0}
             style={{
-              width: 40,
-              height: 40,
-              background: "rgba(255,255,255,0.15)",
-              backdropFilter: "blur(8px)",
-              border: "1px solid rgba(255,255,255,0.25)",
-              color: "#fff",
-              cursor: "pointer",
-              fontSize: 18,
+              background: "none",
+              border: "none",
+              padding: "4px 6px",
+              cursor: current === 0 ? "default" : "pointer",
+              opacity: current === 0 ? 0.2 : 1,
+              fontSize: 20,
+              color: "var(--foreground)",
               lineHeight: 1,
+              transition: "opacity 0.2s",
             }}
           >
             ←
           </button>
-        )}
-
-        {/* Next button */}
-        {current < cities.length - 1 && (
+          <span
+            className="label-mono"
+            style={{ color: "var(--muted-foreground)", minWidth: 40, textAlign: "center" }}
+          >
+            {current + 1} / {cities.length}
+          </span>
           <button
             onClick={next}
             aria-label="Next city"
-            className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full"
+            disabled={current === cities.length - 1}
             style={{
-              width: 40,
-              height: 40,
-              background: "rgba(255,255,255,0.15)",
-              backdropFilter: "blur(8px)",
-              border: "1px solid rgba(255,255,255,0.25)",
-              color: "#fff",
-              cursor: "pointer",
-              fontSize: 18,
+              background: "none",
+              border: "none",
+              padding: "4px 6px",
+              cursor: current === cities.length - 1 ? "default" : "pointer",
+              opacity: current === cities.length - 1 ? 0.2 : 1,
+              fontSize: 20,
+              color: "var(--foreground)",
               lineHeight: 1,
+              transition: "opacity 0.2s",
             }}
           >
             →
           </button>
-        )}
+        </div>
+      </div>
 
-        {/* Dot indicators */}
-        <div
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5"
-        >
-          {cities.map((city, i) => (
-            <button
-              key={i}
-              onClick={() => scrollTo(i)}
-              aria-label={`Go to ${city.name}`}
+      {/* Scrollable card rail
+          Cards are square, ~75 vw wide (capped at 520 px).
+          Equal padding on both sides centres the first/last card:
+            padding = (100vw - cardWidth) / 2
+            = max(12.5vw, 50vw - 260px)   [260 = 520/2]
+          Adjacent cards naturally peek into view on both sides. */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="explore-carousel-rail"
+        style={{
+          display: "flex",
+          overflowX: "scroll",
+          scrollSnapType: "x mandatory",
+          scrollbarWidth: "none",
+          gap: `${GAP}px`,
+          paddingInline: "max(12.5vw, calc(50vw - 260px))",
+        }}
+      >
+        {cities.map((city, i) => (
+          <Link
+            key={city.slug}
+            href={`/city/${city.slug}`}
+            className="relative block shrink-0 w-[75vw] max-w-[520px]"
+            style={{
+              aspectRatio: "1 / 1",
+              scrollSnapAlign: "center",
+              overflow: "hidden",
+            }}
+          >
+            <Image
+              src={`${STORAGE_BASE}/${city.cover_image_path}`}
+              alt={city.name}
+              fill
+              className="object-cover"
+              priority={i === 0}
+              sizes="(max-width: 693px) 75vw, 520px"
+            />
+
+            {/* Gradient overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none"
               style={{
-                width: i === current ? 20 : 6,
-                height: 6,
-                borderRadius: 3,
                 background:
-                  i === current
-                    ? "rgba(255,255,255,0.95)"
-                    : "rgba(255,255,255,0.35)",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                transition: "width 0.25s ease, background 0.25s ease",
+                  "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.12) 45%, transparent 100%)",
               }}
             />
-          ))}
-        </div>
+
+            {/* City label */}
+            <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+              <p
+                style={{
+                  fontFamily:
+                    "var(--font-instrument-serif), Georgia, serif",
+                  fontSize: "clamp(22px, 4.5vw, 34px)",
+                  fontWeight: 400,
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.4px",
+                  color: "#fff",
+                }}
+              >
+                {city.name}
+              </p>
+              <p
+                className="label-mono mt-1.5"
+                style={{ color: "rgba(255,255,255,0.55)" }}
+              >
+                {city.country}
+              </p>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
