@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { VENUE_TYPE_SET, type VenueTypeValue } from "@/lib/venue-types";
 
 function buildGoogleSearchUrl(name: string, cityName: string, country: string): string {
   const q = encodeURIComponent(`${name} ${cityName} ${country}`);
@@ -10,6 +11,14 @@ function buildGoogleSearchUrl(name: string, cityName: string, country: string): 
 function buildGoogleMapsSearchUrl(name: string, cityName: string, country: string): string {
   const q = encodeURIComponent(`${name} ${cityName} ${country}`);
   return `https://www.google.com/maps/search/?api=1&query=${q}`;
+}
+
+function toVenueType(v: unknown): VenueTypeValue {
+  const s = typeof v === "string" ? v.trim().toLowerCase() : "other";
+  if (s === "dance club" || s === "dance_club") return "club";
+  if (s === "cruising club" || s === "cruising_club") return "cruising";
+  if (s === "sex_club" || s === "sex club") return "cruising";
+  return VENUE_TYPE_SET.has(s) ? (s as VenueTypeValue) : "other";
 }
 
 export async function POST(request: Request) {
@@ -40,11 +49,13 @@ export async function POST(request: Request) {
 
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const citySlug = typeof body.city_slug === "string" ? body.city_slug.trim() : "";
-  const venueType = typeof body.venue_type === "string" ? body.venue_type.trim() : "";
+  const venueTypeRaw = typeof body.venue_type === "string" ? body.venue_type.trim() : "";
 
   if (!name) return NextResponse.json({ error: "name is required" }, { status: 400 });
   if (!citySlug) return NextResponse.json({ error: "city_slug is required" }, { status: 400 });
-  if (!venueType) return NextResponse.json({ error: "venue_type is required" }, { status: 400 });
+  if (!venueTypeRaw) return NextResponse.json({ error: "venue_type is required" }, { status: 400 });
+
+  const venueType = toVenueType(venueTypeRaw);
 
   const admin = createSupabaseAdminClient();
 
