@@ -105,7 +105,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
       <div
         ref={railRef}
         className="explore-carousel-rail"
-        style={{ overflowX: "scroll", touchAction: "pan-y", userSelect: "none", WebkitUserSelect: "none" as React.CSSProperties["userSelect"] }}
+        style={{ overflowX: "scroll", touchAction: "pan-y", userSelect: "none" }}
         onMouseEnter={() => { s.current.targetSpeed = 0; }}
         onMouseLeave={() => { s.current.targetSpeed = AUTO_SPEED; }}
         onPointerDown={(e) => {
