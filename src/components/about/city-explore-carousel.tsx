@@ -9,6 +9,14 @@ const STORAGE_BASE =
 
 // Auto-scroll speed in pixels per rAF frame (≈60 fps → ~30 px/s)
 const AUTO_SPEED = 0.5;
+// Maximum momentum velocity after touch release (px per frame)
+const MAX_MOMENTUM = 20;
+// Friction multiplier applied each frame during momentum (0–1)
+const MOMENTUM_FRICTION = 0.95;
+// Minimum velocity before momentum stops (px per frame)
+const MOMENTUM_THRESHOLD = 0.5;
+// Smoothing factor for touch velocity (0–1, higher = more responsive)
+const VELOCITY_SMOOTHING = 0.3;
 
 function shuffleArray<T>(arr: T[]): T[] {
   const result = [...arr];
@@ -76,9 +84,9 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
     const tick = () => {
       if (!st.isDragging) {
         // If we have momentum velocity from a touch flick, apply it
-        if (Math.abs(st.velocity) > 0.5) {
+        if (Math.abs(st.velocity) > MOMENTUM_THRESHOLD) {
           st.offset += st.velocity;
-          st.velocity *= 0.95; // friction
+          st.velocity *= MOMENTUM_FRICTION;
         } else {
           st.velocity = 0;
           // Auto-scroll: ease current speed toward target
@@ -115,12 +123,14 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
       const dx = touch.clientX - st.startX;
       st.dragDistance = Math.abs(dx);
 
-      // Track velocity for momentum
+      // Smooth velocity with exponential moving average to avoid jitter
       const now = performance.now();
       const dt = now - st.lastTouchTime;
       if (dt > 0) {
-        // px per ~16ms frame
-        st.velocity = ((st.lastTouchX - touch.clientX) / dt) * 16;
+        const instantVelocity = ((st.lastTouchX - touch.clientX) / dt) * 16;
+        st.velocity =
+          VELOCITY_SMOOTHING * instantVelocity +
+          (1 - VELOCITY_SMOOTHING) * st.velocity;
       }
       st.lastTouchX = touch.clientX;
       st.lastTouchTime = now;
@@ -136,8 +146,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
 
     const onTouchEnd = () => {
       st.isDragging = false;
-      // Clamp momentum so it doesn't fly off
-      st.velocity = Math.max(-20, Math.min(20, st.velocity));
+      st.velocity = Math.max(-MAX_MOMENTUM, Math.min(MAX_MOMENTUM, st.velocity));
     };
 
     rail.addEventListener("touchstart", onTouchStart, { passive: true });
