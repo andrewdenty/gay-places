@@ -243,25 +243,6 @@ export default async function CityVenueTypePage({
             initialType={internalType as VenueType}
           />
 
-          {/* ── Server-rendered venue links for SEO ── */}
-          <nav aria-label={`${pluralLabel} in ${city.name}`} className="mt-10 border-t border-[var(--border)] pt-6">
-            <h2 className="text-[15px] font-semibold text-[var(--foreground)] mb-3">
-              All {pluralLabel.toLowerCase()} in {city.name}
-            </h2>
-            <ul className="columns-1 sm:columns-2 gap-x-6 text-[14px] leading-[1.8]">
-              {filteredVenues.map((v) => (
-                <li key={v.slug}>
-                  <Link
-                    href={venueUrlPath(city.slug, v.venue_type, v.slug)}
-                    className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
-                  >
-                    {v.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
           {/* Editorial moment */}
           <section className="py-10 mt-8">
             <div className="flex flex-col items-center gap-5 py-4">

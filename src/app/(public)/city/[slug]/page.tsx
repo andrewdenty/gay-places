@@ -9,25 +9,13 @@ import { CityAdminToggle } from "@/components/city/city-admin-toggle";
 import { CityArticles } from "@/components/article/city-articles";
 import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
-import { toCountrySlug, venueUrlPath } from "@/lib/slugs";
+import { toCountrySlug } from "@/lib/slugs";
 
 export const revalidate = 86400;
 
 const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
-const VENUE_TYPE_LABEL: Record<string, string> = {
-  bar: "Bar",
-  club: "Club",
-  restaurant: "Restaurant",
-  cafe: "Café",
-  sauna: "Sauna",
-  event_space: "Event Space",
-  other: "Venue",
-  cruising: "Cruising",
-  hotel: "Hotel",
-  shop: "Shop",
-};
 
 
 export async function generateMetadata({
@@ -241,28 +229,6 @@ export default async function CityPage({
         )}
 
         <CityExplorer city={city} venues={venues} />
-
-        {/* ── Server-rendered venue links for SEO ── */}
-        <nav aria-label={`All venues in ${city.name}`} className="mt-10 border-t border-[var(--border)] pt-6">
-          <h2 className="text-[15px] font-semibold text-[var(--foreground)] mb-3">
-            All places in {city.name}
-          </h2>
-          <ul className="columns-1 sm:columns-2 gap-x-6 text-[14px] leading-[1.8]">
-            {venues.map((v) => (
-              <li key={v.slug}>
-                <Link
-                  href={venueUrlPath(city.slug, v.venue_type, v.slug)}
-                  className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
-                >
-                  {v.name}
-                  <span className="text-[var(--muted-foreground)] ml-1 text-[12px]">
-                    {VENUE_TYPE_LABEL[v.venue_type] ?? v.venue_type}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
 
         {/* ── Blog articles for this city ── */}
         <CityArticles articles={getArticlesByCitySlug(slug)} />
