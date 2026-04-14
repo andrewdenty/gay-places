@@ -97,20 +97,30 @@ export function SiteFooter() {
         className="mx-auto w-full max-w-[720px] px-4 sm:px-6 pt-10 flex flex-col"
         style={{ minHeight: "inherit" }}
       >
-        {/* Logo */}
-        <Link href="/">
-          <Image
-            src="/logo-footer.svg"
-            alt="Gay Places"
-            width={87}
-            height={88}
-            style={{ height: 88, width: "auto" }}
-          />
-        </Link>
+        {/* Nav links — above the logo */}
+        <div className="flex gap-5 mb-14">
+          <Link href="/about" className="label-xs text-white/40 hover:text-white/60 transition-colors">
+            About
+          </Link>
+          <Link href="/guides" className="label-xs text-white/40 hover:text-white/60 transition-colors">
+            Guides
+          </Link>
+          <Link href="/suggest" className="label-xs text-white/40 hover:text-white/60 transition-colors">
+            Suggest a place
+          </Link>
+        </div>
 
-        {/* Bottom: rainbow + copyright */}
-        <div className="mt-auto pt-8 flex items-end justify-between pb-8">
-          <div className="label-xs text-white/40" suppressHydrationWarning>© {new Date().getFullYear()} Andrew Denty</div>
+        {/* Logo + spinning rainbow — same line */}
+        <div className="flex items-center justify-between">
+          <Link href="/">
+            <Image
+              src="/logo-footer.svg"
+              alt="Gay Places"
+              width={87}
+              height={88}
+              style={{ height: 88, width: "auto" }}
+            />
+          </Link>
           <Link href="/" aria-label="Home">
             <Image
               src="/rainbow-logo.svg"
@@ -125,6 +135,11 @@ export function SiteFooter() {
               }}
             />
           </Link>
+        </div>
+
+        {/* Copyright */}
+        <div className="mt-auto pt-8 pb-8">
+          <div className="label-xs text-white/40" suppressHydrationWarning>© {new Date().getFullYear()} Andrew Denty</div>
         </div>
       </div>
     </footer>
