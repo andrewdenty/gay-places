@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { CityExploreCarousel } from "@/components/about/city-explore-carousel";
 import { getTopCitiesWithImages } from "@/lib/data/public";
@@ -39,7 +40,7 @@ export default async function AboutPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageJsonLd) }}
       />
 
-      <div className="pt-12 sm:pt-16 pb-16 sm:pb-24">
+      <div className="pt-20 sm:pt-28 pb-24 sm:pb-40">
 
         {/* ── Hero ── */}
         <div className="text-center mb-16 sm:mb-24">
@@ -75,10 +76,18 @@ export default async function AboutPage() {
 
             {/* Section 1 */}
             <section>
+              <div className="flex justify-center mb-4">
+                <Image
+                  src="/rainbow-logo.svg"
+                  alt=""
+                  width={32}
+                  height={32}
+                />
+              </div>
               <h2 className="h2-editorial text-[var(--foreground)] mb-4">
                 What&rsquo;s missing
               </h2>
-              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
+              <div className="flex flex-col gap-4 leading-[1.6] text-[var(--muted-foreground)]" style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace", fontSize: "13px" }}>
                 <p>
                   Too much of the information around gay life is flat, outdated,
                   or built around the wrong incentives. Some platforms give you
@@ -96,7 +105,7 @@ export default async function AboutPage() {
               <h2 className="h2-editorial text-[var(--foreground)] mb-4">
                 Why it matters
               </h2>
-              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
+              <div className="flex flex-col gap-4 leading-[1.6] text-[var(--muted-foreground)]" style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace", fontSize: "13px" }}>
                 <p>
                   Gay life is not just a directory. It is local, social,
                   fast-changing, and diverse. People need more than names and
@@ -124,7 +133,7 @@ export default async function AboutPage() {
               <h2 className="h2-editorial text-[var(--foreground)] mb-4">
                 Where we start
               </h2>
-              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
+              <div className="flex flex-col gap-4 leading-[1.6] text-[var(--muted-foreground)]" style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace", fontSize: "13px" }}>
                 <p>
                   Today, Gay Places starts with a clean, user-oriented guide to
                   gay venues. Over time, we want to expand into events, community
