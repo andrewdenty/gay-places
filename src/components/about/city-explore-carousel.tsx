@@ -40,36 +40,31 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
     const el = scrollRef.current;
     if (!el) return;
 
-    // Defer until after first paint so offsetWidth is fully calculated
-    const initId = requestAnimationFrame(() => {
-      if (!el.children.length) return;
-      const cardWidth = (el.children[0] as HTMLElement).offsetWidth;
-      if (!cardWidth) return;
+    // Calculate card width directly from CSS rules (44vw, max 260px) to avoid
+    // unreliable DOM measurement timing issues.
+    const cardWidth = Math.min(window.innerWidth * 0.44, 260);
+    const oneSetWidth = shuffled.length * (cardWidth + GAP);
 
-      const oneSetWidth = shuffled.length * (cardWidth + GAP);
+    // Start scrolled to the first card of the middle set so items peek on both sides
+    el.scrollLeft = oneSetWidth;
 
-      // Start scrolled to the first card of the middle set so items peek on both sides
-      el.scrollLeft = oneSetWidth;
-
-      const tick = (time: number) => {
-        if (!pausedRef.current) {
-          const delta =
-            lastTimeRef.current !== null ? (time - lastTimeRef.current) / 1000 : 0;
-          el.scrollLeft += SCROLL_SPEED * delta;
-          // Seamlessly loop: when we enter the third set, jump back to the second set
-          if (el.scrollLeft >= 2 * oneSetWidth) {
-            el.scrollLeft -= oneSetWidth;
-          }
+    const tick = (time: number) => {
+      if (!pausedRef.current) {
+        const delta =
+          lastTimeRef.current !== null ? (time - lastTimeRef.current) / 1000 : 0;
+        el.scrollLeft += SCROLL_SPEED * delta;
+        // Seamlessly loop: when we enter the third set, jump back to the second set
+        if (el.scrollLeft >= 2 * oneSetWidth) {
+          el.scrollLeft -= oneSetWidth;
         }
-        lastTimeRef.current = time;
-        rafRef.current = requestAnimationFrame(tick);
-      };
-
+      }
+      lastTimeRef.current = time;
       rafRef.current = requestAnimationFrame(tick);
-    });
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
 
     return () => {
-      cancelAnimationFrame(initId);
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
     // shuffled is produced by a lazy useState initializer and never changes;
@@ -141,8 +136,7 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
                 aspectRatio: "1 / 1",
                 overflow: "hidden",
                 background: "var(--hover-bg)",
-                border: "1px solid var(--muted)",
-                borderRadius: "4px",
+                border: "1px solid var(--border)",
               }}
             >
               <Image
