@@ -65,7 +65,9 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // shuffled is produced by a lazy useState initializer and never changes;
+    // including shuffled.length makes the dependency explicit without triggering re-runs.
+  }, [shuffled.length]);
 
   if (!shuffled.length) return null;
 
