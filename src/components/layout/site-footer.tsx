@@ -4,13 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-type FooterCity = { slug: string; name: string };
-
-type SiteFooterProps = {
-  topCities?: FooterCity[];
-};
-
-export function SiteFooter({ topCities = [] }: SiteFooterProps) {
+export function SiteFooter() {
   const [rotation, setRotation] = useState(0);
   const state = useRef({
     velocity: 0,
@@ -115,25 +109,26 @@ export function SiteFooter({ topCities = [] }: SiteFooterProps) {
         </Link>
 
         {/* Footer navigation */}
-        {topCities.length > 0 && (
-          <nav aria-label="Popular destinations" className="mt-8">
-            <div className="text-[12px] uppercase tracking-[0.1em] text-white/50 mb-2">
-              Popular Cities
-            </div>
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
-              {topCities.map((city) => (
-                <li key={city.slug}>
-                  <Link
-                    href={`/city/${city.slug}`}
-                    className="text-white/60 hover:text-white transition-colors"
-                  >
-                    {city.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
+        <nav aria-label="Site links" className="mt-8">
+          <ul className="flex flex-wrap gap-x-6 gap-y-1 text-[13px]">
+            <li>
+              <Link href="/#destinations" className="text-white/60 hover:text-white transition-colors">
+                All Destinations
+              </Link>
+            </li>
+            <li>
+              <Link href="/guides" className="text-white/60 hover:text-white transition-colors">
+                Guides
+              </Link>
+            </li>
+            <li>
+              <Link href="/suggest" className="text-white/60 hover:text-white transition-colors">
+                Add a Place
+              </Link>
+            </li>
+            {/* About page coming soon */}
+          </ul>
+        </nav>
 
         {/* Bottom: rainbow + copyright */}
         <div className="mt-auto pt-8 flex items-end justify-between pb-8">
