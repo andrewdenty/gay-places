@@ -62,80 +62,83 @@ export default async function AboutPage() {
           </p>
         </div>
 
-        {/* ── Body copy ── */}
-        <div className="max-w-[600px] mx-auto flex flex-col gap-10 text-center">
+        {/* ── Body copy — manifesto box ── */}
+        <div className="max-w-[600px] mx-auto text-center">
+          <div
+            className="flex flex-col gap-10"
+            style={{
+              background: "var(--hover-bg)",
+              border: "1px solid var(--border)",
+              padding: "clamp(40px, 8vw, 72px) clamp(28px, 6vw, 56px)",
+            }}
+          >
 
-          {/* Bold divider above first section */}
-          <hr className="border-0 border-t-2 border-[var(--foreground)]" />
+            {/* Section 1 */}
+            <section>
+              <h2 className="h2-editorial text-[var(--foreground)] mb-4">
+                What&rsquo;s missing
+              </h2>
+              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
+                <p>
+                  Too much of the information around gay life is flat, outdated,
+                  or built around the wrong incentives. Some platforms give you
+                  little more than a list. Others are really trying to sell you a
+                  hotel room.
+                </p>
+                <p>
+                  What&rsquo;s missing is something that helps people actually decide.
+                </p>
+              </div>
+            </section>
 
-          {/* Section 1 */}
-          <section>
-            <h2 className="h2-editorial text-[var(--foreground)] mb-4">
-              What&rsquo;s missing
-            </h2>
-            <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
-              <p>
-                Too much of the information around gay life is flat, outdated,
-                or built around the wrong incentives. Some platforms give you
-                little more than a list. Others are really trying to sell you a
-                hotel room.
-              </p>
-              <p>
-                What&rsquo;s missing is something that helps people actually decide.
-              </p>
-            </div>
-          </section>
+            {/* Section 2 */}
+            <section>
+              <h2 className="h2-editorial text-[var(--foreground)] mb-4">
+                Why it matters
+              </h2>
+              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
+                <p>
+                  Gay life is not just a directory. It is local, social,
+                  fast-changing, and diverse. People need more than names and
+                  addresses. They need context, perspective, and a clearer sense
+                  of the scene.
+                </p>
+                <p
+                  className="text-[var(--foreground)]"
+                  style={{
+                    fontFamily:
+                      "var(--font-instrument-serif), Georgia, serif",
+                    fontSize: "20px",
+                    lineHeight: 1.4,
+                    letterSpacing: "-0.3px",
+                    fontWeight: 400,
+                  }}
+                >
+                  That is what we are building.
+                </p>
+              </div>
+            </section>
 
-          {/* Section 2 */}
-          <section>
-            <h2 className="h2-editorial text-[var(--foreground)] mb-4">
-              Why it matters
-            </h2>
-            <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
-              <p>
-                Gay life is not just a directory. It is local, social,
-                fast-changing, and diverse. People need more than names and
-                addresses. They need context, perspective, and a clearer sense
-                of the scene.
-              </p>
-              <p
-                className="text-[var(--foreground)]"
-                style={{
-                  fontFamily:
-                    "var(--font-instrument-serif), Georgia, serif",
-                  fontSize: "20px",
-                  lineHeight: 1.4,
-                  letterSpacing: "-0.3px",
-                  fontWeight: 400,
-                }}
-              >
-                That is what we are building.
-              </p>
-            </div>
-          </section>
+            {/* Section 3 */}
+            <section>
+              <h2 className="h2-editorial text-[var(--foreground)] mb-4">
+                Where we start
+              </h2>
+              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
+                <p>
+                  Today, Gay Places starts with a clean, user-oriented guide to
+                  gay venues. Over time, we want to expand into events, community
+                  contributions, and local voices that help bring each city into
+                  focus.
+                </p>
+                <p>
+                  Our goal is simple: make gay life easier to find, understand,
+                  and step into.
+                </p>
+              </div>
+            </section>
 
-          {/* Section 3 */}
-          <section>
-            <h2 className="h2-editorial text-[var(--foreground)] mb-4">
-              Where we start
-            </h2>
-            <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
-              <p>
-                Today, Gay Places starts with a clean, user-oriented guide to
-                gay venues. Over time, we want to expand into events, community
-                contributions, and local voices that help bring each city into
-                focus.
-              </p>
-              <p>
-                Our goal is simple: make gay life easier to find, understand,
-                and step into.
-              </p>
-            </div>
-          </section>
-
-          {/* Bold divider below last section */}
-          <hr className="border-0 border-t-2 border-[var(--foreground)]" />
-
+          </div>
         </div>
 
         {/* ── Explore now ── */}
@@ -155,10 +158,16 @@ export default async function AboutPage() {
             Know a place that belongs here?
           </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/suggest" className="btn-sm btn-sm-primary">
+            <Link
+              href="/suggest"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors h-11 px-5 text-sm bg-[var(--foreground)] text-white hover:opacity-90"
+            >
               Suggest a place
             </Link>
-            <Link href="/#destinations" className="btn-sm btn-sm-secondary">
+            <Link
+              href="/#destinations"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors h-11 px-5 text-sm border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)]"
+            >
               Explore destinations
             </Link>
           </div>
