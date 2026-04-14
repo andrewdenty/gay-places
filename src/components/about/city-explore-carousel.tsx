@@ -3,11 +3,11 @@
 import { useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const STORAGE_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
-// Gap between cards in px
 const GAP = 12;
 
 export type CarouselCity = {
@@ -17,13 +17,7 @@ export type CarouselCity = {
   cover_image_path: string;
 };
 
-export function CityExploreCarousel({
-  cities,
-  dark = false,
-}: {
-  cities: CarouselCity[];
-  dark?: boolean;
-}) {
+export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
 
@@ -49,12 +43,16 @@ export function CityExploreCarousel({
   const next = () => scrollTo(Math.min(cities.length - 1, current + 1));
 
   return (
-    /* The parent in about/page.tsx provides the dark band wrapper.
-       Here we just render the header + rail without any outer background. */
-    <div>
-      {/* Section header */}
+    <div
+      className="relative"
+      style={{
+        marginLeft: "calc(-50vw + 50%)",
+        width: "100vw",
+      }}
+    >
+      {/* Section header — constrained to reading width */}
       <div
-        className="mx-auto px-4 sm:px-6 mb-5 flex items-center justify-between"
+        className="mx-auto px-4 sm:px-6 mb-5"
         style={{ maxWidth: 720 }}
       >
         <h2
@@ -64,69 +62,13 @@ export function CityExploreCarousel({
             fontWeight: 400,
             letterSpacing: "-0.5px",
             lineHeight: 1.1,
-            color: dark ? "#fff" : "var(--foreground)",
           }}
         >
           Explore now
         </h2>
-
-        {/* Nav controls inline with header */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={prev}
-            aria-label="Previous city"
-            disabled={current === 0}
-            style={{
-              background: "none",
-              border: "none",
-              padding: "4px 6px",
-              cursor: current === 0 ? "default" : "pointer",
-              opacity: current === 0 ? 0.2 : 1,
-              fontSize: 20,
-              color: dark ? "#fff" : "var(--foreground)",
-              lineHeight: 1,
-              transition: "opacity 0.2s",
-            }}
-          >
-            ←
-          </button>
-          <span
-            className="label-mono"
-            style={{
-              color: dark ? "rgba(255,255,255,0.45)" : "var(--muted-foreground)",
-              minWidth: 40,
-              textAlign: "center",
-            }}
-          >
-            {current + 1} / {cities.length}
-          </span>
-          <button
-            onClick={next}
-            aria-label="Next city"
-            disabled={current === cities.length - 1}
-            style={{
-              background: "none",
-              border: "none",
-              padding: "4px 6px",
-              cursor: current === cities.length - 1 ? "default" : "pointer",
-              opacity: current === cities.length - 1 ? 0.2 : 1,
-              fontSize: 20,
-              color: dark ? "#fff" : "var(--foreground)",
-              lineHeight: 1,
-              transition: "opacity 0.2s",
-            }}
-          >
-            →
-          </button>
-        </div>
       </div>
 
-      {/* Scrollable card rail
-          Cards are square, ~75 vw wide (capped at 520 px).
-          Equal padding on both sides centres the first/last card:
-            padding = (100vw - cardWidth) / 2
-            = max(12.5vw, 50vw - 260px)   [260 = 520/2]
-          Adjacent cards naturally peek into view on both sides. */}
+      {/* Scrollable card rail */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -194,6 +136,44 @@ export function CityExploreCarousel({
           </Link>
         ))}
       </div>
+
+      {/* Subtle chevron arrows — only visible on sm+ */}
+      {current > 0 && (
+        <button
+          onClick={prev}
+          aria-label="Previous city"
+          className="hidden sm:flex absolute top-1/2 left-3 -translate-y-1/2 items-center justify-center rounded-full"
+          style={{
+            width: 40,
+            height: 40,
+            background: "rgba(255,255,255,0.85)",
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+            transition: "opacity 0.2s",
+          }}
+        >
+          <ChevronLeft size={20} strokeWidth={1.5} color="#171717" />
+        </button>
+      )}
+      {current < cities.length - 1 && (
+        <button
+          onClick={next}
+          aria-label="Next city"
+          className="hidden sm:flex absolute top-1/2 right-3 -translate-y-1/2 items-center justify-center rounded-full"
+          style={{
+            width: 40,
+            height: 40,
+            background: "rgba(255,255,255,0.85)",
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+            transition: "opacity 0.2s",
+          }}
+        >
+          <ChevronRight size={20} strokeWidth={1.5} color="#171717" />
+        </button>
+      )}
     </div>
   );
 }

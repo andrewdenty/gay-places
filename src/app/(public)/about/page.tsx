@@ -50,50 +50,17 @@ export default async function AboutPage() {
           </p>
           <h1
             className="h1-editorial text-[var(--foreground)] mb-6"
-            style={{ fontSize: "clamp(36px, 9vw, 52px)" }}
+            style={{ fontSize: "clamp(36px, 9vw, 48px)" }}
           >
-            Gay life in every city,<br />
-            <em style={{ fontStyle: "italic" }}>finally mapped.</em>
+            Finding gay life in a city<br />
+            <em style={{ fontStyle: "italic" }}>should not feel like guesswork.</em>
           </h1>
           <p className="text-[15px] text-[var(--muted-foreground)] leading-[1.6] max-w-[480px] mx-auto">
             Gay Places is building a better way to discover where to go, what
             is happening, and how to find the venues, events, and communities
             that feel right for you.
           </p>
-
-          {/* Stats row */}
-          <div className="flex justify-center gap-8 sm:gap-14 mt-10 sm:mt-12">
-            {(
-              [
-                { number: "24+", label: "cities" },
-                { number: "1,400+", label: "venues" },
-                { number: "0", label: "sponsored listings" },
-              ] as const
-            ).map(({ number, label }) => (
-              <div key={label} className="text-center">
-                <p
-                  style={{
-                    fontFamily:
-                      "var(--font-instrument-serif), Georgia, serif",
-                    fontSize: "clamp(28px, 6vw, 38px)",
-                    fontWeight: 400,
-                    lineHeight: 1,
-                    letterSpacing: "-0.5px",
-                    color: "var(--foreground)",
-                  }}
-                >
-                  {number}
-                </p>
-                <p className="label-mono text-[var(--muted-foreground)] mt-2">
-                  {label}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
-
-        {/* Thin rule */}
-        <hr className="border-0 border-t border-[var(--border)] mb-12 sm:mb-16" />
 
         {/* ── Body copy ── */}
         <div className="max-w-[600px] mx-auto flex flex-col gap-10">
@@ -115,9 +82,6 @@ export default async function AboutPage() {
               </p>
             </div>
           </section>
-
-          {/* Rule */}
-          <hr className="border-0 border-t border-[var(--border)]" />
 
           {/* Section 2 */}
           <section>
@@ -147,27 +111,6 @@ export default async function AboutPage() {
             </div>
           </section>
 
-          {/* Pull-quote */}
-          <blockquote
-            style={{
-              fontFamily: "var(--font-instrument-serif), Georgia, serif",
-              fontSize: "clamp(28px, 6vw, 40px)",
-              fontWeight: 400,
-              lineHeight: 1.25,
-              letterSpacing: "-0.5px",
-              color: "var(--foreground)",
-              fontStyle: "italic",
-              margin: "0.5rem 0",
-            }}
-          >
-            &ldquo;Gay life is not a list.
-            <br />
-            It&rsquo;s a feeling.&rdquo;
-          </blockquote>
-
-          {/* Rule */}
-          <hr className="border-0 border-t border-[var(--border)]" />
-
           {/* Section 3 */}
           <section>
             <h2 className="h2-editorial text-[var(--foreground)] mb-4">
@@ -189,19 +132,10 @@ export default async function AboutPage() {
 
         </div>
 
-        {/* ── Explore now — dark full-bleed band ── */}
+        {/* ── Explore now ── */}
         {featuredCities.length > 0 && (
-          <div
-            style={{
-              marginLeft: "calc(-50vw + 50%)",
-              width: "100vw",
-              background: "#111",
-              paddingTop: "clamp(48px, 8vw, 80px)",
-              paddingBottom: "clamp(48px, 8vw, 80px)",
-              marginTop: "clamp(64px, 10vw, 96px)",
-            }}
-          >
-            <CityExploreCarousel cities={featuredCities} dark />
+          <div className="mt-16 sm:mt-20">
+            <CityExploreCarousel cities={featuredCities} />
           </div>
         )}
 
@@ -209,23 +143,8 @@ export default async function AboutPage() {
         <div
           className="mt-16 sm:mt-20 text-center"
         >
-          <h2
-            style={{
-              fontFamily: "var(--font-instrument-serif), Georgia, serif",
-              fontSize: "clamp(28px, 6vw, 40px)",
-              fontWeight: 400,
-              lineHeight: 1.2,
-              letterSpacing: "-0.5px",
-              color: "var(--foreground)",
-              marginBottom: "1rem",
-            }}
-          >
-            Your city deserves<br />
-            <em style={{ fontStyle: "italic" }}>to be here.</em>
-          </h2>
-          <p className="text-[15px] text-[var(--muted-foreground)] leading-[1.6] max-w-[420px] mx-auto mb-8">
-            We&rsquo;re building the definitive guide to gay life around the
-            world. If you know a place that belongs, add it.
+          <p className="text-[15px] text-[var(--muted-foreground)] leading-[1.6] mb-6">
+            Know a place that belongs here?
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
