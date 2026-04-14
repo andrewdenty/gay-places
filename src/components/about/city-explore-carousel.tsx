@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -29,49 +29,67 @@ export type CarouselCity = {
 export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
   const [shuffled] = useState(() => shuffleArray(cities));
   const railRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
 
-  // All mutable scroll state lives in a ref so it never causes re-renders.
+  // All mutable state lives in a ref so it never causes re-renders.
   const s = useRef({
+    offset: 0,                // current translateX offset (px)
     speed: 0,                 // current px/frame (eases toward targetSpeed)
     targetSpeed: AUTO_SPEED,  // what speed we're easing toward
     raf: null as number | null,
+    // Drag state (shared by touch + pointer)
     isDragging: false,
-    pointerStartX: 0,
-    scrollAtDragStart: 0,
+    startX: 0,
+    offsetAtDragStart: 0,
     dragDistance: 0,          // tracks how far pointer moved (suppresses link clicks)
-    singleWidth: 0,           // width of one copy of the card set
+    // Touch velocity tracking for momentum
+    lastTouchX: 0,
+    lastTouchTime: 0,
+    velocity: 0,              // px per frame after release
+    // Dimensions
+    singleWidth: 0,
   });
 
   useEffect(() => {
+    const inner = innerRef.current;
     const rail = railRef.current;
-    if (!rail) return;
+    if (!inner || !rail) return;
     const st = s.current;
 
     const updateWidth = () => {
-      st.singleWidth = rail.scrollWidth / 2;
+      st.singleWidth = inner.scrollWidth / 2;
     };
     updateWidth();
     window.addEventListener("resize", updateWidth);
 
+    const applyTransform = () => {
+      inner.style.transform = `translateX(${-st.offset}px)`;
+    };
+
+    const wrapOffset = () => {
+      if (st.singleWidth > 0) {
+        st.offset =
+          ((st.offset % st.singleWidth) + st.singleWidth) % st.singleWidth;
+      }
+    };
+
     const tick = () => {
       if (!st.isDragging) {
-        // Smoothly ease current speed toward the target (decelerate on hover,
-        // accelerate back on mouse-leave).  Lower factor → more gradual.
-        st.speed += (st.targetSpeed - st.speed) * 0.02;
-
-        if (Math.abs(st.speed) > 0.005) {
-          rail.scrollLeft += st.speed;
-        }
-
-        // Seamless infinite loop: once we've scrolled past one full copy,
-        // jump back by exactly that amount — visually imperceptible.
-        if (st.singleWidth > 0) {
-          if (rail.scrollLeft >= st.singleWidth) {
-            rail.scrollLeft -= st.singleWidth;
-          } else if (rail.scrollLeft < 0) {
-            rail.scrollLeft += st.singleWidth;
+        // If we have momentum velocity from a touch flick, apply it
+        if (Math.abs(st.velocity) > 0.5) {
+          st.offset += st.velocity;
+          st.velocity *= 0.95; // friction
+        } else {
+          st.velocity = 0;
+          // Auto-scroll: ease current speed toward target
+          st.speed += (st.targetSpeed - st.speed) * 0.02;
+          if (Math.abs(st.speed) > 0.005) {
+            st.offset += st.speed;
           }
         }
+
+        wrapOffset();
+        applyTransform();
       }
 
       st.raf = requestAnimationFrame(tick);
@@ -79,11 +97,97 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
 
     st.raf = requestAnimationFrame(tick);
 
+    /* ── Native touch events (more reliable than pointer events on iOS) ── */
+    const onTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      st.isDragging = true;
+      st.dragDistance = 0;
+      st.velocity = 0;
+      st.startX = touch.clientX;
+      st.offsetAtDragStart = st.offset;
+      st.lastTouchX = touch.clientX;
+      st.lastTouchTime = performance.now();
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!st.isDragging) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - st.startX;
+      st.dragDistance = Math.abs(dx);
+
+      // Track velocity for momentum
+      const now = performance.now();
+      const dt = now - st.lastTouchTime;
+      if (dt > 0) {
+        // px per ~16ms frame
+        st.velocity = ((st.lastTouchX - touch.clientX) / dt) * 16;
+      }
+      st.lastTouchX = touch.clientX;
+      st.lastTouchTime = now;
+
+      let newOffset = st.offsetAtDragStart - dx;
+      if (st.singleWidth > 0) {
+        newOffset =
+          ((newOffset % st.singleWidth) + st.singleWidth) % st.singleWidth;
+      }
+      st.offset = newOffset;
+      applyTransform();
+    };
+
+    const onTouchEnd = () => {
+      st.isDragging = false;
+      // Clamp momentum so it doesn't fly off
+      st.velocity = Math.max(-20, Math.min(20, st.velocity));
+    };
+
+    rail.addEventListener("touchstart", onTouchStart, { passive: true });
+    rail.addEventListener("touchmove", onTouchMove, { passive: true });
+    rail.addEventListener("touchend", onTouchEnd);
+    rail.addEventListener("touchcancel", onTouchEnd);
+
     return () => {
       if (st.raf) cancelAnimationFrame(st.raf);
       window.removeEventListener("resize", updateWidth);
+      rail.removeEventListener("touchstart", onTouchStart);
+      rail.removeEventListener("touchmove", onTouchMove);
+      rail.removeEventListener("touchend", onTouchEnd);
+      rail.removeEventListener("touchcancel", onTouchEnd);
     };
   }, [shuffled.length]);
+
+  /* ── Desktop-only pointer handlers (skip touch to avoid double-handling) ── */
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
+    const st = s.current;
+    st.isDragging = true;
+    st.dragDistance = 0;
+    st.velocity = 0;
+    st.startX = e.clientX;
+    st.offsetAtDragStart = st.offset;
+    railRef.current?.setPointerCapture(e.pointerId);
+  }, []);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
+    const st = s.current;
+    if (!st.isDragging) return;
+    const dx = e.clientX - st.startX;
+    st.dragDistance = Math.abs(dx);
+    let newOffset = st.offsetAtDragStart - dx;
+    if (st.singleWidth > 0) {
+      newOffset =
+        ((newOffset % st.singleWidth) + st.singleWidth) % st.singleWidth;
+    }
+    st.offset = newOffset;
+    if (innerRef.current) {
+      innerRef.current.style.transform = `translateX(${-st.offset}px)`;
+    }
+  }, []);
+
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
+    s.current.isDragging = false;
+  }, []);
 
   if (!shuffled.length) return null;
 
@@ -101,46 +205,35 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
         <h2 className="h2-editorial text-[var(--foreground)]">Explore now</h2>
       </div>
 
-      {/* Scrollable rail — overflow hidden; JS drives scrollLeft directly */}
+      {/* Rail — overflow hidden; CSS transform drives horizontal position */}
       <div
         ref={railRef}
         className="explore-carousel-rail"
-        style={{ overflowX: "hidden", touchAction: "pan-y pinch-zoom", userSelect: "none" }}
-        onMouseEnter={() => { s.current.targetSpeed = 0; }}
-        onMouseLeave={() => { s.current.targetSpeed = AUTO_SPEED; }}
+        style={{
+          overflow: "hidden",
+          touchAction: "pan-y pinch-zoom",
+          userSelect: "none",
+        }}
+        onMouseEnter={() => {
+          s.current.targetSpeed = 0;
+        }}
+        onMouseLeave={() => {
+          s.current.targetSpeed = AUTO_SPEED;
+        }}
         onDragStart={(e) => e.preventDefault()}
-        onPointerDown={(e) => {
-          const rail = railRef.current;
-          if (!rail) return;
-          s.current.isDragging = true;
-          s.current.dragDistance = 0;
-          s.current.pointerStartX = e.clientX;
-          s.current.scrollAtDragStart = rail.scrollLeft;
-          rail.setPointerCapture(e.pointerId);
-        }}
-        onPointerMove={(e) => {
-          const st = s.current;
-          if (!st.isDragging) return;
-          const rail = railRef.current;
-          if (!rail) return;
-          const dx = e.clientX - st.pointerStartX;
-          st.dragDistance = Math.abs(dx);
-          // Wrap the scroll position for a seamless loop during drag.
-          let newScroll = st.scrollAtDragStart - dx;
-          if (st.singleWidth > 0) {
-            newScroll = ((newScroll % st.singleWidth) + st.singleWidth) % st.singleWidth;
-          }
-          rail.scrollLeft = newScroll;
-        }}
-        onPointerUp={() => { s.current.isDragging = false; }}
-        onPointerCancel={() => { s.current.isDragging = false; }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       >
         <div
+          ref={innerRef}
           style={{
             display: "flex",
             alignItems: "flex-start",
             gap: "12px",
             width: "max-content",
+            willChange: "transform",
           }}
         >
           {doubled.map((city, i) => (
