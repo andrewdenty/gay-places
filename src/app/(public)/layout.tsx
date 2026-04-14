@@ -42,7 +42,7 @@ export default async function PublicLayout({ children }: PropsWithChildren) {
         </div>
       </main>
 
-      <SiteFooter />
+      <SiteFooter topCities={initialCities.map((c) => ({ slug: c.slug, name: c.name }))} />
     </div>
     </ToastProvider>
   );

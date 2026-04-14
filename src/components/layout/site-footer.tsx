@@ -4,7 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-export function SiteFooter() {
+type FooterCity = { slug: string; name: string };
+
+type SiteFooterProps = {
+  topCities?: FooterCity[];
+};
+
+export function SiteFooter({ topCities = [] }: SiteFooterProps) {
   const [rotation, setRotation] = useState(0);
   const state = useRef({
     velocity: 0,
@@ -108,9 +114,30 @@ export function SiteFooter() {
           />
         </Link>
 
+        {/* Footer navigation */}
+        {topCities.length > 0 && (
+          <nav aria-label="Popular destinations" className="mt-8">
+            <div className="text-[12px] uppercase tracking-[0.1em] text-white/50 mb-2">
+              Popular Cities
+            </div>
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
+              {topCities.map((city) => (
+                <li key={city.slug}>
+                  <Link
+                    href={`/city/${city.slug}`}
+                    className="text-white/60 hover:text-white transition-colors"
+                  >
+                    {city.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
         {/* Bottom: rainbow + copyright */}
         <div className="mt-auto pt-8 flex items-end justify-between pb-8">
-          <div className="label-xs text-white/40">© 2026 Andrew Denty</div>
+          <div className="label-xs text-white/40">© {new Date().getFullYear()} Andrew Denty</div>
           <Link href="/" aria-label="Home">
             <Image
               src="/rainbow-logo.svg"

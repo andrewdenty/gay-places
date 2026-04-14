@@ -2,20 +2,40 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getCities, getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
 import { getArticlesByCitySlug } from "@/lib/articles";
 import { CityExplorer } from "@/components/city/city-explorer";
 import { CityAdminToggle } from "@/components/city/city-admin-toggle";
 import { CityArticles } from "@/components/article/city-articles";
 import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
-import { toCountrySlug } from "@/lib/slugs";
+import { toCountrySlug, venueUrlPath } from "@/lib/slugs";
 
 export const revalidate = 86400;
 
 const CITY_IMAGES_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
+const VENUE_TYPE_LABEL: Record<string, string> = {
+  bar: "Bar",
+  club: "Club",
+  restaurant: "Restaurant",
+  cafe: "Café",
+  sauna: "Sauna",
+  event_space: "Event Space",
+  other: "Venue",
+  cruising: "Cruising",
+  hotel: "Hotel",
+  shop: "Shop",
+};
+
+export async function generateStaticParams() {
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return [];
+  }
+  const cities = await getCities().catch(() => []);
+  return cities.map((city) => ({ slug: city.slug }));
+}
 
 export async function generateMetadata({
   params,
@@ -28,7 +48,8 @@ export async function generateMetadata({
   const { slug } = await params;
   const city = await getCityBySlug(slug);
   if (!city) return {};
-  const title = city.seo_title || `Gay ${city.name}`;
+  const year = new Date().getFullYear();
+  const title = city.seo_title || `Gay ${city.name} – Bars, Clubs & Queer Spaces (${year})`;
   const description =
     city.seo_description ||
     city.description ||
@@ -227,6 +248,28 @@ export default async function CityPage({
         )}
 
         <CityExplorer city={city} venues={venues} />
+
+        {/* ── Server-rendered venue links for SEO ── */}
+        <nav aria-label={`All venues in ${city.name}`} className="mt-10 border-t border-[var(--border)] pt-6">
+          <h2 className="text-[15px] font-semibold text-[var(--foreground)] mb-3">
+            All places in {city.name}
+          </h2>
+          <ul className="columns-1 sm:columns-2 gap-x-6 text-[14px] leading-[1.8]">
+            {venues.map((v) => (
+              <li key={v.slug}>
+                <Link
+                  href={venueUrlPath(city.slug, v.venue_type, v.slug)}
+                  className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
+                >
+                  {v.name}
+                  <span className="text-[var(--muted-foreground)] ml-1 text-[12px]">
+                    {VENUE_TYPE_LABEL[v.venue_type] ?? v.venue_type}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
         {/* ── Blog articles for this city ── */}
         <CityArticles articles={getArticlesByCitySlug(slug)} />

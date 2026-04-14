@@ -14,7 +14,7 @@ import { AdminVenueLink } from "@/components/venue/admin-venue-link";
 import { VenueInteractions } from "@/components/venue/VenueInteractions";
 import { VenueAdminToggle } from "@/components/venue/venue-admin-toggle";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getCityBySlug, getVenueBySlug, getNearbyVenues, getPublishedCountrySlugs, getAllPublishedVenuesForSitemap, getCities } from "@/lib/data/public";
 import { getArticlesByVenueSlug } from "@/lib/articles";
 import { VenueGuides } from "@/components/article/venue-guides";
 import { env } from "@/lib/env";
@@ -27,6 +27,23 @@ import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs"
 // component (AdminVenueLink) so no user-specific data is baked into the cached HTML.
 export const revalidate = 86400;
 
+export async function generateStaticParams() {
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return [];
+  }
+  const [cities, venues] = await Promise.all([
+    getCities().catch(() => []),
+    getAllPublishedVenuesForSitemap().catch(() => []),
+  ]);
+  const citySet = new Set(cities.map((c) => c.slug));
+  return venues
+    .filter((v) => v.city_slug && v.slug && citySet.has(v.city_slug))
+    .map((v) => ({
+      slug: v.city_slug,
+      venueType: venueTypeToUrlSegment(v.venue_type),
+      venueSlug: v.slug,
+    }));
+}
 
 
 const CITY_IMAGES_BASE =
@@ -237,13 +254,31 @@ export default async function VenuePage({
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: city.name,
-        item: `${BASE_URL}/city/${city.slug}`,
-      },
-      { "@type": "ListItem", position: 3, name: venue.name, item: placeUrl },
+      ...(countryPublished
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: city.country,
+              item: `${BASE_URL}/country/${countrySlug}`,
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: city.name,
+              item: `${BASE_URL}/city/${city.slug}`,
+            },
+            { "@type": "ListItem", position: 4, name: venue.name, item: placeUrl },
+          ]
+        : [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: city.name,
+              item: `${BASE_URL}/city/${city.slug}`,
+            },
+            { "@type": "ListItem", position: 3, name: venue.name, item: placeUrl },
+          ]),
     ],
   };
 

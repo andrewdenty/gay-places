@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/lib/data/public";
+import { getCities, getCityBySlug, getVenuesByCitySlug, getAllPublishedVenuesForSitemap, getPublishedCountrySlugs } from "@/lib/data/public";
 import { CityExplorer } from "@/components/city/city-explorer";
 import { CityAdminToggle } from "@/components/city/city-admin-toggle";
 import { env } from "@/lib/env";
-import { toCountrySlug, urlSegmentToVenueType } from "@/lib/slugs";
+import { toCountrySlug, urlSegmentToVenueType, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs";
 import type { VenueType } from "@/components/filters/filter-pills";
 
 export const revalidate = 86400;
@@ -25,6 +25,27 @@ const VENUE_TYPE_PLURAL: Record<string, string> = {
   cruising: "Cruising Venues",
 };
 
+export async function generateStaticParams() {
+  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return [];
+  }
+  const [cities, venues] = await Promise.all([
+    getCities().catch(() => []),
+    getAllPublishedVenuesForSitemap().catch(() => []),
+  ]);
+  const citySet = new Set(cities.map((c) => c.slug));
+  const uniquePairs = new Set<string>();
+  for (const v of venues) {
+    if (v.city_slug && citySet.has(v.city_slug)) {
+      uniquePairs.add(`${v.city_slug}::${v.venue_type}`);
+    }
+  }
+  return Array.from(uniquePairs).map((key) => {
+    const [slug, venueType] = key.split("::");
+    return { slug, venueType: venueTypeToUrlSegment(venueType) };
+  });
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -40,8 +61,9 @@ export async function generateMetadata({
   const city = await getCityBySlug(slug);
   if (!city) return {};
 
+  const year = new Date().getFullYear();
   const pluralLabel = VENUE_TYPE_PLURAL[internalType] ?? "Places";
-  const title = `Gay ${pluralLabel} in ${city.name} | Gay Places`;
+  const title = `Gay ${pluralLabel} in ${city.name} (${year})`;
   const description = `Discover the best gay ${pluralLabel.toLowerCase()} in ${city.name}. A curated guide to LGBTQ+ spaces.`;
 
   return {
@@ -98,6 +120,8 @@ export default async function CityVenueTypePage({
   const countryPublished = publishedCountrySlugs.has(countrySlug);
   const pluralLabel = VENUE_TYPE_PLURAL[internalType] ?? "Places";
 
+  const filteredVenues = venues.filter((v) => v.venue_type === internalType);
+
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -145,11 +169,28 @@ export default async function CityVenueTypePage({
     ? `${CITY_IMAGES_BASE}/${city.image_path}`
     : null;
 
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `Gay ${pluralLabel} in ${city.name}`,
+    numberOfItems: filteredVenues.length,
+    itemListElement: filteredVenues.map((v, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `${BASE_URL}${venueUrlPath(city.slug, v.venue_type, v.slug)}`,
+      name: v.name,
+    })),
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
       <CityAdminToggle citySlug={city.slug}>
         <div className="pt-8 pb-6 sm:pt-10 sm:pb-8">
@@ -221,6 +262,25 @@ export default async function CityVenueTypePage({
             venues={venues}
             initialType={internalType as VenueType}
           />
+
+          {/* ── Server-rendered venue links for SEO ── */}
+          <nav aria-label={`${pluralLabel} in ${city.name}`} className="mt-10 border-t border-[var(--border)] pt-6">
+            <h2 className="text-[15px] font-semibold text-[var(--foreground)] mb-3">
+              All {pluralLabel.toLowerCase()} in {city.name}
+            </h2>
+            <ul className="columns-1 sm:columns-2 gap-x-6 text-[14px] leading-[1.8]">
+              {filteredVenues.map((v) => (
+                <li key={v.slug}>
+                  <Link
+                    href={venueUrlPath(city.slug, v.venue_type, v.slug)}
+                    className="text-[var(--foreground)] hover:opacity-70 transition-opacity"
+                  >
+                    {v.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
           {/* Editorial moment */}
           <section className="py-10 mt-8">
