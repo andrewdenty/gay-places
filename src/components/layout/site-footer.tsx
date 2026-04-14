@@ -133,7 +133,7 @@ export function SiteFooter() {
 
         {/* Bottom: rainbow + copyright */}
         <div className="mt-auto pt-8 flex items-end justify-between pb-8">
-          <div className="label-xs text-white/40">© {new Date().getFullYear()} Andrew Denty</div>
+          <div className="label-xs text-white/40" suppressHydrationWarning>© {new Date().getFullYear()} Andrew Denty</div>
           <Link href="/" aria-label="Home">
             <Image
               src="/rainbow-logo.svg"
