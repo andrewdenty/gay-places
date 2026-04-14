@@ -1,16 +1,15 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 const STORAGE_BASE =
   "https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images";
 
-const GAP = 12;
-// Cards are 44 vw wide, capped at 260 px.
-const CARD_HALF_MAX = 130; // half of 260px max-width
-const SCROLL_SPEED = 25; // px/s — slow, gentle auto-scroll
+// Seconds per city card — keeps apparent scroll speed consistent regardless
+// of how many cities are in the carousel.
+const SECONDS_PER_CARD = 5;
 
 function shuffleArray<T>(arr: T[]): T[] {
   const result = [...arr];
@@ -29,67 +28,24 @@ export type CarouselCity = {
 };
 
 export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
-  // Randomise once on mount and triple the list for seamless infinite scroll
   const [shuffled] = useState(() => shuffleArray(cities));
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const pausedRef = useRef(false);
-  const rafRef = useRef<number | null>(null);
-  const lastTimeRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    // Calculate card width directly from CSS rules (44vw, max 260px) to avoid
-    // unreliable DOM measurement timing issues.
-    const cardWidth = Math.min(window.innerWidth * 0.44, 260);
-    const oneSetWidth = shuffled.length * (cardWidth + GAP);
-
-    // Start scrolled to the first card of the middle set so items peek on both sides
-    el.scrollLeft = oneSetWidth;
-
-    const tick = (time: number) => {
-      if (!pausedRef.current) {
-        const delta =
-          lastTimeRef.current !== null ? (time - lastTimeRef.current) / 1000 : 0;
-        el.scrollLeft += SCROLL_SPEED * delta;
-        // Seamlessly loop: when we enter the third set, jump back to the second set
-        if (el.scrollLeft >= 2 * oneSetWidth) {
-          el.scrollLeft -= oneSetWidth;
-        }
-      }
-      lastTimeRef.current = time;
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-
-    return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
-    // shuffled is produced by a lazy useState initializer and never changes;
-    // including shuffled.length makes the dependency explicit without triggering re-runs.
-  }, [shuffled.length]);
+  const [paused, setPaused] = useState(false);
 
   if (!shuffled.length) return null;
 
-  // Triple the shuffled list: [copy A][copy B (visible on load)][copy C]
-  const tripled = [...shuffled, ...shuffled, ...shuffled];
+  // Double the list: the CSS animation translates the track by -50% (one full
+  // set width), then loops — making the scroll seamless with no JS required.
+  const doubled = [...shuffled, ...shuffled];
 
-  const pause = () => {
-    pausedRef.current = true;
-  };
-  const resume = () => {
-    pausedRef.current = false;
-    lastTimeRef.current = null;
-  };
+  // Duration scales with card count so px/s speed is roughly constant.
+  const duration = Math.max(30, shuffled.length * SECONDS_PER_CARD);
 
   return (
     <div
-      className="relative"
       style={{
         marginLeft: "calc(-50vw + 50%)",
         width: "100vw",
+        overflow: "hidden",
       }}
     >
       {/* Section header — centred */}
@@ -107,56 +63,57 @@ export function CityExploreCarousel({ cities }: { cities: CarouselCity[] }) {
         </h2>
       </div>
 
-      {/* Scrollable card rail — auto-scrolls, pauses on hover/touch */}
+      {/* Card rail — CSS keyframe animation, pauses on hover/touch */}
       <div
-        ref={scrollRef}
-        onMouseEnter={pause}
-        onMouseLeave={resume}
-        onTouchStart={pause}
-        onTouchEnd={resume}
-        className="explore-carousel-rail"
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          overflowX: "scroll",
-          scrollbarWidth: "none",
-          gap: `${GAP}px`,
-          paddingInline: `max(15vw, calc(50vw - ${CARD_HALF_MAX}px))`,
-        }}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onTouchStart={() => setPaused(true)}
+        onTouchEnd={() => setPaused(false)}
       >
-        {tripled.map((city, i) => (
-          <div
-            key={`${city.slug}-${i}`}
-            className="shrink-0 flex flex-col items-center w-[44vw] max-w-[260px]"
-          >
-            <Link
-              href={`/city/${city.slug}`}
-              className="relative block w-full"
-              style={{
-                aspectRatio: "1 / 1",
-                overflow: "hidden",
-                background: "var(--hover-bg)",
-                border: "1px solid var(--border)",
-              }}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "12px",
+            width: "max-content",
+            animation: `carousel-scroll ${duration}s linear infinite`,
+            animationPlayState: paused ? "paused" : "running",
+          }}
+        >
+          {doubled.map((city, i) => (
+            <div
+              key={`${city.slug}-${i}`}
+              className="shrink-0 flex flex-col items-center w-[44vw] max-w-[260px]"
             >
-              <Image
-                src={`${STORAGE_BASE}/${city.cover_image_path}`}
-                alt={city.name}
-                fill
-                className="object-cover"
-                priority={i < 3}
-                sizes="(max-width: 591px) 44vw, 260px"
-              />
-            </Link>
-            {/* City label — 8px below card */}
-            <p
-              className="label-mono text-[var(--muted-foreground)] text-center uppercase mt-2"
-              style={{ fontSize: "10px", letterSpacing: "0.08em" }}
-            >
-              {city.name}
-            </p>
-          </div>
-        ))}
+              <Link
+                href={`/city/${city.slug}`}
+                className="relative block w-full"
+                style={{
+                  aspectRatio: "1 / 1",
+                  overflow: "hidden",
+                  background: "var(--hover-bg)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <Image
+                  src={`${STORAGE_BASE}/${city.cover_image_path}`}
+                  alt={city.name}
+                  fill
+                  className="object-cover"
+                  priority={i < 3}
+                  sizes="(max-width: 591px) 44vw, 260px"
+                />
+              </Link>
+              {/* City label — below card */}
+              <p
+                className="label-mono text-[var(--muted-foreground)] text-center uppercase mt-2"
+                style={{ fontSize: "10px", letterSpacing: "0.08em" }}
+              >
+                {city.name}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

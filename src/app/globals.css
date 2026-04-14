@@ -265,6 +265,11 @@ body {
   display: none;
 }
 
+@keyframes carousel-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
 /* MapLibre popup overrides — editorial, sharp edges */
 .gay-places-popup .maplibregl-popup-content {
   border-radius: 20px;
