@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import type { PropsWithChildren } from "react";
 
@@ -40,7 +41,14 @@ export function AdminModal({
 
   if (!isOpen) return null;
 
-  return (
+  // Guard against SSR — document is always defined on the client and isOpen is
+  // always false during server rendering, so this branch is never hit in practice.
+  if (typeof document === "undefined") return null;
+
+  // Portal to document.body so that CSS `transform` on ancestor elements
+  // (e.g. the NavDrawer slide animation) does not confine `position: fixed`
+  // children — transforms create a new containing block for fixed descendants.
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -82,6 +90,7 @@ export function AdminModal({
           {children}
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
