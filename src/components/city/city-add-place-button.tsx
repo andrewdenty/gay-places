@@ -27,15 +27,17 @@ export function CityAddPlaceButton({ citySlug }: { citySlug: string }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     const supabase = createSupabaseBrowserClient();
     (async () => {
       try {
         const { data } = await supabase.rpc("is_admin");
-        if (data === true) setIsAdmin(true);
+        if (!cancelled && data === true) setIsAdmin(true);
       } catch {
         // Silently ignore
       }
     })();
+    return () => { cancelled = true; };
   }, []);
 
   if (!isAdmin) return <AddPlaceLink />;
