@@ -6,13 +6,17 @@ import { Search } from "lucide-react";
 import { SearchModal } from "@/components/search/search-modal";
 import { NearMeFieldButton } from "@/components/ui/near-me-field-button";
 
-export function HeroSearch() {
+type HeroSearchProps = {
+  className?: string;
+};
+
+export function HeroSearch({ className }: HeroSearchProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
   return (
     <>
-      <div className="max-w-[500px]">
+      <div className={`max-w-[500px] ${className ?? ""}`}>
         <button
           type="button"
           onClick={() => setOpen(true)}
