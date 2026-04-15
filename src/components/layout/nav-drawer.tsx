@@ -7,6 +7,7 @@ import { X, Search, ArrowRight } from "lucide-react";
 import { SearchModal } from "@/components/search/search-modal";
 import { NearMeFieldButton } from "@/components/ui/near-me-field-button";
 import { IconButton } from "@/components/ui/icon-button";
+import { SmartAddButton } from "@/components/admin/smart-add-button";
 
 type City = {
   id: string;
@@ -197,13 +198,27 @@ export function NavDrawer({
                 <span className="font-mono text-[10px] uppercase text-[var(--foreground)]" style={{ letterSpacing: "1.2px" }}>
                   Contribute
                 </span>
-                <Link
-                  href="/suggest"
-                  className="rounded-[60px] border border-[var(--border)] px-3 py-2 text-[13px] leading-[1.4] text-[var(--foreground)] transition-colors hover:bg-[var(--hover-bg)]"
-                  onClick={onClose}
-                >
-                  Add a place
-                </Link>
+                {isAdmin ? (
+                  <SmartAddButton
+                    renderTrigger={({ onClick }) => (
+                      <button
+                        type="button"
+                        onClick={onClick}
+                        className="rounded-[60px] border border-[var(--border)] px-3 py-2 text-[13px] leading-[1.4] text-[var(--foreground)] transition-colors hover:bg-[var(--hover-bg)]"
+                      >
+                        Add a place
+                      </button>
+                    )}
+                  />
+                ) : (
+                  <Link
+                    href="/suggest"
+                    className="rounded-[60px] border border-[var(--border)] px-3 py-2 text-[13px] leading-[1.4] text-[var(--foreground)] transition-colors hover:bg-[var(--hover-bg)]"
+                    onClick={onClose}
+                  >
+                    Add a place
+                  </Link>
+                )}
               </div>
 
               {/* Account */}
