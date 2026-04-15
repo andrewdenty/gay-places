@@ -413,7 +413,7 @@ type VenueSitemapRow = { slug: string; venue_type: string; cities: { slug: strin
 export async function getAllPublishedVenuesForSitemap(): Promise<
   { slug: string; city_slug: string; venue_type: string; updated_at?: string }[]
 > {
-  const supabase = createSupabaseAnonClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("venues")
     .select("slug,venue_type,updated_at,cities!inner(slug)")
