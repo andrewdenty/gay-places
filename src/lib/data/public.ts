@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseAnonClient } from "@/lib/supabase/server";
 import type { OpeningHours } from "@/lib/types/opening-hours";
 import type { VenueTags } from "@/lib/venue-tags";
 import { toSlug } from "@/lib/slugs";
@@ -86,7 +86,7 @@ export function isMissingColumnError(error: { code?: string }) {
 }
 
 export async function getCities(): Promise<City[]> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAnonClient();
   const { data, error } = await supabase
     .from("cities")
     .select(CITY_FIELDS_WITH_DESC)
@@ -290,7 +290,7 @@ export async function getVenueBySlug(
 }
 
 export async function getPublishedCountrySlugs(): Promise<Set<string>> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAnonClient();
   const { data, error } = await supabase
     .from("countries")
     .select("slug");
@@ -413,7 +413,7 @@ type VenueSitemapRow = { slug: string; venue_type: string; cities: { slug: strin
 export async function getAllPublishedVenuesForSitemap(): Promise<
   { slug: string; city_slug: string; venue_type: string; updated_at?: string }[]
 > {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAnonClient();
   const { data, error } = await supabase
     .from("venues")
     .select("slug,venue_type,updated_at,cities!inner(slug)")
