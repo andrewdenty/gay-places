@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { SmartAddButton } from "@/components/admin/smart-add-button";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ export default async function AdminHomePage() {
     { count: countryCount },
     { count: pendingCount },
     { count: claimsCount },
+    { data: cities },
   ] = await Promise.all([
     supabase.from("venues").select("id", { count: "exact", head: true }),
     supabase.from("cities").select("id", { count: "exact", head: true }),
@@ -21,6 +23,7 @@ export default async function AdminHomePage() {
       .select("id", { count: "exact", head: true })
       .eq("status", "pending"),
     supabase.from("venue_claims").select("id", { count: "exact", head: true }),
+    supabase.from("cities").select("id,name,slug,country").order("name"),
   ]);
 
   const pending = pendingCount ?? 0;
@@ -61,10 +64,15 @@ export default async function AdminHomePage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-      <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-        Overview of Gay Places content.
-      </p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+            Overview of Gay Places content.
+          </p>
+        </div>
+        <SmartAddButton cities={(cities ?? []) as { id: string; name: string; slug: string; country: string }[]} />
+      </div>
 
       {/* Submission alert banner */}
       {pending > 0 && (

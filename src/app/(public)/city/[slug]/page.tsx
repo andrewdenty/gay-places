@@ -6,6 +6,7 @@ import { getCityBySlug, getVenuesByCitySlug, getPublishedCountrySlugs } from "@/
 import { getArticlesByCitySlug } from "@/lib/articles";
 import { CityExplorer } from "@/components/city/city-explorer";
 import { CityAdminToggle } from "@/components/city/city-admin-toggle";
+import { CityAddPlaceButton } from "@/components/city/city-add-place-button";
 import { CityArticles } from "@/components/article/city-articles";
 import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
@@ -178,13 +179,7 @@ export default async function CityPage({
                   </div>
                   <h1 className="h1-editorial">{city.name}</h1>
                 </div>
-                <Link
-                  href="/suggest"
-                  className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[var(--hover-bg)] shrink-0"
-                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-                >
-                  Add a place
-                </Link>
+                <CityAddPlaceButton citySlug={slug} />
               </div>
               {city.description && (
                 <p className="mt-4 text-[15px] text-[var(--foreground)] leading-[1.4]">
@@ -212,13 +207,7 @@ export default async function CityPage({
                 </div>
                 <h1 className="h1-editorial">{city.name}</h1>
               </div>
-              <Link
-                href="/suggest"
-                className="rounded-[60px] border px-3 py-2 text-[13px] leading-[1.4] transition-colors hover:bg-[var(--hover-bg)] shrink-0"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-              >
-                Add a place
-              </Link>
+              <CityAddPlaceButton citySlug={slug} />
             </div>
             {city.description && (
               <p className="mt-4 text-[15px] text-[var(--foreground)] leading-[1.4]">

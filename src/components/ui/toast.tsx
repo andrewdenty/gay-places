@@ -8,17 +8,24 @@ import {
   useRef,
   useState,
 } from "react";
+import { usePathname } from "next/navigation";
 
 type ToastType = "success" | "error";
 
 interface Toast {
   id: number;
-  message: string;
+  message: React.ReactNode;
   type: ToastType;
+  dismissOnNavigate?: boolean;
+}
+
+interface ToastOptions {
+  duration?: number;
+  dismissOnNavigate?: boolean;
 }
 
 interface ToastContextValue {
-  showToast: (message: string, type?: ToastType) => void;
+  showToast: (message: React.ReactNode, type?: ToastType, options?: ToastOptions) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -26,13 +33,26 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const nextIdRef = useRef(1);
+  const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
-  const showToast = useCallback((message: string, type: ToastType = "success") => {
+  // Dismiss toasts flagged with dismissOnNavigate when route changes
+  // (React-recommended pattern: update state during render to avoid cascading effects)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    const filtered = toasts.filter((t) => !t.dismissOnNavigate);
+    if (filtered.length !== toasts.length) {
+      setToasts(filtered);
+    }
+  }
+
+  const showToast = useCallback((message: React.ReactNode, type: ToastType = "success", options?: ToastOptions) => {
     const id = nextIdRef.current++;
-    setToasts((prev) => [...prev, { id, message, type }]);
+    const duration = options?.duration ?? (type === "error" ? 12000 : 5000);
+    setToasts((prev) => [...prev, { id, message, type, dismissOnNavigate: options?.dismissOnNavigate }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, type === "error" ? 12000 : 5000);
+    }, duration);
   }, []);
 
   const dismiss = useCallback((id: number) => {

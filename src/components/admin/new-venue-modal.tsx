@@ -20,8 +20,8 @@ export function NewVenueModal({ cities }: { cities: City[] }) {
 
   return (
     <>
-      <Button type="button" onClick={() => setOpen(true)}>
-        New Place
+      <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
+        Manually add a place
       </Button>
 
       <AdminModal

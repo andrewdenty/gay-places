@@ -27,7 +27,7 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const [{ data: venue }, { data: citiesRaw }, { data: allVenueTags }] =
+  const [{ data: venue }, { data: citiesRaw }, { data: allVenueTags }, { data: photos }] =
     await Promise.all([
       supabase
         .from("venues")
@@ -41,6 +41,11 @@ export async function GET(
         .select("id,name,slug,timezone")
         .order("name", { ascending: true }),
       supabase.from("venues").select("venue_tags").not("venue_tags", "is", null),
+      supabase
+        .from("venue_photos")
+        .select("id,storage_path")
+        .eq("venue_id", venueId)
+        .order("created_at", { ascending: true }),
     ]);
 
   if (!venue) {
@@ -106,5 +111,6 @@ export async function GET(
     prevVenueName: prevVenue?.name ?? null,
     nextVenueName: nextVenue?.name ?? null,
     viewOnSitePath,
+    photos: (photos ?? []) as { id: string; storage_path: string }[],
   });
 }
