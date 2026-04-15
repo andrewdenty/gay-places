@@ -403,7 +403,7 @@ export async function getNearbyVenues(
     .map((x) => x.venue);
 }
 
-type VenueSitemapRow = { slug: string; venue_type: string; cities: { slug: string }[] };
+type VenueSitemapRow = { slug: string; venue_type: string; cities: { slug: string } | null };
 
 /**
  * Returns the slug, city slug, and venue type for every published venue, used
@@ -423,7 +423,7 @@ export async function getAllPublishedVenuesForSitemap(): Promise<
     .map((row) => ({
       slug: row.slug,
       venue_type: row.venue_type ?? "other",
-      city_slug: row.cities[0]?.slug ?? "",
+      city_slug: row.cities?.slug ?? "",
       updated_at: row.updated_at,
     }))
     .filter((v) => v.city_slug);
@@ -479,11 +479,11 @@ export async function getVenueBySlugOnly(
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const row = data as unknown as { slug: string; venue_type: string; cities: { slug: string }[] };
+  const row = data as unknown as { slug: string; venue_type: string; cities: { slug: string } | null };
   return {
     slug: row.slug,
     venue_type: row.venue_type ?? "other",
-    city_slug: row.cities[0]?.slug ?? "",
+    city_slug: row.cities?.slug ?? "",
   };
 }
 
