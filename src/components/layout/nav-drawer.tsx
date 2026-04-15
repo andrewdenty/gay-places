@@ -200,6 +200,7 @@ export function NavDrawer({
                 </span>
                 {isAdmin ? (
                   <SmartAddButton
+                    onBeforeOpen={onClose}
                     renderTrigger={({ onClick }) => (
                       <button
                         type="button"

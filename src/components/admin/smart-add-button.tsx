@@ -32,6 +32,8 @@ interface SmartAddButtonProps {
   size?: "sm" | "md";
   /** Extra class names for the trigger button. */
   className?: string;
+  /** Called before the modal opens (e.g. close a parent drawer). */
+  onBeforeOpen?: () => void;
   /** Render a custom trigger instead of the default Button. Return a clickable element. */
   renderTrigger?: (props: { onClick: () => void }) => React.ReactNode;
 }
@@ -44,6 +46,7 @@ export function SmartAddButton({
   size = "md",
   className,
   renderTrigger,
+  onBeforeOpen,
 }: SmartAddButtonProps) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -141,7 +144,10 @@ export function SmartAddButton({
     }
   }
 
-  const handleOpen = useCallback(() => setOpen(true), []);
+  const handleOpen = useCallback(() => {
+    onBeforeOpen?.();
+    setOpen(true);
+  }, [onBeforeOpen]);
 
   return (
     <>

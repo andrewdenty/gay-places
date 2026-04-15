@@ -6,10 +6,12 @@ import {
   useState,
   useTransition,
 } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { COMMON_TIMEZONES } from "@/components/admin/opening-hours-editor";
 import { useToast } from "@/components/ui/toast";
-import { updateCity } from "@/app/(admin)/admin/cities/actions";
+import { updateCity, uploadCityImage, removeCityImage } from "@/app/(admin)/admin/cities/actions";
+import { InlineCityImageUpload } from "@/components/admin/inline-city-image-upload";
 
 // ─── Styling constants ─────────────────────────────────────────────────────────
 const INPUT =
@@ -30,6 +32,7 @@ export interface CityData {
   center_lng: number | null;
   published: boolean | null;
   description?: string | null;
+  image_path?: string | null;
   seo_title?: string | null;
   seo_description?: string | null;
   timezone?: string | null;
@@ -60,6 +63,7 @@ export function CityEditForm({ city, countryOptions, onSave }: Props) {
   const [description, setDescription] = useState(city.description ?? "");
   const [seoTitle, setSeoTitle] = useState(city.seo_title ?? "");
   const [seoDescription, setSeoDescription] = useState(city.seo_description ?? "");
+  const [imagePath, setImagePath] = useState(city.image_path ?? null);
 
   // ── Dirty state ────────────────────────────────────────────────────────────
   const [isDirty, setIsDirty] = useState(false);
@@ -126,8 +130,18 @@ export function CityEditForm({ city, countryOptions, onSave }: Props) {
 
   return (
     <>
+      {/* Edit in admin link */}
+      <div className="mt-6 flex justify-end">
+        <Link
+          href={`/admin/cities/${city.slug}`}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Edit in admin ↗
+        </Link>
+      </div>
+
       {/* City details card */}
-      <div className="mt-6 rounded-2xl border border-border bg-card p-6">
+      <div className="mt-4 rounded-2xl border border-border bg-card p-6">
         <div className="text-sm font-semibold">City details</div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <input
@@ -247,6 +261,56 @@ export function CityEditForm({ city, countryOptions, onSave }: Props) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* City image */}
+      <div className="mt-6 rounded-2xl border border-border bg-card p-6">
+        <div className="text-sm font-semibold">City image</div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          A single cover image for this city, used on city pages and the homepage.
+        </p>
+        {imagePath ? (
+          <div className="mt-4">
+            <div className="relative inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://oxdlypfblekvcsfarghv.supabase.co/storage/v1/object/public/city-images/${imagePath}`}
+                alt={`${city.name} city image`}
+                className="h-40 w-auto rounded-lg object-cover"
+              />
+            </div>
+            <div className="mt-3">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const fd = new FormData();
+                    fd.set("city_id", city.id);
+                    fd.set("city_slug", city.slug);
+                    fd.set("image_path", imagePath);
+                    await removeCityImage(fd);
+                    setImagePath(null);
+                    showToast("Image removed");
+                  } catch (e) {
+                    showToast(e instanceof Error ? e.message : "Failed to remove image", "error");
+                  }
+                }}
+              >
+                Remove image
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted-foreground">No image yet.</p>
+        )}
+        <InlineCityImageUpload
+          cityId={city.id}
+          citySlug={city.slug}
+          uploadAction={uploadCityImage}
+          onUploaded={(newPath) => setImagePath(newPath)}
+        />
       </div>
 
       {/* ── Sticky bottom bar ─────────────────────────────────────────────────────

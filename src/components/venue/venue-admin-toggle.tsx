@@ -15,10 +15,13 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { uploadVenuePhoto, deleteVenuePhoto } from "@/app/(admin)/admin/venues/[venueId]/actions";
 import type { VenueData, CityData } from "@/components/admin/venue-edit-form";
 import type { VenueTagCategory } from "@/lib/venue-tags";
+import { InlineVenuePhotos } from "@/components/admin/inline-venue-photos";
 
 // Lazy-load the edit form — never shipped to non-admin visitors.
 const VenueEditForm = dynamic(
@@ -38,6 +41,7 @@ interface EditData {
   prevVenueName: string | null;
   nextVenueName: string | null;
   viewOnSitePath: string | null;
+  photos: { id: string; storage_path: string }[];
 }
 
 interface Props {
@@ -143,6 +147,7 @@ export function VenueAdminToggle({ venueId, children }: Props) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<EditData | null>(null);
+  const [photos, setPhotos] = useState<{ id: string; storage_path: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -173,6 +178,7 @@ export function VenueAdminToggle({ venueId, children }: Props) {
           if (!res.ok) throw new Error(`Failed to load edit data (${res.status})`);
           const data = (await res.json()) as EditData;
           setEditData(data);
+          setPhotos(data.photos ?? []);
         } catch (e) {
           setError(e instanceof Error ? e.message : "Failed to load");
           setLoading(false);
@@ -230,9 +236,28 @@ export function VenueAdminToggle({ venueId, children }: Props) {
             overflow: editMode ? undefined : "hidden",
           }}
         >
+          {/* Edit in admin link */}
+          <div className="mt-6 flex justify-end">
+            <Link
+              href={`/admin/venues/${venueId}`}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Edit in admin ↗
+            </Link>
+          </div>
+
           <VenueEditForm
             {...editData}
             inline // hides the admin prev/next nav header — save bar style is unaffected
+          />
+
+          {/* Photos section */}
+          <InlineVenuePhotos
+            venueId={venueId}
+            photos={photos}
+            onPhotosChange={setPhotos}
+            uploadAction={uploadVenuePhoto}
+            deleteAction={deleteVenuePhoto}
           />
         </div>
       )}
