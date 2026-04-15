@@ -20,11 +20,23 @@ interface Counts {
   underratedCount: number;
 }
 
+function generateId(): string {
+  // crypto.randomUUID() requires a secure context (HTTPS / localhost).
+  // Fall back to a Math.random-based UUID v4 when unavailable (e.g. LAN HTTP).
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 function getSessionId(): string {
   if (typeof window === "undefined") return "";
   let id = localStorage.getItem(SESSION_KEY);
   if (!id) {
-    id = crypto.randomUUID();
+    id = generateId();
     localStorage.setItem(SESSION_KEY, id);
   }
   return id;
