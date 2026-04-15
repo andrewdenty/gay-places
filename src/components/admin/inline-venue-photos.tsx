@@ -49,7 +49,7 @@ async function convertHeicToJpeg(file: File): Promise<File> {
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error("HEIC photos can only be uploaded from Safari. Please use Safari or convert to JPEG first."));
+      reject(new Error("Failed to convert HEIC image. Please convert to JPEG manually or try a different browser."));
     };
     img.src = url;
   });

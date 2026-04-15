@@ -40,9 +40,7 @@ export function InlineCityImageUpload({ cityId, citySlug, uploadAction, onUpload
         await uploadAction(formData);
         setFilename(null);
         formRef.current?.reset();
-        // Derive the new storage path to update local state immediately.
-        // The server action uploads to `{cityId}/{timestamp}.{ext}` — since we
-        // can't read the exact timestamp, we re-fetch the city's image_path.
+        // Fetch the new storage path to update local state.
         if (onUploaded) {
           const res = await fetch(`/api/admin/cities/${citySlug}/edit-data`);
           if (res.ok) {
