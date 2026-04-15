@@ -11,7 +11,16 @@ export async function createSupabaseServerClient() {
     throw new Error("Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
 
-  const cookieStore = await cookies();
+  // cookies() throws when there is no request context (e.g. sitemap generation,
+  // build-time execution, or some Server Component usages). Guard and fall back
+  // to a noop store so the client can be used even when there is no active
+  // request.
+  let cookieStore: Awaited<ReturnType<typeof cookies>> | null = null;
+  try {
+    cookieStore = await cookies();
+  } catch {
+    cookieStore = null;
+  }
 
   return createServerClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
@@ -19,15 +28,16 @@ export async function createSupabaseServerClient() {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll();
+          return cookieStore?.getAll?.() ?? [];
         },
         setAll(cookiesToSet) {
+          if (!cookieStore) return;
           try {
             for (const { name, value, options } of cookiesToSet) {
               cookieStore.set(name, value, options);
             }
           } catch {
-            // Called from a Server Component — session refresh handled by middleware
+            // Called from a Server Component — session refresh is handled by middleware
           }
         },
       },
