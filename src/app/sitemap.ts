@@ -35,6 +35,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getAllPublishedVenuesForSitemap().catch(() => []),
   ]);
 
+  if (venues.length === 0) {
+    console.warn("Sitemap: no venues returned for sitemap generation — check Supabase RLS/permissions or that venues are published");
+  }
+
   const articles = getAllArticles();
 
   const staticRoutes: MetadataRoute.Sitemap = [
