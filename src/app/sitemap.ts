@@ -11,38 +11,14 @@ const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gayplaces.co";
 
 /**
- * Sitemap IDs:
- *   0 — static + country + city + venue-type routes
- *   1 — guide/article routes
- *   2+ — venue routes, batched ~5 000 per sitemap
+ * Single sitemap at /sitemap.xml.
+ *
+ * NOTE: Do NOT export generateSitemaps() here. When generateSitemaps() is
+ * present, Next.js routes sitemaps to /sitemap/[id].xml instead of
+ * /sitemap.xml, causing the well-known URL to 404. A single sitemap supports
+ * up to 50,000 URLs which is sufficient for this site.
  */
-const VENUE_BATCH_SIZE = 5000;
-
-export async function generateSitemaps() {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
-    return [{ id: 0 }];
-  }
-
-  const venues = await getAllPublishedVenuesForSitemap().catch(() => []);
-  const venueSitemapCount = Math.max(1, Math.ceil(venues.length / VENUE_BATCH_SIZE));
-
-  // id 0 = core pages, id 1 = guides, id 2+ = venue batches
-  const ids = [
-    { id: 0 },
-    { id: 1 },
-    ...Array.from({ length: venueSitemapCount }, (_, i) => ({ id: i + 2 })),
-  ];
-  return ids;
-}
-
-export default async function sitemap({
-  id,
-}: {
-  id: number;
-}): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Skip DB queries if Supabase is not configured (e.g. during CI builds)
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -53,84 +29,81 @@ export default async function sitemap({
 
   const now = new Date().toISOString();
 
-  // ── Sitemap 0: static + country + city + venue-type routes ──
-  if (id === 0) {
-    const [cities, countrySlugs, venues] = await Promise.all([
-      getCities().catch(() => []),
-      getPublishedCountrySlugs().catch(() => new Set<string>()),
-      getAllPublishedVenuesForSitemap().catch(() => []),
-    ]);
+  const [cities, countrySlugs, venues] = await Promise.all([
+    getCities().catch(() => []),
+    getPublishedCountrySlugs().catch(() => new Set<string>()),
+    getAllPublishedVenuesForSitemap().catch(() => []),
+  ]);
 
-    const staticRoutes: MetadataRoute.Sitemap = [
-      { url: BASE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    ];
+  const articles = getAllArticles();
 
-    const countryRoutes: MetadataRoute.Sitemap = Array.from(countrySlugs).map(
-      (slug) => ({
-        url: `${BASE_URL}/country/${slug}`,
-        lastModified: now,
-        changeFrequency: "weekly" as const,
-        priority: 0.7,
-      }),
-    );
+  const staticRoutes: MetadataRoute.Sitemap = [
+    { url: BASE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
+  ];
 
-    const cityRoutes: MetadataRoute.Sitemap = cities.map((city) => ({
-      url: `${BASE_URL}/city/${city.slug}`,
+  const countryRoutes: MetadataRoute.Sitemap = Array.from(countrySlugs).map(
+    (slug) => ({
+      url: `${BASE_URL}/country/${slug}`,
       lastModified: now,
       changeFrequency: "weekly" as const,
-      priority: 0.8,
+      priority: 0.7,
+    }),
+  );
+
+  const cityRoutes: MetadataRoute.Sitemap = cities.map((city) => ({
+    url: `${BASE_URL}/city/${city.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
+  // One page per unique (city, venue_type) pair
+  const uniqueCityTypes = new Set<string>();
+  for (const venue of venues) {
+    if (venue.city_slug) {
+      uniqueCityTypes.add(`${venue.city_slug}::${venue.venue_type}`);
+    }
+  }
+  const venueTypeRoutes: MetadataRoute.Sitemap = Array.from(uniqueCityTypes).map((key) => {
+    const [citySlug, venueType] = key.split("::");
+    return {
+      url: `${BASE_URL}/city/${citySlug}/${venueTypeToUrlSegment(venueType)}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    };
+  });
+
+  const guideRoutes: MetadataRoute.Sitemap = [
+    {
+      url: `${BASE_URL}/guides`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    },
+    ...articles.map((article) => ({
+      url: `${BASE_URL}/guides/${article.slug}`,
+      lastModified: article.updatedAt ?? article.publishedAt ?? now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+  ];
+
+  const venueRoutes: MetadataRoute.Sitemap = venues
+    .filter((venue) => venue.city_slug && venue.slug)
+    .map((venue) => ({
+      url: `${BASE_URL}${venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)}`,
+      lastModified: venue.updated_at ?? now,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
     }));
 
-    // One page per unique (city, venue_type) pair
-    const uniqueCityTypes = new Set<string>();
-    for (const venue of venues) {
-      if (venue.city_slug) {
-        uniqueCityTypes.add(`${venue.city_slug}::${venue.venue_type}`);
-      }
-    }
-    const venueTypeRoutes: MetadataRoute.Sitemap = Array.from(uniqueCityTypes).map((key) => {
-      const [citySlug, venueType] = key.split("::");
-      return {
-        url: `${BASE_URL}/city/${citySlug}/${venueTypeToUrlSegment(venueType)}`,
-        lastModified: now,
-        changeFrequency: "weekly" as const,
-        priority: 0.75,
-      };
-    });
-
-    return [...staticRoutes, ...countryRoutes, ...cityRoutes, ...venueTypeRoutes];
-  }
-
-  // ── Sitemap 1: guide/article routes ──
-  if (id === 1) {
-    const articles = getAllArticles();
-    return [
-      {
-        url: `${BASE_URL}/guides`,
-        lastModified: now,
-        changeFrequency: "weekly" as const,
-        priority: 0.75,
-      },
-      ...articles.map((article) => ({
-        url: `${BASE_URL}/guides/${article.slug}`,
-        lastModified: article.updatedAt ?? article.publishedAt ?? now,
-        changeFrequency: "monthly" as const,
-        priority: 0.7,
-      })),
-    ];
-  }
-
-  // ── Sitemap 2+: venue batches ──
-  const batchIndex = id - 2;
-  const venues = await getAllPublishedVenuesForSitemap().catch(() => []);
-  const batch = venues
-    .filter((venue) => venue.city_slug && venue.slug)
-    .slice(batchIndex * VENUE_BATCH_SIZE, (batchIndex + 1) * VENUE_BATCH_SIZE);
-
-  return batch.map((venue) => ({
-    url: `${BASE_URL}${venueUrlPath(venue.city_slug, venue.venue_type, venue.slug)}`,
-    lastModified: venue.updated_at ?? now,
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
+  return [
+    ...staticRoutes,
+    ...countryRoutes,
+    ...cityRoutes,
+    ...venueTypeRoutes,
+    ...guideRoutes,
+    ...venueRoutes,
+  ];
 }
