@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { deleteVenue } from "./actions";
 import { venueUrlPath } from "@/lib/slugs";
@@ -176,17 +175,19 @@ export function VenuesList({
                 >
                   Delete
                 </button>
-                <Link href={`/admin/venues/${v.id}`}>
-                  <Button size="sm" variant="secondary">Edit</Button>
+                <Link
+                  href={`/admin/venues/${v.id}`}
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors h-9 px-4 text-sm border border-[var(--border)] bg-transparent text-foreground hover:bg-[var(--muted)]"
+                >
+                  Edit
                 </Link>
                 {v.cities?.slug && v.slug && (
                   <Link
                     href={venueUrlPath(v.cities.slug, v.venue_type, v.slug)}
                     target="_blank"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors h-9 px-4 text-sm border border-[var(--border)] bg-transparent text-foreground hover:bg-[var(--muted)]"
                   >
-                    <Button size="sm" variant="secondary">
-                      View ↗
-                    </Button>
+                    View ↗
                   </Link>
                 )}
               </div>
