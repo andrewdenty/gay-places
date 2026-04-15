@@ -24,6 +24,9 @@ export type VenueRow = {
 
 type SortOption = "alphabetical" | "newest" | "oldest";
 
+const linkButtonCls =
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors h-9 px-4 text-sm border border-[var(--border)] bg-transparent text-foreground hover:bg-[var(--muted)]";
+
 function timeAgo(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
@@ -177,7 +180,7 @@ export function VenuesList({
                 </button>
                 <Link
                   href={`/admin/venues/${v.id}`}
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors h-9 px-4 text-sm border border-[var(--border)] bg-transparent text-foreground hover:bg-[var(--muted)]"
+                  className={linkButtonCls}
                 >
                   Edit
                 </Link>
@@ -185,7 +188,7 @@ export function VenuesList({
                   <Link
                     href={venueUrlPath(v.cities.slug, v.venue_type, v.slug)}
                     target="_blank"
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors h-9 px-4 text-sm border border-[var(--border)] bg-transparent text-foreground hover:bg-[var(--muted)]"
+                    className={linkButtonCls}
                   >
                     View ↗
                   </Link>
