@@ -102,9 +102,13 @@ export function NavDrawer({
 
             {/* Search field + dismiss button — always in same position */}
             <div className="flex items-center gap-3 pb-4 border-b border-[var(--muted)]">
-              <button
+              {/* div instead of button here because NearMeFieldButton is a <button> inside — nesting buttons is invalid HTML */}
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => setSearchOpen(true)}
-                className="flex flex-1 items-center rounded-[80px] text-left"
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setSearchOpen(true); }}
+                className="flex flex-1 items-center rounded-[80px] text-left cursor-pointer"
                 style={{
                   backgroundColor: "var(--hover-bg)",
                   border: "1px solid var(--muted)",
@@ -118,7 +122,7 @@ export function NavDrawer({
                   Search gay places...
                 </span>
                 <NearMeFieldButton hideTextOnMobile onClick={() => { onClose(); router.push("/near-me"); }} />
-              </button>
+              </div>
 
               {/* X button — closes nav */}
               <IconButton label="Close menu" onClick={onClose}>

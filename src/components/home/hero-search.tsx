@@ -17,9 +17,12 @@ export function HeroSearch({ className }: HeroSearchProps) {
   return (
     <>
       <div className={`max-w-[500px] ${className ?? ""}`}>
-        <button
-          type="button"
+        {/* div instead of button because NearMeFieldButton is a <button> inside — nesting buttons is invalid HTML */}
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => setOpen(true)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setOpen(true); }}
           className="group flex w-full items-center rounded-full border text-left transition-colors cursor-text"
           style={{
             backgroundColor: "var(--hover-bg)",
@@ -42,7 +45,7 @@ export function HeroSearch({ className }: HeroSearchProps) {
             Search gay places...
           </span>
           <NearMeFieldButton onClick={() => router.push("/near-me")} />
-        </button>
+        </div>
       </div>
 
       <SearchModal isOpen={open} onClose={() => setOpen(false)} />
