@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { CityExploreCarousel } from "@/components/about/city-explore-carousel";
 import { getTopCitiesWithImages } from "@/lib/data/public";
 import { env } from "@/lib/env";
@@ -145,6 +146,31 @@ export default async function AboutPage() {
                   Our goal is simple: make gay life easier to find, understand,
                   and step into.
                 </p>
+              </div>
+            </section>
+
+            {/* Section 4 */}
+            <section>
+              <h2 className="h2-editorial text-[var(--foreground)] mb-4">
+                Buy me a coffee
+              </h2>
+              <div className="flex flex-col gap-4 text-[15px] leading-[1.6] text-[var(--muted-foreground)]">
+                <p>
+                  Building and running a website is expensive. Also, I drink a
+                  lot of coffee. Help support our mission to build a better guide
+                  to gay life.
+                </p>
+              </div>
+              <div className="mt-6">
+                <a
+                  href="https://buymeacoffee.com/gayplaces"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-colors h-11 px-5 text-sm border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)]"
+                >
+                  Buy me a coffee
+                  <ArrowUpRight size={16} strokeWidth={1.5} />
+                </a>
               </div>
             </section>
 
