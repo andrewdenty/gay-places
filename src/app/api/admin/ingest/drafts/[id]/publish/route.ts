@@ -114,10 +114,10 @@ export async function POST(
   }
 
   try {
-    // Resolve city_id
+    // Resolve city_id and timezone
     const { data: city, error: cityErr } = await admin
       .from("cities")
-      .select("id")
+      .select("id,timezone")
       .eq("slug", candidate.city_slug)
       .maybeSingle();
 
@@ -157,10 +157,19 @@ export async function POST(
       typeof draft.venue_tags === "object" && draft.venue_tags !== null
         ? (draft.venue_tags as VenueTags)
         : {};
-    const openingHours =
+    const openingHoursRaw =
       typeof draft.opening_hours === "object" && draft.opening_hours !== null
-        ? draft.opening_hours
+        ? (draft.opening_hours as Record<string, unknown>)
         : {};
+    // Ensure tz is set from the city's timezone. The draft's tz may be missing
+    // or defaulted to "UTC" when the enrichment couldn't determine the timezone.
+    const cityTz = typeof city.timezone === "string" && city.timezone ? city.timezone : "UTC";
+    const openingHours = {
+      ...openingHoursRaw,
+      tz: typeof openingHoursRaw.tz === "string" && openingHoursRaw.tz && openingHoursRaw.tz !== "UTC"
+        ? openingHoursRaw.tz
+        : cityTz,
+    };
     const websiteUrl =
       typeof draft.website_url === "string" ? draft.website_url : null;
     const instagramUrl =
