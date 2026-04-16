@@ -60,7 +60,7 @@ const nextConfig: NextConfig = {
         destination: "/v/:slug",
       },
       {
-        source: "/city/:type(bar|club|restaurant|cafe|sauna|event-space|place)/:slug",
+        source: "/city/:type(bar|club|restaurant|cafe|sauna|event-space|place|cruising)/:slug",
         destination: "/v/:slug",
       },
     ];
