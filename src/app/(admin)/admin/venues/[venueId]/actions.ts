@@ -4,6 +4,11 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import {
+  EDITOR_NOTE_BODY_MAX,
+  EDITOR_NOTE_BODY_MIN,
+  isEditorNotePromptKey,
+} from "@/lib/editor-note";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -64,6 +69,37 @@ export async function updateVenueDetails(formData: FormData) {
       ? "generated"
       : undefined;
 
+  // ── Editor's Note ──────────────────────────────────────────────────────
+  // Empty prompt = clear all related fields together. A set prompt requires
+  // a body within the 40–200 character range (enforced here too, not only
+  // client-side, since the server action is a trust boundary).
+  const rawPrompt = getText(formData, "editor_note_prompt");
+  const rawBody = getText(formData, "editor_note_body");
+  let editor_note_prompt: string | null = null;
+  let editor_note_body: string | null = null;
+  let editor_note_attribution_type: string | null = null;
+  let editor_note_updated_at: string | null = null;
+  // v1: always null. Reserved for a future editors table lookup.
+  const editor_note_editor_id: string | null = null;
+  if (rawPrompt) {
+    if (!isEditorNotePromptKey(rawPrompt)) {
+      throw new Error("Invalid editor note prompt");
+    }
+    if (
+      rawBody.length < EDITOR_NOTE_BODY_MIN ||
+      rawBody.length > EDITOR_NOTE_BODY_MAX
+    ) {
+      throw new Error(
+        `Editor's note body must be ${EDITOR_NOTE_BODY_MIN}–${EDITOR_NOTE_BODY_MAX} characters`,
+      );
+    }
+    editor_note_prompt = rawPrompt;
+    editor_note_body = rawBody;
+    // v1: always editorial when a note is saved.
+    editor_note_attribution_type = "editorial";
+    editor_note_updated_at = new Date().toISOString();
+  }
+
   const { error } = await supabase
     .from("venues")
     .update({
@@ -87,6 +123,11 @@ export async function updateVenueDetails(formData: FormData) {
       published,
       closed,
       claimed,
+      editor_note_prompt,
+      editor_note_body,
+      editor_note_attribution_type,
+      editor_note_editor_id,
+      editor_note_updated_at,
     })
     .eq("id", id);
   if (error) throw error;
