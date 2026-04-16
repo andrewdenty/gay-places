@@ -6,13 +6,12 @@ import { type NextRequest, NextResponse } from "next/server";
  * A 301 redirect to the collapsed path lets the destination page return a proper 404.
  */
 export function middleware(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
   if (pathname.includes("//")) {
     const cleanPath = pathname.replace(/\/\/+/g, "/");
     const url = request.nextUrl.clone();
     url.pathname = cleanPath;
-    url.search = search;
     return NextResponse.redirect(url, { status: 301 });
   }
 }
