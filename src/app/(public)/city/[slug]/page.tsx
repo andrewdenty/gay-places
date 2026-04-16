@@ -233,9 +233,8 @@ export default async function CityPage({
               className="w-full max-w-[350px]"
             />
             <p className="text-[15px] text-[var(--foreground)] text-center leading-[1.4] max-w-[500px]">
-              Gay Places is a quietly curated guide to gay bars, clubs, and other spaces around the
-              world. Less directory, more edit, it brings together places with atmosphere, character,
-              and a reason to go.
+              Gay Places is building a better guide to gay life around the world, bringing together
+              venues, events, and local context to make it easier to find, understand, and step into.
             </p>
           </div>
         </section>
