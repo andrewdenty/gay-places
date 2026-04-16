@@ -229,10 +229,13 @@ export async function fetchPlace(placeId: string): Promise<PlaceDetails> {
     typeof raw.googleMapsUri === "string" ? raw.googleMapsUri : null;
 
   const regularOpeningHours = raw.regularOpeningHours as
-    | { periods?: unknown[]; timeZone?: { id?: string } }
+    | { periods?: unknown[] }
     | undefined;
 
-  const tz = regularOpeningHours?.timeZone?.id;
+  // timeZone is a top-level field on the Place resource, not nested inside
+  // regularOpeningHours. Prefer the top-level value; fall back to any
+  // hypothetical nested value for resilience.
+  const tz = (raw.timeZone as { id?: string } | undefined)?.id;
   const opening_hours = parseOpeningHours(regularOpeningHours?.periods, tz);
 
   return {
