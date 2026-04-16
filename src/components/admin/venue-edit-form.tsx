@@ -19,6 +19,13 @@ import { useToast } from "@/components/ui/toast";
 import { updateVenueDetails } from "@/app/(admin)/admin/venues/[venueId]/actions";
 import type { VenueTagCategory, VenueTags } from "@/lib/venue-tags";
 import { VENUE_TYPES } from "@/lib/venue-types";
+import { EditorNoteEditor } from "@/components/admin/editor-note-editor";
+import {
+  EDITOR_NOTE_BODY_MAX,
+  EDITOR_NOTE_BODY_MIN,
+  isEditorNotePromptKey,
+  type EditorNotePromptKey,
+} from "@/lib/editor-note";
 
 // ─── Styling constants ────────────────────────────────────────────────────────
 const INPUT =
@@ -61,6 +68,11 @@ export interface VenueData {
   city_id: string | null;
   slug: string | null;
   opening_hours: unknown;
+  editor_note_prompt: string | null;
+  editor_note_body: string | null;
+  editor_note_attribution_type: string | null;
+  editor_note_editor_id: string | null;
+  editor_note_updated_at: string | null;
 }
 
 export interface CityData {
@@ -134,6 +146,13 @@ export function VenueEditForm({
   const [closed, setClosed] = useState(venue.closed ?? false);
   const [claimed, setClaimed] = useState(venue.claimed ?? false);
 
+  // ── Editor's Note ──────────────────────────────────────────────────────────
+  const [editorNotePrompt, setEditorNotePrompt] = useState<EditorNotePromptKey | null>(
+    isEditorNotePromptKey(venue.editor_note_prompt) ? venue.editor_note_prompt : null,
+  );
+  const [editorNoteBody, setEditorNoteBody] = useState(venue.editor_note_body ?? "");
+  const [editorNoteError, setEditorNoteError] = useState<string | null>(null);
+
   // ── Opening hours + tags (use onChange callbacks) ─────────────────────────
   const [openingHours, setOpeningHours] = useState<OpeningHours | null>(null);
   const [venueTags, setVenueTags] = useState<VenueTags>(
@@ -171,6 +190,24 @@ export function VenueEditForm({
       return;
     }
 
+    // Editor's Note validation: when a prompt is selected, the body must be
+    // trimmed and fall inside the [MIN, MAX] range. When no prompt is
+    // selected the form wipes the body, so this only fires for real notes.
+    if (editorNotePrompt) {
+      const trimmed = editorNoteBody.trim();
+      if (
+        trimmed.length < EDITOR_NOTE_BODY_MIN ||
+        trimmed.length > EDITOR_NOTE_BODY_MAX
+      ) {
+        setEditorNoteError(
+          `Body must be ${EDITOR_NOTE_BODY_MIN}–${EDITOR_NOTE_BODY_MAX} characters (currently ${trimmed.length}).`,
+        );
+        showToast("Editor's note is invalid", "error");
+        return;
+      }
+    }
+    setEditorNoteError(null);
+
     const formData = new FormData();
     formData.set("id", venue.id);
     formData.set("city_id", cityId);
@@ -194,6 +231,9 @@ export function VenueEditForm({
     } else if (venue.opening_hours) {
       formData.set("opening_hours", JSON.stringify(venue.opening_hours));
     }
+    // Editor's Note — prompt empty string signals "clear all related fields".
+    formData.set("editor_note_prompt", editorNotePrompt ?? "");
+    formData.set("editor_note_body", editorNoteBody);
 
     startTransition(async () => {
       try {
@@ -211,6 +251,7 @@ export function VenueEditForm({
     websiteUrl, googleMapsUrl, instagramUrl, facebookUrl,
     descriptionBase, descriptionEditorial, published, closed, claimed,
     venueTags, openingHours,
+    editorNotePrompt, editorNoteBody,
     startTransition, showToast, onSave,
   ]);
 
@@ -478,6 +519,30 @@ export function VenueEditForm({
               className={TEXTAREA}
             />
           </div>
+
+          {/* ── Editor's Note ─────────────────────────────────────── */}
+          <SectionLabel>Editor&apos;s Note</SectionLabel>
+          <EditorNoteEditor
+            prompt={editorNotePrompt}
+            body={editorNoteBody}
+            onPromptChange={(p) => {
+              setEditorNotePrompt(p);
+              setEditorNoteError(null);
+              setIsDirty(true);
+            }}
+            onBodyChange={(b) => {
+              setEditorNoteBody(b);
+              setEditorNoteError(null);
+              setIsDirty(true);
+            }}
+            onClear={() => {
+              setEditorNotePrompt(null);
+              setEditorNoteBody("");
+              setEditorNoteError(null);
+              setIsDirty(true);
+            }}
+            error={editorNoteError}
+          />
 
           {/* ── Opening hours ─────────────────────────────────────── */}
           <SectionLabel>Opening hours</SectionLabel>

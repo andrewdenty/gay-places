@@ -10,6 +10,7 @@ import { VenueMapWrapper } from "@/components/maps/VenueMapWrapper";
 import { InstagramIcon, FacebookIcon } from "@/components/venue/social-icons";
 import { ShareButton } from "@/components/venue/share-button";
 import { VenueDescription } from "@/components/venue/venue-description";
+import { EditorNote } from "@/components/venue/editor-note";
 import { AdminVenueLink } from "@/components/venue/admin-venue-link";
 import { VenueInteractions } from "@/components/venue/VenueInteractions";
 import { VenueAdminToggle } from "@/components/venue/venue-admin-toggle";
@@ -434,6 +435,13 @@ export default async function VenuePage({
             )}
           </div>
         </section>
+
+        {/* Editor's Note — pull-quote answering a rotating editorial prompt */}
+        <EditorNote
+          prompt={venue.editor_note_prompt}
+          body={venue.editor_note_body}
+          attributionType={venue.editor_note_attribution_type}
+        />
 
         {/* Section 2 — Tag categories */}
         {TAG_CATEGORIES.map(({ key, label }) => {

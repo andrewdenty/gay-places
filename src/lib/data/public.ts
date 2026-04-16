@@ -3,6 +3,7 @@ import type { OpeningHours } from "@/lib/types/opening-hours";
 import type { VenueTags } from "@/lib/venue-tags";
 import { toSlug } from "@/lib/slugs";
 import type { VenueTypeValue } from "@/lib/venue-types";
+import type { EditorNoteAttributionType, EditorNotePromptKey } from "@/lib/editor-note";
 
 export type Country = {
   id: string;
@@ -54,14 +55,25 @@ export type Venue = {
   closed?: boolean;
   /** Admin-controlled. When true, displays a "Verified by venue" badge on the public page. */
   claimed?: boolean;
+  /** Editor's Note — answers one of five rotating prompts. All fields null = no note. */
+  editor_note_prompt?: EditorNotePromptKey | null;
+  editor_note_body?: string | null;
+  editor_note_attribution_type?: EditorNoteAttributionType | null;
+  /** Reserved for a future editors table. Currently always null in v1. */
+  editor_note_editor_id?: string | null;
+  editor_note_updated_at?: string | null;
   updated_at: string;
 };
 
+const EDITOR_NOTE_FIELDS =
+  "editor_note_prompt,editor_note_body,editor_note_attribution_type,editor_note_editor_id,editor_note_updated_at";
+
 const VENUE_FIELDS =
-  "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours,closed,claimed,updated_at";
+  `id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours,closed,claimed,${EDITOR_NOTE_FIELDS},updated_at`;
 
 // Fallback projection used when the `claimed` column doesn't exist yet
 // (i.e. migration 0030 hasn't been applied). Matches the pre-0030 schema.
+// Also used as the fallback when the editor-note columns aren't yet migrated.
 const VENUE_FIELDS_NO_CLAIMED =
   "id,city_id,slug,name,address,lat,lng,venue_type,description,description_base,description_editorial,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,opening_hours,closed,updated_at";
 
