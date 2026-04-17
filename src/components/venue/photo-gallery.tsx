@@ -61,7 +61,7 @@ export function PhotoGallery({ photos, venueName }: Props) {
       {/* Thumbnail strip */}
       <div
         className={[
-          "mt-4 flex gap-2",
+          "mt-8 flex gap-2",
           photos.length >= 4 ? "overflow-x-auto scrollbar-none" : "",
         ].join(" ").trim()}
       >

@@ -101,7 +101,7 @@ export function OpeningHoursAccordion({ hours, openUntilLabel }: Props) {
   return (
     <div
       id="opening-hours"
-      className="scroll-mt-28 border-t border-b border-[var(--border)]"
+      className="mt-8 scroll-mt-28 border-t border-b border-[var(--border)]"
     >
       {/* Accordion trigger */}
       <button

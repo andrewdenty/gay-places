@@ -21,7 +21,7 @@ export function VenueDescription({ summary, editorial, defaultExpanded = false }
     !!editorial && editorial.startsWith(summary);
 
   return (
-    <div className="mt-6">
+    <div className="mt-8">
       {!expanded && (
         <p className="text-[15px] leading-[1.55] text-[var(--foreground)]">
           {summary}

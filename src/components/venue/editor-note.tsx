@@ -19,7 +19,7 @@ export function EditorNote({ prompt, body }: Props) {
   const { eyebrow } = getEditorNotePrompt(prompt);
 
   return (
-    <figure className="pt-8 pb-0">
+    <figure className="mt-8">
       <div className="label-mono text-[var(--muted-foreground)]">
         {eyebrow}
       </div>

@@ -387,7 +387,7 @@ export default async function VenuePage({
         </div>
 
         {/* Section 1 — Name + interactions */}
-        <section className="pb-8">
+        <section>
           {/* Name + interactions — buttons right of title on desktop, below on mobile */}
           <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-x-4 gap-y-0">
             <h1
@@ -396,7 +396,7 @@ export default async function VenuePage({
             >
               {venue.name}
             </h1>
-            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 mb-4 sm:mb-0 flex items-center gap-2">
+            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 flex items-center gap-2">
               <VenueInteractions
                 venueId={venue.id}
                 initialCounts={interactionCounts}
