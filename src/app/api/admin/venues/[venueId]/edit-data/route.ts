@@ -32,7 +32,7 @@ export async function GET(
       supabase
         .from("venues")
         .select(
-          "id,name,address,lat,lng,venue_type,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,description,description_base,description_editorial,description_generation_status,description_last_generated_at,published,closed,city_id,slug,opening_hours",
+          "id,name,address,lat,lng,venue_type,venue_tags,website_url,google_maps_url,instagram_url,facebook_url,description,description_base,description_editorial,description_generation_status,description_last_generated_at,published,closed,claimed,city_id,slug,opening_hours,editor_note_prompt,editor_note_body,editor_note_attribution_type,editor_note_editor_id,editor_note_updated_at",
         )
         .eq("id", venueId)
         .maybeSingle(),
