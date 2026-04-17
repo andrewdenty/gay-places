@@ -7,13 +7,9 @@ import {
 type Props = {
   prompt: string | null | undefined;
   body: string | null | undefined;
-  attributionType?: EditorNoteAttributionType | null;
-  /**
-   * When attributionType === "editor" and an editor record exists, the name
-   * here renders in place of "GAY PLACES". v1 never populates this — the
-   * admin UI only writes "editorial" — but the render path is live so the
-   * future editor-attribution flow slots in without a rewrite.
-   */
+  /** Accepted for backward compatibility; attribution is no longer displayed. */
+  attributionType?: EditorNoteAttributionType | string | null;
+  /** Accepted for backward compatibility; attribution is no longer displayed. */
   editorName?: string | null;
 };
 

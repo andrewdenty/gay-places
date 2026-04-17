@@ -320,6 +320,10 @@ export default async function VenuePage({
     return clean.includes("/") ? "Website" : clean;
   })();
 
+  // Reusable class for tag pill badges
+  const tagPillClass =
+    "inline-flex h-5 items-center rounded-full bg-[var(--tag-bg)] px-2 font-[family-name:var(--font-geist-mono),ui-monospace,monospace] text-[10px] capitalize text-[var(--tag-foreground)]";
+
   return (
     <>
       <script
@@ -410,7 +414,6 @@ export default async function VenuePage({
         <EditorNote
           prompt={venue.editor_note_prompt}
           body={venue.editor_note_body}
-          attributionType={venue.editor_note_attribution_type}
         />
 
         {/* Description */}
@@ -472,10 +475,7 @@ export default async function VenuePage({
             <VenueSectionRow key={key} label={label}>
               <div className="flex flex-wrap items-center justify-end gap-[6px]">
                 {categoryTags.map((t) => (
-                  <span
-                    key={t}
-                    className="inline-flex h-5 items-center rounded-full bg-[var(--tag-bg)] px-2 font-[family-name:var(--font-geist-mono),ui-monospace,monospace] text-[10px] capitalize text-[var(--tag-foreground)]"
-                  >
+                  <span key={t} className={tagPillClass}>
                     {t}
                   </span>
                 ))}

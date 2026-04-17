@@ -60,9 +60,10 @@ export function PhotoGallery({ photos, venueName }: Props) {
     <>
       {/* Thumbnail strip */}
       <div
-        className={`mt-4 flex gap-2${
-          photos.length >= 4 ? " overflow-x-auto scrollbar-none" : ""
-        }`}
+        className={[
+          "mt-4 flex gap-2",
+          photos.length >= 4 ? "overflow-x-auto scrollbar-none" : "",
+        ].join(" ").trim()}
       >
         {photos.map((photo, i) => {
           // Mobile layout classes based on photo count (desktop always 112×112 squares)
