@@ -4,10 +4,15 @@ import { useState } from 'react';
 interface Props {
   summary: string;
   editorial?: string | null;
+  /**
+   * When true the full description is shown upfront with no "Read more" toggle.
+   * Used when there are no photos and no editor-note quote.
+   */
+  defaultExpanded?: boolean;
 }
 
-export function VenueDescription({ summary, editorial }: Props) {
-  const [expanded, setExpanded] = useState(false);
+export function VenueDescription({ summary, editorial, defaultExpanded = false }: Props) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
 
   // When the editorial begins with the summary sentence (new enrichment flow),
   // showing both would duplicate the opening sentence. In that case, show only
@@ -20,7 +25,7 @@ export function VenueDescription({ summary, editorial }: Props) {
       {!expanded && (
         <p className="text-[15px] leading-[1.55] text-[var(--foreground)]">
           {summary}
-          {editorial && (
+          {editorial && !defaultExpanded && (
             <>
               {' '}
               <button

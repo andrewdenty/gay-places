@@ -59,24 +59,42 @@ export function PhotoGallery({ photos, venueName }: Props) {
   return (
     <>
       {/* Thumbnail strip */}
-      <div className="mt-4 flex gap-2 overflow-x-auto scrollbar-none">
-        {photos.map((photo, i) => (
-          <button
-            key={photo.id}
-            type="button"
-            onClick={() => open(i)}
-            className="h-[112px] w-[112px] shrink-0 overflow-hidden bg-[var(--muted)] cursor-pointer"
-            aria-label={`View photo ${i + 1}`}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={photoUrl(photo.storage_path)}
-              alt={`${venueName} photo ${i + 1}`}
-              loading="lazy"
-              className="h-full w-full object-cover transition-opacity hover:opacity-80"
-            />
-          </button>
-        ))}
+      <div
+        className={`mt-4 flex gap-2${
+          photos.length >= 4 ? " overflow-x-auto scrollbar-none" : ""
+        }`}
+      >
+        {photos.map((photo, i) => {
+          // Mobile layout classes based on photo count (desktop always 112×112 squares)
+          let sizeClass: string;
+          if (photos.length === 1) {
+            // Single photo: full width on mobile, square on desktop
+            sizeClass = "h-[240px] w-full sm:h-[112px] sm:w-[112px] sm:shrink-0";
+          } else if (photos.length <= 3) {
+            // 2–3 photos: equal-width fill on mobile, square on desktop
+            sizeClass = "h-[180px] flex-1 min-w-0 sm:h-[112px] sm:w-[112px] sm:flex-none sm:shrink-0";
+          } else {
+            // 4+ photos: fixed squares with horizontal scroll
+            sizeClass = "h-[112px] w-[112px] shrink-0";
+          }
+          return (
+            <button
+              key={photo.id}
+              type="button"
+              onClick={() => open(i)}
+              className={`overflow-hidden bg-[var(--muted)] cursor-pointer ${sizeClass}`}
+              aria-label={`View photo ${i + 1}`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={photoUrl(photo.storage_path)}
+                alt={`${venueName} photo ${i + 1}`}
+                loading="lazy"
+                className="h-full w-full object-cover transition-opacity hover:opacity-80"
+              />
+            </button>
+          );
+        })}
       </div>
 
       {/* Lightbox */}

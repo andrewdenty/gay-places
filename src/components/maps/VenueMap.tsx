@@ -11,9 +11,10 @@ type Props = {
   lng: number;
   name: string;
   googleMapsUrl?: string | null;
+  address?: string | null;
 };
 
-export function VenueMap({ lat, lng, name, googleMapsUrl }: Props) {
+export function VenueMap({ lat, lng, name, googleMapsUrl, address }: Props) {
   const mapsLink =
     googleMapsUrl ?? `https://www.google.com/maps?q=${lat},${lng}`;
 
@@ -43,14 +44,14 @@ export function VenueMap({ lat, lng, name, googleMapsUrl }: Props) {
   );
 
   return (
-    <section className="border-b border-[var(--border)] py-[24px]">
-      <div className="mb-4 flex items-center justify-between gap-4">
+    <section className="border-b border-[var(--border)] py-[32px]">
+      <div className="mb-6 flex items-center justify-between gap-4">
         <span className="h2-editorial-sm">Map</span>
         <a
           href={mapsLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-sm btn-sm-primary"
+          className="btn-sm btn-sm-secondary"
         >
           Open in Maps
           <ArrowUpRight size={16} strokeWidth={1.5} />
@@ -62,6 +63,9 @@ export function VenueMap({ lat, lng, name, googleMapsUrl }: Props) {
       >
         <MapView center={[lng, lat]} zoom={15} onReady={handleReady} />
       </div>
+      {address && (
+        <p className="mt-3 text-[13px] text-[var(--foreground)]">{address}</p>
+      )}
     </section>
   );
 }
