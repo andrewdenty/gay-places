@@ -21,6 +21,7 @@ import { VenueGuides } from "@/components/article/venue-guides";
 import { env } from "@/lib/env";
 import { isOpenNow, getOpenUntilLabel } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
+import { isEditorNotePromptKey } from "@/lib/editor-note";
 import type { OpeningHours, OpeningHoursRange } from "@/lib/types/opening-hours";
 import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs";
 
@@ -319,6 +320,10 @@ export default async function VenuePage({
     return clean.includes("/") ? "Website" : clean;
   })();
 
+  // Reusable class for tag pill badges
+  const tagPillClass =
+    "inline-flex h-5 items-center rounded-full bg-[var(--tag-bg)] px-2 font-[family-name:var(--font-geist-mono),ui-monospace,monospace] text-[10px] capitalize text-[var(--tag-foreground)]";
+
   return (
     <>
       <script
@@ -381,8 +386,8 @@ export default async function VenuePage({
           )}
         </div>
 
-        {/* Section 1 — Place identity */}
-        <section className="pb-6">
+        {/* Section 1 — Name + interactions */}
+        <section>
           {/* Name + interactions — buttons right of title on desktop, below on mobile */}
           <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-x-4 gap-y-0">
             <h1
@@ -391,7 +396,7 @@ export default async function VenuePage({
             >
               {venue.name}
             </h1>
-            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 mb-4 sm:mb-0 flex items-center gap-2">
+            <div className="w-full sm:w-auto sm:shrink-0 mt-4 sm:mt-0 flex items-center gap-2">
               <VenueInteractions
                 venueId={venue.id}
                 initialCounts={interactionCounts}
@@ -403,69 +408,36 @@ export default async function VenuePage({
               />
             </div>
           </div>
-
-          {/* Photo gallery */}
-          {photos && photos.length > 0 && (
-            <div className="mt-2">
-              <PhotoGallery photos={photos} venueName={venue.name} />
-            </div>
-          )}
-
-          {/* Intro + expandable editorial */}
-          {(venue.description_base || venue.description) && (
-            <VenueDescription
-              summary={venue.description_base ?? venue.description!}
-              editorial={venue.description_editorial}
-            />
-          )}
-
-          {/* Address + Map button — below description */}
-          <div className="mt-7 flex items-center justify-between gap-3">
-            <p className="text-[13px] text-[var(--foreground)]">{venue.address}</p>
-            {venue.google_maps_url && (
-              <a
-                href={venue.google_maps_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-sm btn-sm-secondary shrink-0"
-              >
-                Map
-                <ArrowUpRight size={16} strokeWidth={1.5} />
-              </a>
-            )}
-          </div>
         </section>
 
-        {/* Editor's Note — pull-quote answering a rotating editorial prompt */}
+        {/* Editor's Note — pull-quote directly beneath name/buttons */}
         <EditorNote
           prompt={venue.editor_note_prompt}
           body={venue.editor_note_body}
-          attributionType={venue.editor_note_attribution_type}
         />
 
-        {/* Section 2 — Tag categories */}
-        {TAG_CATEGORIES.map(({ key, label }) => {
-          const categoryTags = venueTags[key];
-          if (!categoryTags || categoryTags.length === 0) return null;
+        {/* Description */}
+        {(venue.description_base || venue.description) && (() => {
+          const hasEditorNote =
+            !!venue.editor_note_body &&
+            !!venue.editor_note_prompt &&
+            isEditorNotePromptKey(venue.editor_note_prompt);
+          const hasPhotos = !!photos && photos.length > 0;
           return (
-            <VenueSectionRow key={key} label={label}>
-              <div className="flex flex-wrap items-center justify-end gap-x-[6px]">
-                {categoryTags.map((t, i) => (
-                  <span key={t} className="flex items-center gap-[6px]">
-                    {i > 0 && (
-                      <span className="text-[var(--foreground)] text-[10px] font-semibold tracking-[1.2px]">
-                        •
-                      </span>
-                    )}
-                    <span className="tag-mono text-[var(--foreground)]">{t}</span>
-                  </span>
-                ))}
-              </div>
-            </VenueSectionRow>
+            <VenueDescription
+              summary={venue.description_base ?? venue.description!}
+              editorial={venue.description_editorial}
+              defaultExpanded={!hasPhotos && !hasEditorNote}
+            />
           );
-        })}
+        })()}
 
-        {/* Section 3 — Opening hours (accordion) */}
+        {/* Photo gallery */}
+        {photos && photos.length > 0 && (
+          <PhotoGallery photos={photos} venueName={venue.name} />
+        )}
+
+        {/* Opening hours (accordion) — top border acts as section divider */}
         {(() => {
           const hrs = venue.opening_hours;
           if (!hrs) return null;
@@ -483,33 +455,36 @@ export default async function VenuePage({
           );
         })()}
 
-        {/* Section 4 — Guides featuring this venue */}
+        {/* Guides featuring this venue */}
         <VenueGuides articles={venueArticles} />
 
-        {/* Section 5 — Map */}
+        {/* Map — address integrated, secondary button, 32px padding */}
         <VenueMapWrapper
           lat={venue.lat}
           lng={venue.lng}
           name={venue.name}
           googleMapsUrl={venue.google_maps_url}
+          address={venue.address}
         />
 
-        {/* Section 7 — Website */}
-        {venue.website_url && websiteLabel && (
-          <VenueSectionRow label="Website">
-            <a
-              href={venue.website_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-sm btn-sm-secondary"
-            >
-              {websiteLabel}
-              <ArrowUpRight size={16} strokeWidth={1.5} />
-            </a>
-          </VenueSectionRow>
-        )}
+        {/* Tag categories — below map */}
+        {TAG_CATEGORIES.map(({ key, label }) => {
+          const categoryTags = venueTags[key];
+          if (!categoryTags || categoryTags.length === 0) return null;
+          return (
+            <VenueSectionRow key={key} label={label}>
+              <div className="flex flex-wrap items-center justify-end gap-[6px]">
+                {categoryTags.map((t) => (
+                  <span key={t} className={tagPillClass}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </VenueSectionRow>
+          );
+        })}
 
-        {/* Section 6 — Social */}
+        {/* Social */}
         {(venue.instagram_url || venue.facebook_url) && (
           <VenueSectionRow label="Social">
             <div className="flex items-center gap-[8px]">
@@ -539,7 +514,22 @@ export default async function VenuePage({
           </VenueSectionRow>
         )}
 
-        {/* Section 7 — Nearby places */}
+        {/* Website */}
+        {venue.website_url && websiteLabel && (
+          <VenueSectionRow label="Website">
+            <a
+              href={venue.website_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-sm btn-sm-secondary"
+            >
+              {websiteLabel}
+              <ArrowUpRight size={16} strokeWidth={1.5} />
+            </a>
+          </VenueSectionRow>
+        )}
+
+        {/* Nearby places */}
         {nearbyVenues.length > 0 && (
           <VenueSectionRow label="Nearby">
             <div className="flex flex-wrap items-center justify-end gap-x-[6px] text-[13px]">
@@ -560,7 +550,7 @@ export default async function VenuePage({
           </VenueSectionRow>
         )}
 
-        {/* Section 9 — Contribute */}
+        {/* Contribute */}
         <VenueSectionRow label="Contribute" bordered={false}>
           <div className="flex flex-wrap items-center justify-end gap-[8px]">
             <Link href={`/venues/${venue.id}/suggest-edit`} className="btn-sm btn-sm-secondary">

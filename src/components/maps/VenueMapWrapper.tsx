@@ -12,6 +12,7 @@ type Props = {
   lng: number;
   name: string;
   googleMapsUrl?: string | null;
+  address?: string | null;
 };
 
 export function VenueMapWrapper(props: Props) {

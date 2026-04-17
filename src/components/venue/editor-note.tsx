@@ -7,36 +7,28 @@ import {
 type Props = {
   prompt: string | null | undefined;
   body: string | null | undefined;
-  attributionType?: EditorNoteAttributionType | null;
-  /**
-   * When attributionType === "editor" and an editor record exists, the name
-   * here renders in place of "GAY PLACES". v1 never populates this — the
-   * admin UI only writes "editorial" — but the render path is live so the
-   * future editor-attribution flow slots in without a rewrite.
-   */
+  /** Accepted for backward compatibility; attribution is no longer displayed. */
+  attributionType?: EditorNoteAttributionType | string | null;
+  /** Accepted for backward compatibility; attribution is no longer displayed. */
   editorName?: string | null;
 };
 
-export function EditorNote({ prompt, body, attributionType, editorName }: Props) {
+export function EditorNote({ prompt, body }: Props) {
   if (!body || !prompt || !isEditorNotePromptKey(prompt)) return null;
 
   const { eyebrow } = getEditorNotePrompt(prompt);
-  const attribution =
-    attributionType === "editor" && editorName
-      ? `— ${editorName.toUpperCase()}`
-      : "— GAY PLACES";
 
   return (
-    <figure className="border-b border-[var(--border)] py-[40px]">
+    <figure className="mt-8">
       <div className="label-mono text-[var(--muted-foreground)]">
         {eyebrow}
       </div>
       <blockquote
-        className="mt-3 max-w-[40ch] text-[var(--foreground)]"
+        className="mt-4 max-w-[40ch] text-[var(--foreground)]"
         style={{
           fontFamily:
             "var(--font-instrument-serif), Georgia, 'Times New Roman', serif",
-          fontSize: "30px",
+          fontSize: "26px",
           lineHeight: 1.3,
           letterSpacing: "-0.5px",
           fontWeight: 400,
@@ -44,9 +36,6 @@ export function EditorNote({ prompt, body, attributionType, editorName }: Props)
       >
         {body}
       </blockquote>
-      <figcaption className="label-mono mt-5 text-[var(--muted-foreground)]">
-        {attribution}
-      </figcaption>
     </figure>
   );
 }
