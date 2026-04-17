@@ -21,6 +21,7 @@ import { VenueGuides } from "@/components/article/venue-guides";
 import { env } from "@/lib/env";
 import { isOpenNow, getOpenUntilLabel } from "@/components/city/opening-hours";
 import { TAG_CATEGORIES } from "@/lib/venue-tags";
+import { Tag } from "@/components/ui/tag";
 import { isEditorNotePromptKey } from "@/lib/editor-note";
 import type { OpeningHours, OpeningHoursRange } from "@/lib/types/opening-hours";
 import { toCountrySlug, venueTypeToUrlSegment, venueUrlPath } from "@/lib/slugs";
@@ -320,10 +321,6 @@ export default async function VenuePage({
     return clean.includes("/") ? "Website" : clean;
   })();
 
-  // Reusable class for tag pill badges
-  const tagPillClass =
-    "inline-flex h-5 items-center rounded-full bg-[var(--tag-bg)] px-2 font-[family-name:var(--font-geist-mono),ui-monospace,monospace] text-[10px] capitalize text-[var(--tag-foreground)]";
-
   return (
     <>
       <script
@@ -475,9 +472,7 @@ export default async function VenuePage({
             <VenueSectionRow key={key} label={label}>
               <div className="flex flex-wrap items-center justify-end gap-[6px]">
                 {categoryTags.map((t) => (
-                  <span key={t} className={tagPillClass}>
-                    {t}
-                  </span>
+                  <Tag key={t}>{t}</Tag>
                 ))}
               </div>
             </VenueSectionRow>

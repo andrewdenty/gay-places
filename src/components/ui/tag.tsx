@@ -11,7 +11,15 @@ const dotColors: Record<Tone, string> = {
   neutral: "#B0B0B0",
 };
 
-export function Tag({
+export function Tag({ children }: PropsWithChildren) {
+  return (
+    <span className="inline-flex h-5 items-center rounded-full bg-[var(--tag-bg)] px-2 font-[family-name:var(--font-geist-mono),ui-monospace,monospace] text-[11px] capitalize text-[var(--tag-foreground)]">
+      {children}
+    </span>
+  );
+}
+
+export function ToneTag({
   children,
   tone = "neutral",
 }: PropsWithChildren<{ tone?: Tone }>) {
@@ -29,4 +37,3 @@ export function Tag({
     </span>
   );
 }
-

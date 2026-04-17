@@ -11,7 +11,7 @@ import {
 } from "@/lib/data/public";
 import { CountryCityRow } from "@/components/country/country-city-row";
 import { CountryMapWrapper } from "@/components/maps/CountryMapWrapper";
-import { Tag } from "@/components/ui/tag";
+import { ToneTag } from "@/components/ui/tag";
 import { env } from "@/lib/env";
 import type { Venue } from "@/lib/data/public";
 import { venueUrlPath } from "@/lib/slugs";
@@ -342,9 +342,9 @@ export default async function CountryPage({
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 pt-0.5">
-                  <Tag tone={VENUE_TYPE_TONE[venue.venue_type] ?? "neutral"}>
+                  <ToneTag tone={VENUE_TYPE_TONE[venue.venue_type] ?? "neutral"}>
                     {VENUE_TYPE_LABEL[venue.venue_type] ?? venue.venue_type}
-                  </Tag>
+                  </ToneTag>
                   <span className="label-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors hidden sm:inline">
                     VIEW ↗
                   </span>
