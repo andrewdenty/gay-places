@@ -27,21 +27,8 @@ export function EditorNote({ prompt, body, attributionType, editorName }: Props)
       : "— GAY PLACES";
 
   return (
-    <figure className="border-b border-[var(--border)] py-[48px]">
-      <div
-        aria-hidden="true"
-        className="select-none leading-none text-[var(--muted-foreground)]/40"
-        style={{
-          fontFamily:
-            "var(--font-instrument-serif), Georgia, 'Times New Roman', serif",
-          fontSize: "96px",
-          lineHeight: 0.8,
-          marginBottom: "-8px",
-        }}
-      >
-        &ldquo;
-      </div>
-      <div className="label-mono mt-2 text-[var(--muted-foreground)]">
+    <figure className="border-b border-[var(--border)] py-[40px]">
+      <div className="label-mono text-[var(--muted-foreground)]">
         {eyebrow}
       </div>
       <blockquote
@@ -49,9 +36,10 @@ export function EditorNote({ prompt, body, attributionType, editorName }: Props)
         style={{
           fontFamily:
             "var(--font-instrument-serif), Georgia, 'Times New Roman', serif",
-          fontSize: "28px",
-          lineHeight: 1.35,
-          letterSpacing: "-0.2px",
+          fontSize: "30px",
+          lineHeight: 1.3,
+          letterSpacing: "-0.5px",
+          fontWeight: 400,
         }}
       >
         {body}

@@ -16,16 +16,16 @@ export function VenueDescription({ summary, editorial }: Props) {
     !!editorial && editorial.startsWith(summary);
 
   return (
-    <div className="mt-4">
+    <div className="mt-6">
       {!expanded && (
-        <p className="text-[15px] leading-[1.4] text-[var(--foreground)]">
+        <p className="text-[15px] leading-[1.55] text-[var(--foreground)]">
           {summary}
           {editorial && (
             <>
               {' '}
               <button
                 onClick={() => setExpanded(true)}
-                className="underline text-[var(--foreground)] cursor-pointer bg-transparent border-none p-0 font-[inherit] text-[15px] leading-[1.4]"
+                className="underline text-[var(--foreground)] cursor-pointer bg-transparent border-none p-0 font-[inherit] text-[15px] leading-[1.55]"
               >
                 Read more
               </button>
@@ -36,11 +36,11 @@ export function VenueDescription({ summary, editorial }: Props) {
       {editorial && expanded && (
         <>
           {!editorialStartsWithSummary && (
-            <p className="text-[15px] leading-[1.4] text-[var(--foreground)]">
+            <p className="text-[15px] leading-[1.55] text-[var(--foreground)]">
               {summary}
             </p>
           )}
-          <p className={`text-[15px] leading-[1.4] text-[var(--foreground)]${!editorialStartsWithSummary ? ' mt-3' : ''}`}>
+          <p className={`text-[15px] leading-[1.55] text-[var(--foreground)]${!editorialStartsWithSummary ? ' mt-3' : ''}`}>
             {editorial}
           </p>
         </>

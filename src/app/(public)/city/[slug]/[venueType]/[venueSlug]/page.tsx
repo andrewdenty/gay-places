@@ -382,7 +382,7 @@ export default async function VenuePage({
         </div>
 
         {/* Section 1 — Place identity */}
-        <section className="pb-10">
+        <section className="pb-6">
           {/* Name + interactions — buttons right of title on desktop, below on mobile */}
           <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-x-4 gap-y-0">
             <h1
@@ -406,7 +406,7 @@ export default async function VenuePage({
 
           {/* Photo gallery */}
           {photos && photos.length > 0 && (
-            <div>
+            <div className="mt-2">
               <PhotoGallery photos={photos} venueName={venue.name} />
             </div>
           )}
@@ -420,7 +420,7 @@ export default async function VenuePage({
           )}
 
           {/* Address + Map button — below description */}
-          <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="mt-7 flex items-center justify-between gap-3">
             <p className="text-[13px] text-[var(--foreground)]">{venue.address}</p>
             {venue.google_maps_url && (
               <a
