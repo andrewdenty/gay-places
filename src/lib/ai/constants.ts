@@ -5,7 +5,6 @@
 /** Words and phrases that must never appear in AI-generated venue descriptions. */
 export const BANNED_WORDS = [
   "vibrant",
-  "iconic",
   "legendary",
   "must-visit",
   "lively",
@@ -13,7 +12,6 @@ export const BANNED_WORDS = [
   "thriving",
   "hidden gem",
   "nestled",
-  "tucked away",
   "hub",
   "scene staple",
   "electrifying",
@@ -65,7 +63,7 @@ export const MODEL_CONFIG = {
   },
   enrichment: {
     model: "claude-sonnet-4-6",
-    temperature: 0.3,
+    temperature: 0.4,
     max_tokens: 8192,
   },
   tags: {
