@@ -73,7 +73,7 @@ export function PhotoGallery({ photos, venueName }: Props) {
             sizeClass = "h-[240px] w-full sm:h-[112px] sm:w-[112px] sm:shrink-0";
           } else if (photos.length <= 3) {
             // 2–3 photos: equal-width fill on mobile, square on desktop
-            sizeClass = "h-[180px] flex-1 min-w-0 sm:h-[112px] sm:w-[112px] sm:flex-none sm:shrink-0";
+            sizeClass = "aspect-square flex-1 min-w-0 sm:aspect-auto sm:h-[112px] sm:w-[112px] sm:flex-none sm:shrink-0";
           } else {
             // 4+ photos: fixed squares with horizontal scroll
             sizeClass = "h-[112px] w-[112px] shrink-0";
