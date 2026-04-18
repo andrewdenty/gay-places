@@ -54,15 +54,15 @@ export function buildDiscoveryPrompt(
 
 STRICT RULES:
 1. Only include venues that are explicitly gay or LGBTQ+. Do NOT include merely "gay-friendly" or "inclusive" venues unless they are clearly and primarily part of the gay/LGBTQ+ scene (e.g. listed in major LGBTQ+ travel guides, have a strongly gay identity).
-2. Exclude any venue that is permanently closed or has strong evidence of closure.
+2. Exclude any venue that is permanently closed or has evidence of closure.
 3. Each venue MUST have at least one credible source link (e.g. a listing on a gay travel site, a local LGBTQ+ guide, official venue website, or reputable press coverage). Do not include venues you cannot support with at least one URL.
-4. Venue types must be one of: bar, dance club, sauna, cruising club, restaurant, cafe, event_space.
+4. Venue types must be one of: bar, dance club, sauna, cruising club, restaurant, cafe, shop, event space.
 5. Confidence must reflect how certain you are the venue is real, currently open, and explicitly LGBTQ+:
    - "high": multiple credible sources, clearly active
    - "medium": one or two sources, likely active
    - "low": limited or indirect evidence
 6. Search exhaustively — do not stop at the most famous venues. Include smaller neighbourhood bars, weekly queer nights at otherwise-straight venues if they have a strong established identity, and recently opened spots you are aware of.
-7. For each venue, note why you believe it is currently open. If you can only find references older than 2 years with no recent corroboration, mark confidence as "low" and note the staleness in "notes".
+7. For each venue, note why you believe it is currently open. If you can only find references older than 1 year with no recent corroboration, mark confidence as "low" and note the staleness in "notes".
 
 Return a JSON array (and ONLY the JSON array, no markdown, no commentary) where each element has:
 {
@@ -265,11 +265,11 @@ Write in present tense, third person. Do not end with a recommendation or call t
 
   const user = `Write a description of this venue in 3–4 sentences. Each sentence has a specific job — follow this order exactly:
 
-Sentence 1 (anchor): State what the venue is. Type + location + who goes there, in one plain line. This sentence will be used standalone as a listing card summary, so it must work on its own.
+Sentence 1 (anchor): State what the venue is. Type + any distinguishing features, in one plain line. If there are no distinguishing features to discuss you may mention the venue's location provided this is notable. This sentence will be used standalone as a listing card summary, so it must work on its own.
 
-Sentence 2 (experience): Describe what it is actually like to be there — the atmosphere, what people do, how it feels. Physical details, practical notes for visitors, and specific characteristics are all welcome. State facts and let them carry the weight. Describe what IS present, not what is absent — avoid shorthand like "no-frills", "unpretentious", or "down-to-earth". Instead of saying a venue lacks something, show the specific reality: the worn bar stools, the cash-only policy, the same faces every weekend.
+Sentence 2 (experience): Describe what it is actually like to be there — the atmosphere, what the crowd is like, what people do, how it feels. Physical details, practical notes for visitors, and specific characteristics are all welcome. State facts and let them carry the weight. Describe what IS present, not what is absent — avoid shorthand like "no-frills", "unpretentious", or "down-to-earth". Instead of saying a venue lacks something, show the specific reality: the worn bar stools, the cash-only policy, the same faces every weekend. Base this on actual information - do not create filler.
 
-Sentence 3 (events — include only if something specific is known): If the venue has a notable regular event, name it and describe what it involves. Be specific: name the night, say what happens, note when it runs. If nothing specific is known about events, skip this sentence entirely — do not genericise ("known for its events" is not acceptable).
+Sentence 3 (events — include only if something specific is known): If the venue has a notable regular event, name it and describe what it involves. For example "regular drag karaoke nights". Be specific: name the night, say what happens, note when it runs. If nothing specific is known about events, skip this sentence entirely — do not genericise ("known for its events" is not acceptable).
 
 Sentence 4 (context — optional): One fact worth knowing: what makes this venue distinct from similar venues in the city, its history, who runs it, or something about the physical space. History and founding dates belong here, not earlier. If you have nothing specific to add, stop at sentence 3 (or sentence 2 if no events).
 
@@ -304,7 +304,7 @@ Type: café
 City: Copenhagen, Denmark
 Address: Frederiksberg Allé 25, 1820 Frederiksberg
 
-A piano bar in Frederiksberg, a few kilometres west of the city centre, known for its singalong sessions and an older regular crowd. The pianist plays through the evening; the audience sings along, which makes it feel nothing like a standard bar night out. Has been running since the 1940s and opens only Wednesday through Saturday, which gives it a rhythm of its own.
+A piano bar in Frederiksberg, known for its singalong sessions and an older regular crowd. The pianist plays through the evening; the audience sings along, which makes it feel nothing like a standard bar night out. Has been running since the 1940s and opens only Wednesday through Saturday, which gives it a rhythm of its own.
 ---
 
 Name: ${input.name}
