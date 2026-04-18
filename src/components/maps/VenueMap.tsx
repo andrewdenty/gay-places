@@ -46,7 +46,7 @@ export function VenueMap({ lat, lng, name, googleMapsUrl, address }: Props) {
   return (
     <section className="border-b border-[var(--border)] py-[32px]">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <span className="h2-editorial-sm">Map</span>
+        <span className="h2-editorial">Map</span>
         <a
           href={mapsLink}
           target="_blank"

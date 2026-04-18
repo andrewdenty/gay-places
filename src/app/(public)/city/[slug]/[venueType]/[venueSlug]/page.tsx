@@ -546,7 +546,7 @@ export default async function VenuePage({
         )}
 
         {/* Contribute */}
-        <VenueSectionRow label="Contribute" bordered={false}>
+        <VenueSectionRow label="Contribute">
           <div className="flex flex-wrap items-center justify-end gap-[8px]">
             <Link href={`/venues/${venue.id}/suggest-edit`} className="btn-sm btn-sm-secondary">
               Suggest an edit
@@ -559,7 +559,7 @@ export default async function VenuePage({
         </VenueSectionRow>
 
         {/* Last updated + claim CTA — same row, same 11px size */}
-        <div className="mt-12 flex items-center justify-between gap-4">
+        <div className="mt-[56px] flex items-center justify-between gap-4">
           {venue.updated_at ? (
             <p className="text-[11px] text-[var(--muted-foreground)]">
               Last updated{" "}
@@ -588,7 +588,7 @@ export default async function VenuePage({
               href={`/venues/${venue.id}/claim`}
               className="text-[11px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors underline underline-offset-2"
             >
-              Own this place? Claim this page
+              Claim this page
             </Link>
           )}
         </div>
