@@ -112,7 +112,7 @@ export function OpeningHoursAccordion({ hours, openUntilLabel }: Props) {
         aria-controls="opening-hours-content"
       >
         <div className="flex items-center gap-4">
-          <span className="h2-editorial-sm">Opening hours</span>
+          <span className="h2-editorial">Opening hours</span>
         </div>
         <div className="flex items-center gap-[10px]">
           {/* Today's summary — always visible in the header */}
