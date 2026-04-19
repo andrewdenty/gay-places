@@ -14,6 +14,7 @@ type CountryRow = {
   featured_venue_ids?: string[] | null;
   seo_title?: string | null;
   seo_description?: string | null;
+  search_keywords?: string[] | null;
   published: boolean;
 };
 
@@ -22,7 +23,7 @@ export default async function AdminCountriesPage() {
   const { data: countries } = await supabase
     .from("countries")
     .select(
-      "id,slug,name,intro,editorial,featured_city_ids,featured_venue_ids,seo_title,seo_description,published"
+      "id,slug,name,intro,editorial,featured_city_ids,featured_venue_ids,seo_title,seo_description,search_keywords,published"
     )
     .order("name", { ascending: true });
 

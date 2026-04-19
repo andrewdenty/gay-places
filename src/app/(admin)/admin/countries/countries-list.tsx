@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { KeywordTagsInput } from "@/components/admin/keyword-tags-input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -17,6 +18,7 @@ type CountryRow = {
   featured_venue_ids?: string[] | null;
   seo_title?: string | null;
   seo_description?: string | null;
+  search_keywords?: string[] | null;
   published: boolean;
 };
 
@@ -47,6 +49,7 @@ function FieldGroup({
 
 function CountryCard({ c }: { c: CountryRow }) {
   const { showToast } = useToast();
+  const [searchKeywords, setSearchKeywords] = useState<string[]>(c.search_keywords ?? []);
 
   return (
     <Card key={c.id} className="p-6">
@@ -148,6 +151,18 @@ function CountryCard({ c }: { c: CountryRow }) {
               placeholder="e.g. 7a9c3d8e-…"
               className={textareaClass}
             />
+          </FieldGroup>
+        </div>
+
+        {/* Search keywords */}
+        <div className="border-t border-[var(--border)] pt-5 grid gap-3">
+          <div className="label-xs text-[var(--muted-foreground)]">SEARCH KEYWORDS</div>
+          <input type="hidden" name="search_keywords" value={JSON.stringify(searchKeywords)} />
+          <FieldGroup
+            label="Alternative names"
+            helper="Terms that redirect searchers to this country (e.g. England, Great Britain → United Kingdom)."
+          >
+            <KeywordTagsInput keywords={searchKeywords} onChange={setSearchKeywords} />
           </FieldGroup>
         </div>
 

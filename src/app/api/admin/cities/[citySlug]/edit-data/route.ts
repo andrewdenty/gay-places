@@ -31,7 +31,7 @@ export async function GET(
       supabase
         .from("cities")
         .select(
-          "id,slug,name,country,center_lat,center_lng,published,description,image_path,seo_title,seo_description,timezone",
+          "id,slug,name,country,center_lat,center_lng,published,description,image_path,seo_title,seo_description,timezone,search_keywords",
         )
         .eq("slug", citySlug)
         .maybeSingle(),
@@ -61,6 +61,7 @@ export async function GET(
             seo_title: null,
             seo_description: null,
             timezone: null,
+            search_keywords: [],
           }
         : null;
     } else {
