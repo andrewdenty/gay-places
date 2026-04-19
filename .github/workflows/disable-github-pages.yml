@@ -1,0 +1,44 @@
+name: Disable GitHub Pages
+
+# This workflow exists to permanently disable the accidental GitHub Pages
+# deployment that was serving a Jekyll-built copy of this Next.js repo at
+# http://www.andrewdenty.com/gay-places/. The site is deployed exclusively
+# via Vercel; GitHub Pages should not be active on this repository.
+#
+# Once this workflow has run and Pages is confirmed deleted (HTTP 204),
+# the dynamic `pages-build-deployment` workflow will stop being triggered
+# and this workflow itself becomes a harmless no-op on subsequent pushes.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+
+jobs:
+  disable-pages:
+    name: Ensure GitHub Pages is disabled
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete GitHub Pages configuration
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STATUS=$(curl -s -o /tmp/pages_response.json -w "%{http_code}" \
+            -X DELETE "https://api.github.com/repos/${{ github.repository }}/pages" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28")
+          echo "Response status: $STATUS"
+          if [ "$STATUS" = "204" ]; then
+            echo "✅ GitHub Pages successfully disabled. No more Jekyll deployments to andrewdenty.com."
+          elif [ "$STATUS" = "404" ]; then
+            echo "✅ GitHub Pages is already disabled (or was never configured). Nothing to do."
+          else
+            echo "⚠️ Unexpected HTTP status $STATUS. Response body:"
+            cat /tmp/pages_response.json
+            exit 1
+          fi
