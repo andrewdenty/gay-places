@@ -51,6 +51,8 @@ export async function updateCountry(formData: FormData) {
   const featuredVenueRaw = getText(formData, "featured_venue_ids");
   const featured_city_ids = parseTextareaLines(featuredCityRaw);
   const featured_venue_ids = parseTextareaLines(featuredVenueRaw);
+  const rawKeywords = getText(formData, "search_keywords");
+  const search_keywords: string[] = rawKeywords ? (JSON.parse(rawKeywords) as string[]) : [];
 
   const { error } = await supabase
     .from("countries")
@@ -63,6 +65,7 @@ export async function updateCountry(formData: FormData) {
       featured_venue_ids,
       seo_title,
       seo_description,
+      search_keywords,
     })
     .eq("id", id);
   if (error) throw error;

@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { NewCountryModal } from "@/components/admin/new-country-modal";
 import { CountriesList } from "./countries-list";
+import { isMissingColumnError } from "@/lib/data/public";
 
 export const dynamic = "force-dynamic";
 
@@ -14,17 +15,30 @@ type CountryRow = {
   featured_venue_ids?: string[] | null;
   seo_title?: string | null;
   seo_description?: string | null;
+  search_keywords?: string[] | null;
   published: boolean;
 };
 
 export default async function AdminCountriesPage() {
   const supabase = await createSupabaseServerClient();
-  const { data: countries } = await supabase
+  let { data: countries, error } = await supabase
     .from("countries")
     .select(
-      "id,slug,name,intro,editorial,featured_city_ids,featured_venue_ids,seo_title,seo_description,published"
+      "id,slug,name,intro,editorial,featured_city_ids,featured_venue_ids,seo_title,seo_description,search_keywords,published"
     )
     .order("name", { ascending: true });
+
+  if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: fallback } = await supabase
+        .from("countries")
+        .select(
+          "id,slug,name,intro,editorial,featured_city_ids,featured_venue_ids,seo_title,seo_description,published"
+        )
+        .order("name", { ascending: true });
+      countries = (fallback ?? []).map((c) => ({ ...c, search_keywords: [] }));
+    }
+  }
 
   return (
     <div>
