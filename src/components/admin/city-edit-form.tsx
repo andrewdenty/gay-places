@@ -12,6 +12,7 @@ import { COMMON_TIMEZONES } from "@/components/admin/opening-hours-editor";
 import { useToast } from "@/components/ui/toast";
 import { updateCity, uploadCityImage, removeCityImage } from "@/app/(admin)/admin/cities/actions";
 import { InlineCityImageUpload } from "@/components/admin/inline-city-image-upload";
+import { KeywordTagsInput } from "@/components/admin/keyword-tags-input";
 
 // ─── Styling constants ─────────────────────────────────────────────────────────
 const INPUT =
@@ -36,6 +37,7 @@ export interface CityData {
   seo_title?: string | null;
   seo_description?: string | null;
   timezone?: string | null;
+  search_keywords?: string[] | null;
 }
 
 interface Props {
@@ -64,6 +66,7 @@ export function CityEditForm({ city, countryOptions, onSave }: Props) {
   const [seoTitle, setSeoTitle] = useState(city.seo_title ?? "");
   const [seoDescription, setSeoDescription] = useState(city.seo_description ?? "");
   const [imagePath, setImagePath] = useState(city.image_path ?? null);
+  const [searchKeywords, setSearchKeywords] = useState<string[]>(city.search_keywords ?? []);
 
   // ── Dirty state ────────────────────────────────────────────────────────────
   const [isDirty, setIsDirty] = useState(false);
@@ -99,6 +102,7 @@ export function CityEditForm({ city, countryOptions, onSave }: Props) {
     formData.set("description", description);
     formData.set("seo_title", seoTitle);
     formData.set("seo_description", seoDescription);
+    formData.set("search_keywords", JSON.stringify(searchKeywords));
 
     startTransition(async () => {
       try {
@@ -112,7 +116,7 @@ export function CityEditForm({ city, countryOptions, onSave }: Props) {
     });
   }, [
     city.id, name, country, centerLat, centerLng, published,
-    timezone, description, seoTitle, seoDescription,
+    timezone, description, seoTitle, seoDescription, searchKeywords,
     startTransition, showToast, onSave,
   ]);
 
@@ -259,6 +263,20 @@ export function CityEditForm({ city, countryOptions, onSave }: Props) {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Search keywords */}
+          <div className="sm:col-span-2 border-t border-border pt-3 mt-1">
+            <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Search keywords
+            </div>
+            <div className="mb-1 text-xs text-muted-foreground">
+              Alternative names that redirect searchers to this city (e.g. Maspalomas, Playa Del Inglés).
+            </div>
+            <KeywordTagsInput
+              keywords={searchKeywords}
+              onChange={(kws) => { setSearchKeywords(kws); markDirty(); }}
+            />
           </div>
         </div>
       </div>

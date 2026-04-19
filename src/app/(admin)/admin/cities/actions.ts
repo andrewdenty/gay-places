@@ -73,10 +73,12 @@ export async function updateCity(formData: FormData) {
   const seo_title = getText(formData, "seo_title") || null;
   const seo_description = getText(formData, "seo_description") || null;
   const timezone = getText(formData, "timezone") || null;
+  const rawKeywords = getText(formData, "search_keywords");
+  const search_keywords: string[] = rawKeywords ? (JSON.parse(rawKeywords) as string[]) : [];
 
   const { error } = await supabase
     .from("cities")
-    .update({ name, country, center_lat, center_lng, published, description, seo_title, seo_description, timezone })
+    .update({ name, country, center_lat, center_lng, published, description, seo_title, seo_description, timezone, search_keywords })
     .eq("id", id);
   if (error) throw error;
 
