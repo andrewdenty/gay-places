@@ -120,13 +120,15 @@ export async function POST(request: Request) {
         .single();
 
       if (retryError) {
-        return NextResponse.json({ error: retryError.message }, { status: 400 });
+        console.error("[suggest-edit] retry insert failed:", retryError.message);
+        return NextResponse.json({ error: "Submission failed. Please try again." }, { status: 500 });
       }
 
       return NextResponse.json({ ok: true, id: retryData.id });
     }
 
-    return NextResponse.json({ error: insertError.message }, { status: 400 });
+    console.error("[suggest-edit] insert failed:", insertError.code, insertError.message);
+    return NextResponse.json({ error: "Submission failed. Please try again." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true, id: submission.id });

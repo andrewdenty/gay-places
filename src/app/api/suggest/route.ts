@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       if (anonError || !anonData?.user) {
         console.error("[suggest] failed to create anon user:", anonError?.message);
         return NextResponse.json(
-          { error: `[debug] anon user creation failed: ${anonError?.message ?? "no user returned"}` },
+          { error: "Submission failed. Please try again." },
           { status: 500 },
         );
       }
@@ -108,15 +108,17 @@ export async function POST(request: Request) {
         .single();
 
       if (retryError) {
-        return NextResponse.json({ error: retryError.message }, { status: 400 });
+        console.error("[suggest] retry insert failed:", retryError.message);
+        return NextResponse.json({ error: "Submission failed. Please try again." }, { status: 500 });
       }
 
       return NextResponse.json({ ok: true, id: retryData.id });
     }
 
+    console.error("[suggest] insert failed:", insertError.code, insertError.message);
     return NextResponse.json(
-      { error: `[debug] insert failed (${insertError.code}): ${insertError.message}` },
-      { status: 400 },
+      { error: "Submission failed. Please try again." },
+      { status: 500 },
     );
   }
 
